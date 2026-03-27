@@ -83,6 +83,7 @@ const Navbar = () => {
           >
             Analyze My PC
           </Link>
+          <ThemeToggle />
         </div>
 
         {/* Mobile hamburger */}
