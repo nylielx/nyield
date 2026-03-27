@@ -16,14 +16,14 @@
 
 const footerLinks = {
   Services: [
-    { label: "Competitive OS", href: "#services" },
-    { label: "Balanced OS", href: "#services" },
-    { label: "Education OS", href: "#services" },
-    { label: "Gaming PCs", href: "#builds" },
-    { label: "Marketplace", href: "#marketplace" },
+    { label: "Competitive OS", href: "/services" },
+    { label: "Balanced OS", href: "/services" },
+    { label: "Education OS", href: "/services" },
+    { label: "Gaming PCs", href: "/builds" },
+    { label: "Marketplace", href: "/marketplace" },
   ],
   Company: [
-    { label: "About", href: "#about" },
+    { label: "About", href: "/#about" },
     { label: "Careers", href: "#" },
     { label: "Contact", href: "#" },
     { label: "Blog", href: "#" },
