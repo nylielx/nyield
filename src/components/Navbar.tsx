@@ -15,9 +15,10 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * Navigation links configuration.
@@ -35,6 +36,7 @@ const navLinks = [
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -77,12 +79,38 @@ const Navbar = () => {
               </a>
             )
           )}
-          <Link
-            to="/"
-            className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity glow-sm"
-          >
-            Analyze My PC
-          </Link>
+          {user ? (
+            /* Logged-in state: show user info and logout */
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground flex items-center gap-1">
+                <User size={16} />
+                {user.fullName}
+              </span>
+              <button
+                onClick={() => logout()}
+                className="px-4 py-2 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:text-primary hover:border-primary transition-colors flex items-center gap-1"
+              >
+                <LogOut size={16} />
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            /* Logged-out state: show sign in / sign up */
+            <div className="flex items-center gap-3">
+              <Link
+                to="/signin"
+                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/signup"
+                className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity glow-sm"
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
           <ThemeToggle />
         </div>
 
@@ -125,12 +153,37 @@ const Navbar = () => {
                 </a>
               )
             )}
-            <Link
-              to="/"
-              className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm text-center"
-            >
-              Analyze My PC
-            </Link>
+            {user ? (
+              <div className="flex flex-col gap-2">
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <User size={16} />
+                  {user.fullName}
+                </span>
+                <button
+                  onClick={() => { logout(); setMenuOpen(false); }}
+                  className="px-5 py-2.5 rounded-lg border border-border text-sm font-medium text-center hover:text-primary hover:border-primary transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Link
+                  to="/signin"
+                  onClick={() => setMenuOpen(false)}
+                  className="px-5 py-2.5 rounded-lg border border-border text-sm font-medium text-center"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/signup"
+                  onClick={() => setMenuOpen(false)}
+                  className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm text-center"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </div>
         </motion.div>
       )}
