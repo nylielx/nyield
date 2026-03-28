@@ -153,12 +153,37 @@ const Navbar = () => {
                 </a>
               )
             )}
-            <Link
-              to="/"
-              className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm text-center"
-            >
-              Analyze My PC
-            </Link>
+            {user ? (
+              <div className="flex flex-col gap-2">
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <User size={16} />
+                  {user.fullName}
+                </span>
+                <button
+                  onClick={() => { logout(); setMenuOpen(false); }}
+                  className="px-5 py-2.5 rounded-lg border border-border text-sm font-medium text-center hover:text-primary hover:border-primary transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Link
+                  to="/signin"
+                  onClick={() => setMenuOpen(false)}
+                  className="px-5 py-2.5 rounded-lg border border-border text-sm font-medium text-center"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/signup"
+                  onClick={() => setMenuOpen(false)}
+                  className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm text-center"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </div>
         </motion.div>
       )}
