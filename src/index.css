@@ -214,4 +214,15 @@
     box-shadow: 0 0 12px hsl(var(--glow) / 0.3),
                 0 0 30px hsl(var(--glow) / 0.08);
   }
+
+  /* ----------------------------------------------------------------
+   * PILL NAVBAR CONTAINER GLOW
+   * Adds a subtle red-tinted shadow around the floating pill navbar
+   * to make it feel elevated and premium.
+   * ---------------------------------------------------------------- */
+  .nav-pill-container {
+    box-shadow: 0 4px 20px hsl(var(--glow) / 0.08),
+                0 0 40px hsl(var(--glow) / 0.04),
+                0 2px 8px hsl(0 0% 0% / 0.15);
+  }
 }
