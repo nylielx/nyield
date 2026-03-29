@@ -37,6 +37,14 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+  const location = useLocation();
+
+  /** Check if a nav link matches the current route (for active pill state) */
+  const isActive = (link: { to?: string; href?: string }) => {
+    if (link.to) return location.pathname === link.to;
+    if (link.href) return location.pathname + location.hash === link.href;
+    return false;
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
