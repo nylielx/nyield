@@ -53,12 +53,12 @@ const Navbar = () => {
   }, []);
 
   return (
-    {/* ================================================================
+    /* ================================================================
      * FLOATING PILL NAVBAR WRAPPER
      * - fixed positioning with top spacing (top-4 = 16px from top)
      * - left-1/2 + -translate-x-1/2 = perfectly centered horizontally
      * - z-50 keeps it above all content
-     * ================================================================ */}
+     * ================================================================ */
     <motion.div
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
