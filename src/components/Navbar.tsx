@@ -55,16 +55,19 @@ const Navbar = () => {
   return (
     /* ================================================================
      * FLOATING PILL NAVBAR WRAPPER
-     * - fixed positioning with top spacing (top-4 = 16px from top)
-     * - left-1/2 + -translate-x-1/2 = perfectly centered horizontally
-     * - z-50 keeps it above all content
+     * - fixed + inset-x-0 = spans full width but only as a positioning layer
+     * - flex justify-center = centers the pill child perfectly
+     * - top-4 = 16px spacing from top of viewport
+     * - pointer-events-none on wrapper, pointer-events-auto on pill
+     *   so clicks pass through the empty space around the pill
      * ================================================================ */
-    <motion.div
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-auto max-w-[95vw]"
-    >
+    <div className="fixed top-4 inset-x-0 z-50 flex justify-center pointer-events-none">
+      <motion.div
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="pointer-events-auto max-w-[95vw]"
+      >
       {/* ================================================================
        * PILL CONTAINER
        * - rounded-full = border-radius: 9999px (pill shape)
@@ -221,6 +224,7 @@ const Navbar = () => {
         </motion.div>
       )}
     </motion.div>
+    </div>
   );
 };
 
