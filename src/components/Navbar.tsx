@@ -224,6 +224,7 @@ const Navbar = () => {
         </motion.div>
       )}
     </motion.div>
+    </div>
   );
 };
 
