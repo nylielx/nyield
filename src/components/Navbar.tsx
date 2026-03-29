@@ -73,7 +73,7 @@ const Navbar = () => {
               <Link
                 key={link.label}
                 to={link.to}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-200"
+                className={`nav-pill ${isActive(link) ? "active" : ""}`}
               >
                 {link.label}
               </Link>
@@ -81,7 +81,7 @@ const Navbar = () => {
               <a
                 key={link.label}
                 href={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-200"
+                className={`nav-pill ${isActive(link) ? "active" : ""}`}
               >
                 {link.label}
               </a>
@@ -146,7 +146,7 @@ const Navbar = () => {
                   key={link.label}
                   to={link.to}
                   onClick={() => setMenuOpen(false)}
-                  className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                  className={`nav-pill ${isActive(link) ? "active" : ""}`}
                 >
                   {link.label}
                 </Link>
@@ -155,7 +155,7 @@ const Navbar = () => {
                   key={link.label}
                   href={link.href}
                   onClick={() => setMenuOpen(false)}
-                  className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                  className={`nav-pill ${isActive(link) ? "active" : ""}`}
                 >
                   {link.label}
                 </a>
