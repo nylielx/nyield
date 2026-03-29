@@ -16,7 +16,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Menu, X, User, LogOut } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -37,6 +37,14 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+  const location = useLocation();
+
+  /** Check if a nav link matches the current route (for active pill state) */
+  const isActive = (link: { to?: string; href?: string }) => {
+    if (link.to) return location.pathname === link.to;
+    if (link.href) return location.pathname + location.hash === link.href;
+    return false;
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -65,7 +73,7 @@ const Navbar = () => {
               <Link
                 key={link.label}
                 to={link.to}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-200"
+                className={`nav-pill ${isActive(link) ? "active" : ""}`}
               >
                 {link.label}
               </Link>
@@ -73,7 +81,7 @@ const Navbar = () => {
               <a
                 key={link.label}
                 href={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-200"
+                className={`nav-pill ${isActive(link) ? "active" : ""}`}
               >
                 {link.label}
               </a>
@@ -138,7 +146,7 @@ const Navbar = () => {
                   key={link.label}
                   to={link.to}
                   onClick={() => setMenuOpen(false)}
-                  className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                  className={`nav-pill ${isActive(link) ? "active" : ""}`}
                 >
                   {link.label}
                 </Link>
@@ -147,7 +155,7 @@ const Navbar = () => {
                   key={link.label}
                   href={link.href}
                   onClick={() => setMenuOpen(false)}
-                  className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                  className={`nav-pill ${isActive(link) ? "active" : ""}`}
                 >
                   {link.label}
                 </a>

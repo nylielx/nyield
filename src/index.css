@@ -182,4 +182,36 @@
   .glass {
     @apply bg-card/80 backdrop-blur-xl border border-border/50;
   }
+
+  /* ----------------------------------------------------------------
+   * NAV PILL HOVER EFFECT
+   * Creates a smooth "pill" background that animates in on hover.
+   * Default: transparent bg, muted text.
+   * Hover: red pill bg + white text + glow + slight scale-up.
+   * Active: same as hover but always visible (current page).
+   * ---------------------------------------------------------------- */
+  .nav-pill {
+    @apply relative px-4 py-2 rounded-full text-sm font-medium text-muted-foreground;
+    background-color: transparent;
+    transition: background-color 0.25s ease,
+                color 0.25s ease,
+                box-shadow 0.25s ease,
+                transform 0.25s ease;
+  }
+
+  .nav-pill:hover {
+    @apply text-primary-foreground;
+    background-color: hsl(var(--primary));
+    box-shadow: 0 0 12px hsl(var(--glow) / 0.3),
+                0 0 30px hsl(var(--glow) / 0.08);
+    transform: scale(1.03);
+  }
+
+  /* Active state — always shows the red pill (for current page) */
+  .nav-pill.active {
+    @apply text-primary-foreground;
+    background-color: hsl(var(--primary));
+    box-shadow: 0 0 12px hsl(var(--glow) / 0.3),
+                0 0 30px hsl(var(--glow) / 0.08);
+  }
 }
