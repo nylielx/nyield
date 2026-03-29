@@ -55,7 +55,7 @@ const Index = () => {
      * All components use semantic tokens (bg-background, text-foreground)
      * which automatically switch colors when dark mode is active.
      */
-    <div className="min-h-screen bg-background text-foreground animated-gradient-bg">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Fixed navbar at the top of the viewport */}
       <Navbar />
 
