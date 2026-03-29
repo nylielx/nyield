@@ -157,7 +157,33 @@
  * Custom utilities that extend Tailwind for nYield-specific patterns.
  * -------------------------------------------------------------------------- */
 @layer utilities {
-  /* Glow effect used on buttons, cards, and accents */
+  /* ----------------------------------------------------------------
+   * ANIMATED GRADIENT BACKGROUND
+   * A slow-moving gradient that cycles through dark/red tones.
+   * background-size: 400% stretches the gradient so the animation
+   * can "pan" across it smoothly. The @keyframes shifts the position.
+   * ---------------------------------------------------------------- */
+  .animated-gradient-bg {
+    background: linear-gradient(
+      -45deg,
+      hsl(var(--background)),
+      hsl(0 30% 12%),
+      hsl(var(--background)),
+      hsl(0 50% 15%),
+      hsl(var(--background))
+    );
+    background-size: 400% 400%;
+    animation: gradient-shift 15s ease infinite;
+  }
+
+  @keyframes gradient-shift {
+    0%   { background-position: 0% 50%; }
+    25%  { background-position: 100% 50%; }
+    50%  { background-position: 100% 0%; }
+    75%  { background-position: 0% 100%; }
+    100% { background-position: 0% 50%; }
+  }
+
   .glow {
     box-shadow: 0 0 20px hsl(var(--glow) / 0.3),
                 0 0 60px hsl(var(--glow) / 0.1);
