@@ -49,15 +49,6 @@ const verificationSteps = [
   { icon: ShieldCheck, title: "Hardware Verified", desc: "Serial numbers & specs checked against listing." },
 ];
 
-/** Filter chip options (non-functional placeholders) */
-const filterChips = [
-  { label: "All GPUs", icon: Monitor },
-  { label: "RTX 4000+", icon: Monitor },
-  { label: "Under £500", icon: Tag },
-  { label: "Under £1000", icon: Tag },
-  { label: "Excellent", icon: ShieldCheck },
-  { label: "Like New", icon: ShieldCheck },
-];
 
 /** Coming soon features */
 const comingSoonFeatures = [
