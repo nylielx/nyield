@@ -4,14 +4,8 @@
  * =============================================================================
  *
  * Each listing represents a used gaming PC that has been stress-tested and
- * verified by nYield's software. This builds buyer confidence by showing
- * real performance data, not just specs.
- *
- * FUTURE SCALABILITY:
- * - This data will come from an API connected to a database
- * - Each listing will be generated after running nYield's diagnostic tool
- * - Sellers will submit their PCs for virtual stress testing
- * - Results are stored and displayed automatically
+ * verified by nYield's software. Tags and bestFor fields help buyers
+ * quickly identify what each build excels at.
  * =============================================================================
  */
 
@@ -20,12 +14,11 @@ export interface MarketplaceListing {
   title: string;
   price: number;
   seller: string;
-  /** Stress test results — the core of nYield's marketplace value proposition */
   benchmarks: {
-    cpuScore: number;         // Out of 100
-    gpuScore: number;         // Out of 100
-    ramStability: number;     // Percentage
-    coolingPerformance: string; // Rating
+    cpuScore: number;
+    gpuScore: number;
+    ramStability: number;
+    coolingPerformance: string;
     estimatedFps: {
       fortnite: number;
       valorant: number;
@@ -37,9 +30,13 @@ export interface MarketplaceListing {
     ram: string;
     storage: string;
   };
-  verified: boolean;          // Has this PC passed nYield verification?
+  verified: boolean;
   condition: string;
   listedDate: string;
+  /** Short description of ideal use case */
+  bestFor: string;
+  /** Tags like "Best Value", "High Performance", "Budget" */
+  tags: string[];
 }
 
 export const marketplaceListings: MarketplaceListing[] = [
@@ -64,6 +61,8 @@ export const marketplaceListings: MarketplaceListing[] = [
     verified: true,
     condition: "Excellent",
     listedDate: "2026-03-20",
+    bestFor: "1440p competitive gaming & streaming",
+    tags: ["Best Value", "High Performance"],
   },
   {
     id: "mp-002",
@@ -86,6 +85,8 @@ export const marketplaceListings: MarketplaceListing[] = [
     verified: true,
     condition: "Good",
     listedDate: "2026-03-18",
+    bestFor: "1080p esports titles on a budget",
+    tags: ["Budget"],
   },
   {
     id: "mp-003",
@@ -108,5 +109,7 @@ export const marketplaceListings: MarketplaceListing[] = [
     verified: true,
     condition: "Like New",
     listedDate: "2026-03-22",
+    bestFor: "4K gaming, video editing & content creation",
+    tags: ["High Performance", "Creator"],
   },
 ];
