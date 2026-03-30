@@ -28,16 +28,16 @@
  */
 
 import { useEffect } from "react";
-import Navbar from "@/components/Navbar";
-import HeroSection from "@/components/HeroSection";
-import StatsSection from "@/components/StatsSection";
-import PerformanceComparison from "@/components/PerformanceComparison";
-import ServicesSection from "@/components/ServicesSection";
-import PCBuildSection from "@/components/PCBuildSection";
-import MarketplaceSection from "@/components/MarketplaceSection";
-import ProcessSection from "@/components/ProcessSection";
-import AboutSection from "@/components/AboutSection";
-import SiteFooter from "@/components/SiteFooter";
+import Navbar from "@/components/component-navbar";
+import HeroSection from "@/components/section-hero";
+import StatsSection from "@/components/section-stats";
+import PerformanceComparison from "@/components/component-performance-comparison";
+import ServicesSection from "@/components/section-services";
+import PCBuildSection from "@/components/section-pc-build";
+import MarketplaceSection from "@/components/section-marketplace";
+import ProcessSection from "@/components/section-process";
+import AboutSection from "@/components/section-about";
+import SiteFooter from "@/components/component-site-footer";
 
 const Index = () => {
   /**

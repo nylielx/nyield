@@ -18,14 +18,14 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import ServicesPage from "./pages/ServicesPage.tsx";
-import BuildsPage from "./pages/BuildsPage.tsx";
-import MarketplacePage from "./pages/MarketplacePage.tsx";
-import SignUpPage from "./pages/SignUpPage.tsx";
-import SignInPage from "./pages/SignInPage.tsx";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage.tsx";
+import Index from "./pages/page-index.tsx";
+import NotFound from "./pages/page-not-found.tsx";
+import ServicesPage from "./pages/page-services.tsx";
+import BuildsPage from "./pages/page-builds.tsx";
+import MarketplacePage from "./pages/page-marketplace.tsx";
+import SignUpPage from "./pages/page-sign-up.tsx";
+import SignInPage from "./pages/page-sign-in.tsx";
+import ForgotPasswordPage from "./pages/page-forgot-password.tsx";
 
 const queryClient = new QueryClient();
 
