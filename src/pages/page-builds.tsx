@@ -35,8 +35,8 @@ import {
 import { pcBuilds, editions, type PCBuild } from "@/data/pcBuilds";
 import pcBlackout from "@/assets/pc-blackout.jpg";
 import pcWhiteout from "@/assets/pc-whiteout.jpg";
-import Navbar from "@/components/Navbar";
-import SiteFooter from "@/components/SiteFooter";
+import Navbar from "@/components/component-navbar";
+import SiteFooter from "@/components/component-site-footer";
 
 /**
  * What's included with every build — shared across all tiers.

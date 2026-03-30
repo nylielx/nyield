@@ -37,8 +37,8 @@ import {
   Clock,
 } from "lucide-react";
 import { osProducts, type OSProduct } from "@/data/osProducts";
-import Navbar from "@/components/Navbar";
-import SiteFooter from "@/components/SiteFooter";
+import Navbar from "@/components/component-navbar";
+import SiteFooter from "@/components/component-site-footer";
 
 /**
  * Maps string icon names from data → real Lucide components.

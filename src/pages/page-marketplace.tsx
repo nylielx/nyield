@@ -44,8 +44,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { marketplaceListings } from "@/data/marketplaceExamples";
-import Navbar from "@/components/Navbar";
-import SiteFooter from "@/components/SiteFooter";
+import Navbar from "@/components/component-navbar";
+import SiteFooter from "@/components/component-site-footer";
 
 /**
  * The verification steps nYield performs on every used PC.
