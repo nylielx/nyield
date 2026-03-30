@@ -74,6 +74,12 @@ const getTagStyle = (tag: string) => {
 };
 
 const MarketplacePage = () => {
+  const [filteredListings, setFilteredListings] = useState<MarketplaceListing[]>(marketplaceListings);
+
+  const handleFilteredChange = useCallback((filtered: MarketplaceListing[]) => {
+    setFilteredListings(filtered);
+  }, []);
+
   useEffect(() => {
     document.title = "Verified Marketplace — nYield";
   }, []);
