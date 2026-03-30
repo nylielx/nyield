@@ -114,16 +114,8 @@ const MarketplaceSection = () => {
                   </div>
                   <div>
                     <p className="text-muted-foreground">Cooling</p>
-                    <p className="font-semibold text-foreground">{listing.benchmarks.coolingPerformance}</p>
+                    <p className="font-semibold text-foreground">{listing.benchmarks.coolingRating}</p>
                   </div>
-                </div>
-                <div className="mt-3 pt-3 border-t border-border flex justify-between text-xs">
-                  <span className="text-muted-foreground">
-                    Fortnite: <span className="text-primary font-semibold">{listing.benchmarks.estimatedFps.fortnite} FPS</span>
-                  </span>
-                  <span className="text-muted-foreground">
-                    Valorant: <span className="text-primary font-semibold">{listing.benchmarks.estimatedFps.valorant} FPS</span>
-                  </span>
                 </div>
               </div>
             </motion.div>

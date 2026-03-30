@@ -25,6 +25,7 @@ import MarketplacePage from "./pages/4-page-marketplace.tsx";
 import SignInPage from "./pages/7-page-sign-in.tsx";
 import SignUpPage from "./pages/8-page-sign-up.tsx";
 import ForgotPasswordPage from "./pages/9-page-forgot-password.tsx";
+import ListingDetailPage from "./pages/5-page-listing-detail.tsx";
 import NotFound from "./pages/10-page-not-found.tsx";
 
 const queryClient = new QueryClient();
