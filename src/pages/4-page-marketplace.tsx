@@ -153,33 +153,15 @@ const MarketplacePage = () => {
       </section>
 
       {/* ================================================================
-       * FILTER BAR (placeholder — all disabled)
+       * FILTER BAR — Functional inline filters
        * ================================================================ */}
       <section className="pt-10 pb-4 bg-background">
         <div className="container mx-auto px-6">
           <div className="max-w-5xl mx-auto space-y-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card text-muted-foreground text-sm cursor-not-allowed opacity-60">
-                <Search size={16} />
-                <span>Search listings... (Coming Soon)</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card text-muted-foreground text-sm cursor-not-allowed opacity-60">
-                <SlidersHorizontal size={16} />
-                <span>Sort by: Price</span>
-                <ChevronDown size={14} />
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {filterChips.map((chip) => (
-                <button key={chip.label} disabled className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-xs text-muted-foreground cursor-not-allowed opacity-60">
-                  <chip.icon size={12} />
-                  {chip.label}
-                </button>
-              ))}
-            </div>
-
-            <p className="text-sm text-muted-foreground">{marketplaceListings.length} verified listings available</p>
+            <MarketplaceFilters listings={marketplaceListings} onFilteredChange={handleFilteredChange} />
+            <p className="text-sm text-muted-foreground">
+              {filteredListings.length} of {marketplaceListings.length} verified listings
+            </p>
           </div>
         </div>
       </section>
@@ -190,7 +172,13 @@ const MarketplacePage = () => {
       <section className="py-8 bg-background">
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {marketplaceListings.map((listing, index) => (
+            {filteredListings.length === 0 ? (
+              <div className="col-span-full text-center py-16">
+                <p className="text-lg font-heading font-bold text-foreground mb-2">No listings match your filters</p>
+                <p className="text-sm text-muted-foreground">Try adjusting or clearing your filters to see more results.</p>
+              </div>
+            ) : (
+            filteredListings.map((listing, index) => (
               <motion.div
                 key={listing.id}
                 initial={{ opacity: 0, y: 30 }}
