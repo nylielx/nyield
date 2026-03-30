@@ -290,7 +290,8 @@ const MarketplacePage = () => {
                   </div>
                 </div>
               </motion.div>
-            ))}
+            ))
+            )}
           </div>
         </div>
       </section>
