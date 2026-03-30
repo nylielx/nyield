@@ -15,7 +15,7 @@
  * =============================================================================
  */
 
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -27,21 +27,17 @@ import {
   HardDrive,
   Gauge,
   Thermometer,
-  Search,
-  SlidersHorizontal,
   MessageSquare,
   LayoutDashboard,
   Filter,
   CreditCard,
-  Tag,
-  ChevronDown,
   AlertTriangle,
   Lock,
 } from "lucide-react";
-import { marketplaceListings } from "@/data/marketplaceExamples";
+import { marketplaceListings, type MarketplaceListing } from "@/data/marketplaceExamples";
 import Navbar from "@/components/component-navbar";
 import SiteFooter from "@/components/component-site-footer";
-import { Badge } from "@/components/ui/badge";
+import MarketplaceFilters from "@/components/component-marketplace-filters";
 import { Button } from "@/components/ui/button";
 
 /** 5 verification steps — no FPS card */
