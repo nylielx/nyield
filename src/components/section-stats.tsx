@@ -34,8 +34,8 @@ const stats = [
 
 const StatsSection = () => {
   return (
-    <section className="py-20 border-y border-border/30 glass-base">
-      <div className="container mx-auto px-6">
+    <section className="py-24 border-y border-border/30 glass-base">
+      <div className="container mx-auto px-6 max-w-6xl">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((stat, index) => (
             <motion.div
