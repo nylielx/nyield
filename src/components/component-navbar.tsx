@@ -92,25 +92,15 @@ const Navbar = () => {
 
               {/* Desktop navigation */}
               <div className="hidden md:flex items-center gap-1">
-                {navLinks.map((link) =>
-                  link.to ? (
-                    <Link
-                      key={link.label}
-                      to={link.to}
-                      className={`nav-pill ${isActive(link) ? "active" : ""}`}
-                    >
-                      {link.label}
-                    </Link>
-                  ) : (
-                    <a
-                      key={link.label}
-                      href={link.href}
-                      className={`nav-pill ${isActive(link) ? "active" : ""}`}
-                    >
-                      {link.label}
-                    </a>
-                  )
-                )}
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.label}
+                    to={link.to}
+                    className={`nav-pill ${isActive(link) ? "active" : ""}`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
               </div>
 
               {/* Desktop auth area */}
