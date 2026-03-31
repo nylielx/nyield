@@ -46,7 +46,7 @@ const AboutSection = () => {
             className="text-center mb-16"
           >
             <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-              The <span className="text-gradient">Mission</span>
+              The <span className="text-gradient-glow-wrapper"><span className="text-gradient-glow">Mission</span></span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8">
               nYield exists to democratize PC performance. We believe every
