@@ -1,0 +1,56 @@
+/**
+ * FINAL CTA SECTION — Closing conversion block
+ */
+
+import { motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+
+const FinalCtaSection = () => {
+  return (
+    <section className="py-32 bg-background relative overflow-hidden">
+      {/* Glow */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-[0.06] pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)",
+        }}
+      />
+
+      <div className="container mx-auto px-6 max-w-6xl relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center"
+        >
+          <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">
+            Choose Your Edition <span className="text-gradient">Today</span>
+          </h2>
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto mb-10">
+            Unlock your PC's full performance instantly
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              to="/services"
+              className="group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:opacity-90 transition-all glow relative overflow-hidden"
+            >
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+              Get Started
+              <ArrowRight size={20} />
+            </Link>
+            <Link
+              to="/services"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg border border-border text-foreground font-semibold text-lg hover:bg-secondary transition-colors"
+            >
+              View Editions
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+export default FinalCtaSection;
