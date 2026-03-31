@@ -34,13 +34,13 @@ const FinalCtaSection = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/services">
-              <GlassButton size="lg" className="inline-flex items-center gap-2">
+              <GlassButton size="lg" className="inline-flex items-center gap-2 bg-primary text-primary-foreground">
                 Get Started
                 <ArrowRight size={20} />
               </GlassButton>
             </Link>
             <Link to="/services">
-              <GlassButton size="lg" className="inline-flex items-center gap-2">
+              <GlassButton size="lg" className="inline-flex items-center gap-2 border border-border text-foreground">
                 View Editions
               </GlassButton>
             </Link>

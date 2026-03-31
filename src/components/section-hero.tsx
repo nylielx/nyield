@@ -155,13 +155,13 @@ const HeroSection = () => {
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
           <Link to="/services">
-            <GlassButton size="lg" className="inline-flex items-center gap-2">
+            <GlassButton size="lg" className="inline-flex items-center gap-2 bg-primary text-primary-foreground">
               Choose Your Edition
               <ArrowRight size={20} />
             </GlassButton>
           </Link>
           <Link to="/builds">
-            <GlassButton size="lg" className="inline-flex items-center gap-2">
+            <GlassButton size="lg" className="inline-flex items-center gap-2 border border-border text-foreground">
               View Gaming PCs
             </GlassButton>
           </Link>
