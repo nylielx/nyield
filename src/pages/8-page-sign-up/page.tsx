@@ -28,7 +28,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, UserPlus, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { signUpSchema, type SignUpFormData } from "@/utils/validation";
-import { Button } from "@/components/ui/button";
+import { GlassButton } from "@/components/ui/glass-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
