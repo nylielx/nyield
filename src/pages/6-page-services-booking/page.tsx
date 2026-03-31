@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  ShieldCheck,
 } from "lucide-react";
 import Navbar from "@/components/component-navbar";
 import SiteFooter from "@/components/component-site-footer";
@@ -49,7 +50,6 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 function getCalendarDays(year: number, month: number) {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
-  // JS getDay: 0=Sun. We want Mon=0
   let startOffset = (firstDay.getDay() + 6) % 7;
   const totalDays = lastDay.getDate();
   const days: (Date | null)[] = [];
@@ -58,9 +58,10 @@ function getCalendarDays(year: number, month: number) {
   return days;
 }
 
+/** Mon–Thu = Premium days (10% surcharge) */
 function isPremiumDay(date: Date) {
-  const day = date.getDay(); // 0=Sun,1=Mon...
-  return day >= 1 && day <= 4; // Mon–Thu
+  const day = date.getDay();
+  return day >= 1 && day <= 4;
 }
 
 function isSunday(date: Date) {
@@ -85,6 +86,7 @@ const ServicesBookingPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedTech, setSelectedTech] = useState<string | null>(null);
+  const [techConfirmed, setTechConfirmed] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [confetti, setConfetti] = useState(false);
   const [timeModalOpen, setTimeModalOpen] = useState(false);
@@ -102,12 +104,14 @@ const ServicesBookingPage = () => {
 
   const activeEditionName = upgraded ? "Education Edition" : edition.name;
   const basePrice = upgraded ? 80 : edition.price;
-  const surcharge = selectedDate && isPremiumDay(selectedDate) ? basePrice * 0.05 : 0;
+  /* 10% surcharge for Mon–Thu */
+  const surcharge = selectedDate && isPremiumDay(selectedDate) ? basePrice * 0.1 : 0;
   const subtotal = basePrice + surcharge;
   const vat = subtotal * 0.2;
   const total = subtotal + vat;
 
-  const canConfirm = selectedDate && selectedTime && selectedTech;
+  /* All conditions including explicit technician confirmation */
+  const canConfirm = selectedDate && selectedTime && selectedTech && techConfirmed;
 
   useEffect(() => {
     document.title = `Book ${activeEditionName} — nYield`;
@@ -127,6 +131,17 @@ const ServicesBookingPage = () => {
     setSelectedDate(date);
     setSelectedTime(null);
     setTimeModalOpen(true);
+  };
+
+  const handleTechSelect = (techId: string) => {
+    if (selectedTech === techId && techConfirmed) {
+      // Deselect
+      setSelectedTech(null);
+      setTechConfirmed(false);
+    } else {
+      setSelectedTech(techId);
+      setTechConfirmed(false);
+    }
   };
 
   const handleConfirm = () => {
@@ -211,7 +226,7 @@ const ServicesBookingPage = () => {
                   month: "long",
                 })}
                 {isPremiumDay(selectedDate) && (
-                  <span className="ml-2 text-secondary">• Premium Day (+5%)</span>
+                  <span className="ml-2 text-primary/70">• Premium Day (+10%)</span>
                 )}
               </p>
 
@@ -408,29 +423,43 @@ const ServicesBookingPage = () => {
                           const isSelected =
                             selectedDate?.toDateString() === date.toDateString();
 
+                          /* ── Day cell styling ──
+                           * Premium (Mon–Thu): darker, amber-tinted border, distinct from standard
+                           * Standard (Fri–Sat): primary-tinted, feels like the better-value pick
+                           * Selected: strong primary bg + glow for both groups
+                           */
+                          let dayClasses: string;
+                          if (disabled) {
+                            dayClasses = "opacity-30 cursor-not-allowed bg-transparent";
+                          } else if (isSelected && premium) {
+                            dayClasses =
+                              "bg-primary text-primary-foreground glow ring-2 ring-primary/50 shadow-[0_0_20px_hsl(var(--primary)/0.4)]";
+                          } else if (isSelected) {
+                            dayClasses =
+                              "bg-primary text-primary-foreground glow-sm ring-2 ring-primary/40";
+                          } else if (premium) {
+                            dayClasses =
+                              "bg-muted/60 border border-muted-foreground/20 text-foreground hover:bg-muted hover:border-muted-foreground/40 hover:shadow-[0_0_14px_hsl(var(--muted-foreground)/0.12)]";
+                          } else {
+                            dayClasses =
+                              "glass-base border-primary/20 text-foreground hover:border-primary/40 hover:bg-primary/10 hover:shadow-[0_0_12px_hsl(var(--primary)/0.12)]";
+                          }
+
                           return (
                             <motion.button
                               key={date.toISOString()}
-                              whileHover={disabled ? {} : { y: -3, scale: 1.03 }}
+                              whileHover={disabled ? {} : { y: -3, scale: 1.05 }}
                               whileTap={disabled ? {} : { scale: 0.95 }}
                               onClick={() => !disabled && handleDateClick(date)}
                               disabled={disabled}
-                              className={`aspect-square rounded-lg flex flex-col items-center justify-center text-xs transition-all relative ${
-                                disabled
-                                  ? "opacity-30 cursor-not-allowed"
-                                  : isSelected
-                                  ? "bg-primary text-primary-foreground glow-sm"
-                                  : premium
-                                  ? "glass-base border-secondary/30 hover:border-secondary/60 hover:shadow-[0_0_12px_hsl(var(--secondary)/0.15)]"
-                                  : "glass-base border-primary/20 hover:border-primary/40 hover:shadow-[0_0_12px_hsl(var(--primary)/0.1)]"
-                              }`}
+                              className={`aspect-square rounded-lg flex flex-col items-center justify-center text-xs transition-all relative ${dayClasses}`}
                             >
                               <span className="font-bold text-sm leading-none">
                                 {date.getDate()}
                               </span>
                               {!disabled && premium && !isSelected && (
-                                <span className="text-[8px] text-secondary mt-0.5 leading-none">
-                                  +5%
+                                <span className="text-[8px] text-muted-foreground mt-0.5 leading-none">
+                                  +10%
                                 </span>
                               )}
                             </motion.button>
@@ -438,55 +467,139 @@ const ServicesBookingPage = () => {
                         })}
                       </div>
 
-                      {/* Legend */}
-                      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-border/20">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded-sm border border-primary/30 glass-base" />
-                          <span className="text-[10px] text-muted-foreground">
-                            Fri–Sun (Standard)
+                      {/* ── Legend with animated indicators ── */}
+                      <div className="flex flex-col gap-2.5 mt-5 pt-3 border-t border-border/20">
+                        {/* Premium legend */}
+                        <div className="flex items-center gap-2.5">
+                          <div className="relative w-3.5 h-3.5 flex items-center justify-center">
+                            {/* Outer revolving glow ring */}
+                            <div
+                              className="absolute inset-0 rounded-full"
+                              style={{
+                                background:
+                                  "conic-gradient(from 0deg, hsl(var(--muted-foreground) / 0.05), hsl(var(--muted-foreground) / 0.35), hsl(var(--muted-foreground) / 0.05))",
+                                animation: "spin 3s linear infinite",
+                              }}
+                            />
+                            {/* Inner dot */}
+                            <div
+                              className="relative w-2 h-2 rounded-full bg-muted-foreground/60"
+                              style={{
+                                boxShadow: "0 0 6px hsl(var(--muted-foreground) / 0.3)",
+                                animation: "pulse 2s ease-in-out infinite",
+                              }}
+                            />
+                          </div>
+                          <span className="text-[11px] text-muted-foreground">
+                            Mon – Thu — <span className="text-foreground font-medium">Premium (+10%)</span>
                           </span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded-sm border border-secondary/30 glass-base" />
-                          <span className="text-[10px] text-muted-foreground">
-                            Mon–Thu (Premium +5%)
+                        {/* Standard legend */}
+                        <div className="flex items-center gap-2.5">
+                          <div className="relative w-3.5 h-3.5 flex items-center justify-center">
+                            <div
+                              className="absolute inset-0 rounded-full"
+                              style={{
+                                background:
+                                  "conic-gradient(from 0deg, hsl(var(--primary) / 0.05), hsl(var(--primary) / 0.4), hsl(var(--primary) / 0.05))",
+                                animation: "spin 3s linear infinite",
+                              }}
+                            />
+                            <div
+                              className="relative w-2 h-2 rounded-full bg-primary/70"
+                              style={{
+                                boxShadow: "0 0 6px hsl(var(--primary) / 0.35)",
+                                animation: "pulse 2s ease-in-out infinite",
+                              }}
+                            />
+                          </div>
+                          <span className="text-[11px] text-muted-foreground">
+                            Fri – Sun — <span className="text-foreground font-medium">Standard</span>
                           </span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Technician selection */}
+                  {/* ── Technician selection with confirmation dropdown ── */}
                   <div>
                     <h3 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
                       <User size={18} className="text-primary" /> Choose Your Technician
                     </h3>
                     <div className="grid sm:grid-cols-2 gap-4">
-                      {technicians.map((tech) => (
-                        <motion.button
-                          key={tech.id}
-                          whileHover={{ y: -4, scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setSelectedTech(tech.id)}
-                          className={`rounded-xl p-5 text-left transition-all ${
-                            selectedTech === tech.id
-                              ? "glass-elevated border-primary glow-sm"
-                              : "glass-base hover:border-border"
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                              <User size={20} className="text-primary" />
-                            </div>
-                            <div>
-                              <p className="font-heading font-bold text-foreground">
-                                {tech.name}
-                              </p>
-                              <p className="text-xs text-muted-foreground">{tech.role}</p>
-                            </div>
+                      {technicians.map((tech) => {
+                        const isSelected = selectedTech === tech.id;
+                        const isConfirmed = isSelected && techConfirmed;
+
+                        return (
+                          <div key={tech.id} className="space-y-0">
+                            <motion.button
+                              whileHover={{ y: -4, scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => handleTechSelect(tech.id)}
+                              className={`w-full rounded-xl p-5 text-left transition-all ${
+                                isConfirmed
+                                  ? "glass-elevated border-primary glow-sm"
+                                  : isSelected
+                                  ? "glass-elevated border-primary/50"
+                                  : "glass-base hover:border-border"
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                                    isConfirmed
+                                      ? "bg-primary/30"
+                                      : "bg-primary/20"
+                                  }`}
+                                >
+                                  {isConfirmed ? (
+                                    <ShieldCheck size={20} className="text-primary" />
+                                  ) : (
+                                    <User size={20} className="text-primary" />
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="font-heading font-bold text-foreground">
+                                    {tech.name}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">{tech.role}</p>
+                                </div>
+                                {isConfirmed && (
+                                  <Check size={16} className="ml-auto text-primary" />
+                                )}
+                              </div>
+                            </motion.button>
+
+                            {/* Confirmation dropdown — appears after selecting, before confirming */}
+                            <AnimatePresence>
+                              {isSelected && !isConfirmed && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0, y: -8 }}
+                                  animate={{ opacity: 1, height: "auto", y: 0 }}
+                                  exit={{ opacity: 0, height: 0, y: -8 }}
+                                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                  className="overflow-hidden"
+                                >
+                                  <div className="mt-2 p-3 rounded-lg glass-base border border-primary/20 flex items-center justify-between gap-3">
+                                    <p className="text-xs text-muted-foreground">
+                                      Confirm <span className="text-foreground font-medium">{tech.name}</span> as your technician?
+                                    </p>
+                                    <motion.button
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      onClick={() => setTechConfirmed(true)}
+                                      className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold glow-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+                                    >
+                                      Confirm {tech.name}
+                                    </motion.button>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </div>
-                        </motion.button>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -538,6 +651,9 @@ const ServicesBookingPage = () => {
                           <span className="text-muted-foreground">Technician</span>
                           <span className="text-foreground font-medium">
                             {technicians.find((t) => t.id === selectedTech)?.name}
+                            {techConfirmed && (
+                              <span className="ml-1.5 text-primary text-[10px]">✓ Confirmed</span>
+                            )}
                           </span>
                         </div>
                       )}
@@ -550,8 +666,8 @@ const ServicesBookingPage = () => {
                       </div>
                       {surcharge > 0 && (
                         <div className="flex justify-between text-sm">
-                          <span className="text-secondary">Premium Day (+5%)</span>
-                          <span className="text-secondary">
+                          <span className="text-primary/70">Premium Day (+10%)</span>
+                          <span className="text-primary/70">
                             £{surcharge.toFixed(2)}
                           </span>
                         </div>
@@ -576,13 +692,13 @@ const ServicesBookingPage = () => {
                     {/* TODO: Integrate Stripe payment */}
                     {/* TODO: Connect to backend booking system */}
                     <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
+                      whileHover={canConfirm ? { scale: 1.02 } : {}}
+                      whileTap={canConfirm ? { scale: 0.98 } : {}}
                       onClick={handleConfirm}
                       disabled={!canConfirm}
                       className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
                         canConfirm
-                          ? "bg-primary text-primary-foreground glow-sm hover:opacity-90"
+                          ? "bg-primary text-primary-foreground glow-sm hover:shadow-[0_0_24px_hsl(var(--primary)/0.4)]"
                           : "bg-muted text-muted-foreground cursor-not-allowed"
                       }`}
                     >
@@ -591,7 +707,13 @@ const ServicesBookingPage = () => {
 
                     {!canConfirm && (
                       <p className="text-[10px] text-muted-foreground text-center">
-                        Select date, time & technician to continue
+                        {!selectedDate
+                          ? "Select a date to continue"
+                          : !selectedTime
+                          ? "Select a time slot"
+                          : !selectedTech
+                          ? "Choose a technician"
+                          : "Confirm your technician to proceed"}
                       </p>
                     )}
                   </div>
