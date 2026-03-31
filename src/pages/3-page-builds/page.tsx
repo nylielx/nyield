@@ -38,6 +38,7 @@ import pcBlackout from "@/assets/pc-blackout.jpg";
 import pcWhiteout from "@/assets/pc-whiteout.jpg";
 import Navbar from "@/components/component-navbar";
 import SiteFooter from "@/components/component-site-footer";
+import { GlassButton } from "@/components/ui/glass-button";
 
 /**
  * What's included with every build — shared across all tiers.
