@@ -17,7 +17,7 @@ import {
   Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AwardBadge } from "@/components/ui/award-badge";
+import { AwardBadge, tierDescriptions } from "@/components/ui/award-badge";
 import {
   Tooltip,
   TooltipContent,
@@ -49,11 +49,6 @@ const tierToBadge = (tier: "gold" | "silver" | "bronze") => {
   return map[tier];
 };
 
-const tierTooltips: Record<string, string> = {
-  gold: "Advanced verified: latency, WiFi, FPS, stability, and multi-game benchmark tested",
-  silver: "Performance verified: basic third-party benchmark suite completed",
-  bronze: "Seller verified: trusted seller listing",
-};
 
 interface ListingCardProps {
   listing: MarketplaceListing;
@@ -139,9 +134,9 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
         </div>
       )}
 
-      {/* Verification badge — TOP RIGHT */}
+      {/* Verification badge — TOP RIGHT (3D badge) */}
       {listing.isActive && (
-        <div className="absolute top-3 right-3 z-20">
+        <div className="absolute -top-2 -right-4 z-20">
           <Tooltip>
             <TooltipTrigger asChild>
               <div>
@@ -149,7 +144,7 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
               </div>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="max-w-[220px] text-xs">
-              {tierTooltips[verification.tier]}
+              {tierDescriptions[badgeProps.place]}
             </TooltipContent>
           </Tooltip>
         </div>
