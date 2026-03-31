@@ -18,15 +18,15 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
-import Index from "./pages/1-page-index.tsx";
-import ServicesPage from "./pages/2-page-services.tsx";
-import BuildsPage from "./pages/3-page-builds.tsx";
-import MarketplacePage from "./pages/4-page-marketplace.tsx";
-import SignInPage from "./pages/7-page-sign-in.tsx";
-import SignUpPage from "./pages/8-page-sign-up.tsx";
-import ForgotPasswordPage from "./pages/9-page-forgot-password.tsx";
-import ListingDetailPage from "./pages/5-page-listing-detail.tsx";
-import NotFound from "./pages/10-page-not-found.tsx";
+import Index from "./pages/1-page-index";
+import ServicesPage from "./pages/2-page-services";
+import BuildsPage from "./pages/3-page-builds";
+import MarketplacePage from "./pages/4-page-marketplace";
+import ListingDetailPage from "./pages/5-page-listing-detail";
+import SignInPage from "./pages/7-page-sign-in";
+import SignUpPage from "./pages/8-page-sign-up";
+import ForgotPasswordPage from "./pages/9-page-forgot-password";
+import NotFound from "./pages/10-page-not-found";
 
 const queryClient = new QueryClient();
 
@@ -56,4 +56,3 @@ const App = () => (
 );
 
 export default App;
-
