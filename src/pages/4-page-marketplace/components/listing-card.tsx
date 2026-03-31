@@ -1,6 +1,6 @@
 /**
- * LISTING CARD — Marketplace card with AwardBadge verification tiers,
- * animated like/save controls (top-left), and badge (top-right).
+ * LISTING CARD — Marketplace card with icon-based verification badge,
+ * animated like/save controls (top-left), and small badge icon (top-right).
  */
 
 import { useState } from "react";
@@ -17,12 +17,7 @@ import {
   Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AwardBadge, tierDescriptions } from "@/components/ui/award-badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { VerificationBadge } from "@/components/ui/verification-badge";
 import type { MarketplaceListing } from "../types/marketplace-types";
 
 const getTagStyle = (tag: string) => {
@@ -39,17 +34,6 @@ const getTagStyle = (tag: string) => {
   }
 };
 
-/** Map verification tier to AwardBadge props */
-const tierToBadge = (tier: "gold" | "silver" | "bronze") => {
-  const map = {
-    gold: { type: "product-of-the-month" as const, place: 1 as const },
-    silver: { type: "product-of-the-week" as const, place: 2 as const },
-    bronze: { type: "product-of-the-day" as const, place: 3 as const },
-  };
-  return map[tier];
-};
-
-
 interface ListingCardProps {
   listing: MarketplaceListing;
   index: number;
@@ -59,12 +43,8 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
   const [favourited, setFavourited] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const verification = (listing as any).verification_tier ?? {
-    tier: listing.verified ? "gold" : "bronze",
-    label: listing.verified ? "Advanced Verified" : "Seller Verified",
-  };
-
-  const badgeProps = tierToBadge(verification.tier);
+  const tier = (listing as any).verification_tier?.tier ??
+    (listing.verified ? "gold" : "bronze") as "gold" | "silver" | "bronze";
 
   return (
     <motion.div
@@ -134,19 +114,10 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
         </div>
       )}
 
-      {/* Verification badge — TOP RIGHT (3D badge) */}
+      {/* Verification badge — TOP RIGHT (small icon) */}
       {listing.isActive && (
-        <div className="absolute -top-2 -right-4 z-20">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <AwardBadge type={badgeProps.type} place={badgeProps.place} size="sm" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-[220px] text-xs">
-              {tierDescriptions[badgeProps.place]}
-            </TooltipContent>
-          </Tooltip>
+        <div className="absolute top-3 right-3 z-20">
+          <VerificationBadge tier={tier} />
         </div>
       )}
 
