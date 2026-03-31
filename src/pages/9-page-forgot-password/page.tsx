@@ -21,6 +21,7 @@ import { Link } from "react-router-dom";
 import { KeyRound, Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/utils/validation";
+import { GlassButton } from "@/components/ui/glass-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
