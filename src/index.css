@@ -286,6 +286,68 @@
   .glass-card {
     @apply glass-elevated;
   }
+  /* ----------------------------------------------------------------
+   * INTERACTIVE CARD — hover lift + glow + gradient outline
+   * Apply via: className="interactive-card"
+   * ---------------------------------------------------------------- */
+  .interactive-card {
+    @apply glass-elevated rounded-xl transition-all duration-300;
+    background-image: linear-gradient(
+      hsl(var(--card) / 0.7),
+      hsl(var(--card) / 0.7)
+    ),
+    linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.15),
+      hsl(var(--accent) / 0.08)
+    );
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+  }
+
+  .interactive-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 30px hsl(var(--glow) / 0.12),
+                0 0 20px hsl(var(--glow) / 0.06);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+
+  /* ----------------------------------------------------------------
+   * SHINE SWEEP — one-shot shimmer on hover for clickable elements
+   * Apply via: className="shine-sweep" (must have overflow-hidden + relative)
+   * ---------------------------------------------------------------- */
+  .shine-sweep::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 40%,
+      hsl(0 0% 100% / 0.12) 45%,
+      hsl(0 0% 100% / 0.18) 50%,
+      transparent 55%
+    );
+    transform: translateX(-100%);
+    transition: none;
+    pointer-events: none;
+  }
+
+  .shine-sweep:hover::after {
+    transform: translateX(100%);
+    transition: transform 0.7s ease;
+  }
+
+  /* ----------------------------------------------------------------
+   * HOVER GLOW — soft diffused glow on hover for buttons
+   * ---------------------------------------------------------------- */
+  .hover-glow {
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  .hover-glow:hover {
+    box-shadow: 0 0 16px hsl(var(--glow) / 0.25),
+                0 0 40px hsl(var(--glow) / 0.08);
+  }
 }
 
 @keyframes gradient-shimmer {
