@@ -112,8 +112,8 @@ const MarketplacePage = () => {
       </section>
 
       {/* ── FILTER BAR ── */}
-      <section className="pt-10 pb-4 bg-background">
-        <div className="container mx-auto px-6">
+      <section className="pt-12 pb-4 bg-background">
+        <div className="container mx-auto px-6 max-w-6xl">
           <div className="max-w-5xl mx-auto space-y-4">
             {loading ? (
               <div className="text-sm text-muted-foreground">Loading listings...</div>
