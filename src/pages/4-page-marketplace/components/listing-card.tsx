@@ -2,12 +2,11 @@
  * =============================================================================
  * LISTING CARD — Single marketplace listing card component
  * =============================================================================
- *
- * Renders a single PC listing with specs, benchmarks, tags, and action buttons.
- * Handles both active and disabled (coming soon) states.
+ * Includes favourite heart icon and save-to-list button.
  * =============================================================================
  */
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -18,6 +17,8 @@ import {
   HardDrive,
   Gauge,
   Lock,
+  Heart,
+  Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { MarketplaceListing } from "../types/marketplace-types";
@@ -43,6 +44,9 @@ interface ListingCardProps {
 }
 
 const ListingCard = ({ listing, index }: ListingCardProps) => {
+  const [favourited, setFavourited] = useState(false);
+  const [saved, setSaved] = useState(false);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -67,10 +71,36 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
         </div>
       )}
 
+      {/* Favourite + Save buttons — top right */}
+      {listing.isActive && (
+        <div className="absolute top-3 right-3 z-10 flex gap-1.5">
+          <button
+            onClick={() => setFavourited(!favourited)}
+            className="w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background transition-colors"
+            title={favourited ? "Remove from favourites" : "Add to favourites"}
+          >
+            <Heart
+              size={14}
+              className={favourited ? "fill-primary text-primary" : "text-muted-foreground"}
+            />
+          </button>
+          <button
+            onClick={() => setSaved(!saved)}
+            className="w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background transition-colors"
+            title={saved ? "Remove from list" : "Save to list"}
+          >
+            <Bookmark
+              size={14}
+              className={saved ? "fill-primary text-primary" : "text-muted-foreground"}
+            />
+          </button>
+        </div>
+      )}
+
       {/* Card Header */}
       <div className="p-5 border-b border-border">
         <div className="flex items-start justify-between mb-2">
-          <h3 className="font-heading text-lg font-bold text-foreground leading-tight">{listing.title}</h3>
+          <h3 className="font-heading text-lg font-bold text-foreground leading-tight pr-16">{listing.title}</h3>
           {listing.verified && (
             <div className="flex items-center gap-1 text-primary text-xs font-semibold shrink-0 ml-2">
               <ShieldCheck size={14} /> Verified
@@ -103,7 +133,6 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
         <p className="text-xs font-semibold text-primary mb-3 flex items-center gap-1"><Gauge size={12} /> STRESS TEST RESULTS</p>
 
         <div className="space-y-2.5">
-          {/* CPU Score bar */}
           <div>
             <div className="flex justify-between text-xs mb-1">
               <span className="text-muted-foreground">CPU Score</span>
@@ -114,7 +143,6 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
             </div>
           </div>
 
-          {/* GPU Score bar */}
           <div>
             <div className="flex justify-between text-xs mb-1">
               <span className="text-muted-foreground">GPU Score</span>

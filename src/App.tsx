@@ -2,14 +2,6 @@
  * =============================================================================
  * APP.TSX — Root component & Router configuration
  * =============================================================================
- *
- * ROUTES:
- * /            → Index (landing page)
- * /services    → ServicesPage (in-depth OS editions)
- * /builds      → BuildsPage (in-depth gaming PC tiers)
- * /marketplace → MarketplacePage (in-depth verified marketplace)
- * *            → NotFound (404 catch-all)
- * =============================================================================
  */
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -32,6 +24,9 @@ import MyOrdersPage from "./pages/8-page-user-management/2-my-orders";
 import SavedBuildsPage from "./pages/8-page-user-management/3-saved-builds";
 import SavedItemsPage from "./pages/8-page-user-management/4-saved-items";
 import ListsPage from "./pages/8-page-user-management/5-lists";
+import ProfileSettingsPage from "./pages/8-page-user-management/6-profile-settings";
+import SecurityPage from "./pages/8-page-user-management/7-security";
+import HelpSupportPage from "./pages/8-page-user-management/8-help-support";
 import NotFound from "./pages/10-page-not-found";
 
 const queryClient = new QueryClient();
@@ -59,6 +54,9 @@ const App = () => (
               <Route path="builds" element={<SavedBuildsPage />} />
               <Route path="saved" element={<SavedItemsPage />} />
               <Route path="lists" element={<ListsPage />} />
+              <Route path="profile" element={<ProfileSettingsPage />} />
+              <Route path="security" element={<SecurityPage />} />
+              <Route path="help" element={<HelpSupportPage />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
