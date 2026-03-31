@@ -141,32 +141,34 @@ const VerificationBadge = ({ tier, className = "" }: VerificationBadgeProps) => 
         />
       </div>
 
-      {/* ── Flag (unrolls down on hover) ── */}
+      {/* ── Flag (unrolls from the RIGHT side) ── */}
       <div
-        className="absolute top-full mt-1.5 right-0 z-30 pointer-events-none group-hover/badge:pointer-events-auto"
-        style={{ minWidth: "180px" }}
+        className="absolute top-0 right-full mr-1.5 z-30 pointer-events-none group-hover/badge:pointer-events-auto flex items-start"
+        style={{ minWidth: "200px" }}
       >
         <div
           className={`
-            origin-top scale-y-0 opacity-0
-            group-hover/badge:scale-y-100 group-hover/badge:opacity-100
-            bg-gradient-to-b ${config.flagGradient}
-            backdrop-blur-xl border ${config.flagBorder}
-            rounded-lg rounded-tr-sm shadow-xl
+            origin-right scale-x-0 opacity-0
+            group-hover/badge:scale-x-100 group-hover/badge:opacity-100
+            bg-background/90 backdrop-blur-xl
+            border border-border/60
+            rounded-lg rounded-r-sm
             px-3 py-2.5
+            ${config.glowBorder}
           `}
           style={{
             transition: "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease-out",
+            boxShadow: config.glowShadow,
           }}
         >
           {/* Tier label */}
-          <p className="text-[11px] font-bold text-white/95 tracking-wide mb-1 flex items-center gap-1.5">
+          <p className={`text-[11px] font-bold tracking-wide mb-1 flex items-center gap-1.5 ${config.iconColor} whitespace-nowrap`}>
             <ShieldCheck size={12} className="shrink-0" />
             {config.shortLabel}
           </p>
 
           {/* Description */}
-          <p className="text-[9px] leading-relaxed text-white/70 mb-2">
+          <p className="text-[9px] leading-relaxed text-muted-foreground mb-2">
             {config.description}
           </p>
 
@@ -175,7 +177,7 @@ const VerificationBadge = ({ tier, className = "" }: VerificationBadgeProps) => 
             {config.features.map((f) => (
               <span
                 key={f.label}
-                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-medium bg-white/10 text-white/80 border border-white/10"
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-medium bg-muted text-muted-foreground border border-border/50"
               >
                 <f.icon size={8} className="shrink-0" />
                 {f.label}
@@ -185,7 +187,7 @@ const VerificationBadge = ({ tier, className = "" }: VerificationBadgeProps) => 
 
           {/* Gold shimmer line */}
           {tier === "gold" && (
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-300/50 to-transparent" />
+            <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-amber-400/50 to-transparent" />
           )}
         </div>
       </div>
