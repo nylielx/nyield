@@ -1,0 +1,88 @@
+/**
+ * =============================================================================
+ * BOOKINGS MOCK DATA — Sample bookings for dashboard display
+ * =============================================================================
+ */
+
+import type { Booking } from "../types/booking-types";
+
+export const bookingsMock: Booking[] = [
+  {
+    id: "BK-001",
+    userId: "usr-001",
+    edition: "competitive",
+    editionName: "Competitive Edition",
+    pcSpecs: {
+      gpu: "NVIDIA RTX 4090",
+      cpu: "Intel Core i9-14900K",
+      ram: "32GB DDR5-6000",
+      storage: "2TB NVMe SSD",
+      cooling: "360mm AIO Liquid Cooler",
+      powerSupply: "1000W 80+ Platinum",
+      pcCase: "Lian Li O11 Dynamic EVO",
+      notes: "Primary gaming rig — need max FPS in Valorant & CS2",
+    },
+    date: "2026-04-15",
+    time: "14:00",
+    timeLabel: "2:00 PM",
+    technicianId: "hassan",
+    technicianName: "Hassan",
+    status: "scheduled",
+    price: 50,
+    surcharge: 5,
+    vat: 11,
+    total: 66,
+    createdAt: "2026-03-28T10:30:00Z",
+  },
+  {
+    id: "BK-002",
+    userId: "usr-001",
+    edition: "education",
+    editionName: "Education Edition",
+    pcSpecs: {
+      gpu: "NVIDIA RTX 4070",
+      cpu: "AMD Ryzen 7 7800X3D",
+      ram: "32GB DDR5-5600",
+      storage: "1TB NVMe SSD",
+      cooling: "Noctua NH-D15",
+      powerSupply: "750W 80+ Gold",
+    },
+    date: "2026-03-20",
+    time: "15:00",
+    timeLabel: "3:00 PM",
+    technicianId: "alisher",
+    technicianName: "Alisher",
+    status: "completed",
+    price: 80,
+    surcharge: 0,
+    vat: 16,
+    total: 96,
+    createdAt: "2026-03-15T14:00:00Z",
+  },
+  {
+    id: "BK-003",
+    userId: "usr-001",
+    edition: "balanced",
+    editionName: "Balanced Edition",
+    pcSpecs: {
+      gpu: "AMD RX 7800 XT",
+      cpu: "AMD Ryzen 5 7600X",
+      ram: "16GB DDR5-5600",
+      storage: "1TB NVMe SSD",
+      cooling: "240mm AIO Liquid Cooler",
+      powerSupply: "650W 80+ Gold",
+      pcCase: "NZXT H510",
+    },
+    date: "2026-04-02",
+    time: "16:00",
+    timeLabel: "4:00 PM",
+    technicianId: "hassan",
+    technicianName: "Hassan",
+    status: "processing",
+    price: 50,
+    surcharge: 5,
+    vat: 11,
+    total: 66,
+    createdAt: "2026-03-30T09:15:00Z",
+  },
+];
