@@ -123,7 +123,7 @@ const ForgotPasswordPage = () => {
                   )}
                 </div>
 
-                <GlassButton type="submit" className="w-full text-center" disabled={isSubmitting}>
+                <GlassButton type="submit" className="w-full text-center bg-primary text-primary-foreground" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <span className="inline-flex items-center gap-2">
                       <Loader2 className="animate-spin w-4 h-4" />
