@@ -4,12 +4,32 @@
  * =============================================================================
  */
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Cpu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MeshGradient } from "@paper-design/shaders-react";
 
 const HeroSection = () => {
+  const [isDark, setIsDark] = useState(
+    document.documentElement.classList.contains("dark")
+  );
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  const gradientColors = isDark
+    ? ["#1a0000", "#330a00", "#ff5722", "#661a00"]
+    : ["#ffffff", "#fff0ec", "#ff5722", "#ffe0d6"];
+
   return (
     <section
       id="hero"
@@ -20,10 +40,10 @@ const HeroSection = () => {
         <MeshGradient
           style={{ width: "100%", height: "100%" }}
           speed={0.6}
-          colors={["#0a0a0a", "#1a0000", "#ff5722", "#1a0505"]}
+          colors={gradientColors}
         />
         {/* Overlay gradient for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
       </div>
 
       {/* Hero Content */}

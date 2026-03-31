@@ -34,6 +34,8 @@ import ProfileSettingsPage from "./pages/8-page-user-management/6-profile-settin
 import SecurityPage from "./pages/8-page-user-management/7-security";
 import HelpSupportPage from "./pages/8-page-user-management/8-help-support";
 import NotFound from "./pages/10-page-not-found";
+import ProcessPage from "./pages/11-page-process";
+import AboutPage from "./pages/12-page-about";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +72,8 @@ const App = () => (
               <Route path="security" element={<SecurityPage />} />
               <Route path="help" element={<HelpSupportPage />} />
             </Route>
+            <Route path="/process" element={<ProcessPage />} />
+            <Route path="/about" element={<AboutPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

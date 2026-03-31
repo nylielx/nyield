@@ -23,8 +23,8 @@ const navLinks = [
   { label: "Services", to: "/services" },
   { label: "Builds", to: "/builds" },
   { label: "Marketplace", to: "/marketplace" },
-  { label: "Process", href: "/#process" },
-  { label: "About", href: "/#about" },
+  { label: "Process", to: "/process" },
+  { label: "About", to: "/about" },
 ];
 
 const Navbar = () => {
@@ -51,10 +51,8 @@ const Navbar = () => {
 
   const gradientBg = `linear-gradient(${rotation}deg, hsl(0 72% 51% / 0.7), hsl(0 0% 85% / 0.5), hsl(0 72% 51% / 0.7))`;
 
-  const isActive = (link: { to?: string; href?: string }) => {
-    if (link.to) return location.pathname === link.to;
-    if (link.href) return location.pathname + location.hash === link.href;
-    return false;
+  const isActive = (link: { to: string }) => {
+    return location.pathname === link.to;
   };
 
   useEffect(() => {
@@ -94,25 +92,15 @@ const Navbar = () => {
 
               {/* Desktop navigation */}
               <div className="hidden md:flex items-center gap-1">
-                {navLinks.map((link) =>
-                  link.to ? (
-                    <Link
-                      key={link.label}
-                      to={link.to}
-                      className={`nav-pill ${isActive(link) ? "active" : ""}`}
-                    >
-                      {link.label}
-                    </Link>
-                  ) : (
-                    <a
-                      key={link.label}
-                      href={link.href}
-                      className={`nav-pill ${isActive(link) ? "active" : ""}`}
-                    >
-                      {link.label}
-                    </a>
-                  )
-                )}
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.label}
+                    to={link.to}
+                    className={`nav-pill ${isActive(link) ? "active" : ""}`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
               </div>
 
               {/* Desktop auth area */}
@@ -158,27 +146,16 @@ const Navbar = () => {
             className="md:hidden mt-2 rounded-2xl glass-focus overflow-hidden"
           >
             <div className="px-5 py-4 flex flex-col gap-3">
-              {navLinks.map((link) =>
-                link.to ? (
-                  <Link
-                    key={link.label}
-                    to={link.to}
-                    onClick={() => setMenuOpen(false)}
-                    className={`nav-pill ${isActive(link) ? "active" : ""}`}
-                  >
-                    {link.label}
-                  </Link>
-                ) : (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    onClick={() => setMenuOpen(false)}
-                    className={`nav-pill ${isActive(link) ? "active" : ""}`}
-                  >
-                    {link.label}
-                  </a>
-                )
-              )}
+              {navLinks.map((link) => (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  onClick={() => setMenuOpen(false)}
+                  className={`nav-pill ${isActive(link) ? "active" : ""}`}
+                >
+                  {link.label}
+                </Link>
+              ))}
               {user ? (
                 <div className="flex flex-col gap-2 pt-2 border-t border-border/50">
                   <Link
