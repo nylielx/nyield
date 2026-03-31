@@ -1,11 +1,11 @@
 /**
  * =============================================================================
- * HERO SECTION — Landing hero with MeshGradient shader background
+ * HERO SECTION — Landing hero with MeshGradient + parallax depth system
  * =============================================================================
  */
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Cpu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MeshGradient } from "@paper-design/shaders-react";
@@ -26,6 +26,23 @@ const HeroSection = () => {
     return () => observer.disconnect();
   }, []);
 
+  /* ── Scroll-driven parallax transforms ── */
+  const { scrollY } = useScroll();
+
+  // Background (deep) — slowest
+  const deepLayerY = useTransform(scrollY, [0, 1000], [0, 50]);
+  const deepScale = useTransform(scrollY, [0, 1000], [1, 1.05]);
+
+  // Grid / shader (mid) — medium speed
+  const midLayerY = useTransform(scrollY, [0, 1000], [0, 120]);
+
+  // Glow blobs (front) — fastest
+  const frontLayerY = useTransform(scrollY, [0, 1000], [0, 200]);
+
+  // Content fades out as user scrolls past hero
+  const contentOpacity = useTransform(scrollY, [0, 600], [1, 0]);
+  const contentY = useTransform(scrollY, [0, 600], [0, 60]);
+
   const gradientColors = isDark
     ? ["#1a0000", "#330a00", "#ff5722", "#661a00"]
     : ["#ffffff", "#fff0ec", "#ff5722", "#ffe0d6"];
@@ -35,20 +52,75 @@ const HeroSection = () => {
       id="hero"
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
-      {/* MeshGradient Shader Background */}
-      <div className="absolute inset-0">
+      {/* ── LAYER 1: Deep background (slowest parallax) ── */}
+      <motion.div
+        className="absolute inset-0"
+        style={{ y: deepLayerY, scale: deepScale }}
+      >
         <MeshGradient
           style={{ width: "100%", height: "100%" }}
           speed={0.6}
           colors={gradientColors}
         />
-        {/* Overlay gradient for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
-      </div>
+      </motion.div>
 
-      {/* Hero Content */}
+      {/* ── LAYER 2: Grid overlay (mid parallax) ── */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        style={{ y: midLayerY }}
+      >
+        {/* SVG grid pattern */}
+        <svg className="absolute inset-0 w-full h-full opacity-[0.04]">
+          <defs>
+            <pattern
+              id="hero-grid"
+              width="60"
+              height="60"
+              patternUnits="userSpaceOnUse"
+            >
+              <path
+                d="M 60 0 L 0 0 0 60"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="0.5"
+                className="text-foreground"
+              />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#hero-grid)" />
+        </svg>
+      </motion.div>
+
+      {/* ── LAYER 3: Glow blobs (fastest parallax) ── */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        style={{ y: frontLayerY }}
+      >
+        {/* Primary glow */}
+        <div
+          className="absolute top-1/4 left-1/3 w-[500px] h-[500px] rounded-full opacity-20"
+          style={{
+            background: "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)",
+            filter: "blur(120px)",
+          }}
+        />
+        {/* Secondary glow */}
+        <div
+          className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full opacity-15"
+          style={{
+            background: "radial-gradient(circle, hsl(var(--accent)) 0%, transparent 70%)",
+            filter: "blur(140px)",
+          }}
+        />
+      </motion.div>
+
+      {/* ── Overlay gradient for readability ── */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
+
+      {/* ── Hero Content (fades on scroll) ── */}
       <motion.div
         className="relative z-10 container mx-auto px-6 text-center max-w-4xl"
+        style={{ opacity: contentOpacity, y: contentY }}
         initial="hidden"
         animate="visible"
         variants={{
