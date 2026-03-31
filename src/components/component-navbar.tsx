@@ -82,7 +82,7 @@ const Navbar = () => {
           }}
         >
           <nav
-            className={`rounded-full glass-premium transition-all duration-300 ${
+            className={`rounded-full glass-focus transition-all duration-300 ${
               scrolled ? "shadow-lg" : ""
             }`}
           >
@@ -155,7 +155,7 @@ const Navbar = () => {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="md:hidden mt-2 rounded-2xl glass-premium border border-border/30 overflow-hidden"
+            className="md:hidden mt-2 rounded-2xl glass-focus overflow-hidden"
           >
             <div className="px-5 py-4 flex flex-col gap-3">
               {navLinks.map((link) =>

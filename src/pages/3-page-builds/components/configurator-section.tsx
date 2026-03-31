@@ -33,7 +33,7 @@ const ConfiguratorSection = ({
   const selectedOption = options.find((o) => o.id === selectedId);
 
   return (
-    <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
+    <div className="rounded-xl glass-base overflow-hidden">
       {/* Clickable header */}
       <button
         onClick={() => setOpen(!open)}

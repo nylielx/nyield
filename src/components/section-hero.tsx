@@ -70,7 +70,7 @@ const HeroSection = () => {
             hidden: { opacity: 0, y: 20 },
             visible: { opacity: 1, y: 0 },
           }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-elevated border-primary/20 mb-8"
         >
           <Cpu size={16} className="text-primary" />
           <span className="text-sm font-medium text-primary">

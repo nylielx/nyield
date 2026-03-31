@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import type { SavedItem } from "../data/saved-items-mock";
 
 export const SavedItemCard = ({ item }: { item: SavedItem }) => (
-  <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+  <Card className="glass-base">
     <CardContent className="p-4">
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0">

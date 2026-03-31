@@ -68,7 +68,7 @@ const PerformanceComparison = () => {
               </div>
 
               {/* Stock bar (gray) */}
-              <div className="relative h-8 rounded-md bg-secondary overflow-hidden mb-1">
+              <div className="relative h-8 rounded-md bg-secondary/50 overflow-hidden mb-1">
                 <motion.div
                   className="absolute inset-y-0 left-0 bg-muted-foreground/30 rounded-md"
                   initial={{ width: 0 }}
@@ -87,7 +87,7 @@ const PerformanceComparison = () => {
               </div>
 
               {/* Optimized bar (primary/teal) */}
-              <div className="relative h-8 rounded-md bg-secondary overflow-hidden">
+              <div className="relative h-8 rounded-md bg-secondary/50 overflow-hidden">
                 <motion.div
                   className="absolute inset-y-0 left-0 bg-primary/80 rounded-md"
                   initial={{ width: 0 }}

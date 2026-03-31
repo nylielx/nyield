@@ -11,7 +11,7 @@ const statusStyles: Record<Order["status"], string> = {
 };
 
 export const OrderCard = ({ order }: { order: Order }) => (
-  <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+  <Card className="glass-base">
     <CardContent className="p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">

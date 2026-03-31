@@ -198,7 +198,7 @@ const DropdownPanel = ({ group, selected, onToggle, isOpen, onOpenToggle }: Drop
 
       {/* Dropdown panel */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 z-50 min-w-[220px] max-h-[320px] overflow-y-auto rounded-xl border border-border bg-card shadow-xl p-3 space-y-3">
+        <div className="absolute top-full left-0 mt-2 z-50 min-w-[220px] max-h-[320px] overflow-y-auto rounded-xl glass-focus shadow-xl p-3 space-y-3">
           {group.sections.map((section, si) => (
             <div key={si}>
               {section.heading && (
@@ -399,7 +399,7 @@ const MarketplaceFilters = ({ listings, onFilteredChange }: MarketplaceFiltersPr
           </button>
 
           {sortOpen && (
-            <div className="absolute top-full right-0 mt-2 z-50 min-w-[180px] rounded-xl border border-border bg-card shadow-xl p-2">
+            <div className="absolute top-full right-0 mt-2 z-50 min-w-[180px] rounded-xl glass-focus shadow-xl p-2">
               {SORT_OPTIONS.map((option) => (
                 <button
                   key={option}

@@ -25,10 +25,10 @@ const ConfiguratorOptionCard = ({ option, selected, onSelect, index }: Configura
       transition={{ delay: index * 0.03, duration: 0.3 }}
       whileHover={{ y: -2 }}
       onClick={onSelect}
-      className={`relative text-left rounded-lg border p-4 transition-all ${
+      className={`relative text-left rounded-lg p-4 transition-all ${
         selected
-          ? "border-primary bg-primary/10 shadow-md shadow-primary/10"
-          : "border-border/50 bg-background/50 hover:border-border hover:bg-muted/20"
+          ? "glass-elevated border-primary shadow-md shadow-primary/10"
+          : "glass-base hover:border-border"
       }`}
     >
       {/* Selection indicator */}

@@ -54,15 +54,15 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
       viewport={{ once: true }}
       transition={{ delay: index * 0.08, duration: 0.5 }}
       whileHover={listing.isActive ? { y: -4 } : undefined}
-      className={`rounded-xl border overflow-hidden flex flex-col relative ${
+      className={`rounded-xl overflow-hidden flex flex-col relative ${
         listing.isActive
-          ? "border-border bg-card"
-          : "border-border/50 bg-card/50 opacity-50 pointer-events-none select-none"
+          ? "glass-elevated"
+          : "glass-base opacity-50 pointer-events-none select-none"
       }`}
     >
       {/* Disabled overlay */}
       {!listing.isActive && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/70 backdrop-blur-sm rounded-xl">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/70 backdrop-blur-md rounded-xl">
           <Lock className="w-8 h-8 text-muted-foreground mb-3" />
           <p className="font-heading text-sm font-bold text-foreground">Coming Soon</p>
           <p className="text-xs text-muted-foreground text-center max-w-[200px] mt-1">

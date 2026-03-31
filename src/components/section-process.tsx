@@ -40,7 +40,7 @@ const steps = [
 
 const ProcessSection = () => {
   return (
-    <section id="process" className="py-24 bg-secondary/20">
+    <section id="process" className="py-24 glass-base">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

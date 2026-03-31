@@ -75,7 +75,7 @@ const ProfileDropdown = () => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="absolute right-0 mt-2 w-56 rounded-xl glass-premium shadow-xl overflow-hidden"
+            className="absolute right-0 mt-2 w-56 rounded-xl glass-focus shadow-xl overflow-hidden"
           >
             {/* User info header */}
             <div className="px-4 py-3 border-b border-border/50">
