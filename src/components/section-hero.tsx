@@ -20,10 +20,7 @@ const HeroSection = () => {
         <MeshGradient
           style={{ width: "100%", height: "100%" }}
           speed={0.6}
-          color1="#0a0a0a"
-          color2="#1a0000"
-          color3="#ff5722"
-          color4="#1a0505"
+          colors={["#0a0a0a", "#1a0000", "#ff5722", "#1a0505"]}
         />
         {/* Overlay gradient for readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
