@@ -73,8 +73,8 @@ const MarketplacePage = () => {
       <ListingHeader />
 
       {/* ── VERIFICATION CARDS ── */}
-      <section className="py-8 bg-secondary/30">
-        <div className="container mx-auto px-6">
+      <section className="py-12 bg-secondary/30">
+        <div className="container mx-auto px-6 max-w-6xl">
           <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center text-sm text-muted-foreground mb-5">
             Every listing includes this data — no hidden specs
           </motion.p>
