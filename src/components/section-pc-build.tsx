@@ -39,7 +39,7 @@ const PCBuildSection = () => {
           className="text-center mb-16"
         >
           <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-            Pre-Built <span className="text-gradient">Gaming PCs</span>
+            Pre-Built <span className="text-gradient-glow-wrapper"><span className="text-gradient-glow">Gaming PCs</span></span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Compact, powerful, pre-optimized. Designed for students who need

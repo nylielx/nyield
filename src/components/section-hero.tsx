@@ -86,8 +86,10 @@ const HeroSection = () => {
           }}
           className="font-heading text-5xl md:text-7xl font-bold leading-tight mb-6"
         >
-          Unlock Your PC's{" "}
-          <span className="text-gradient">True Power</span>
+          <span className="text-gradient-glow-wrapper">
+            Unlock Your PC's{" "}
+            <span className="text-gradient-glow">True Power</span>
+          </span>
         </motion.h1>
 
         {/* Subtitle */}

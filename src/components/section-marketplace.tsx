@@ -37,7 +37,7 @@ const MarketplaceSection = () => {
           className="text-center mb-16"
         >
           <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-            Verified <span className="text-gradient">Marketplace</span>
+            Verified <span className="text-gradient-glow-wrapper"><span className="text-gradient-glow">Marketplace</span></span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Every PC is stress-tested and verified by nYield's diagnostic software.

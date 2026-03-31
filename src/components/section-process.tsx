@@ -49,7 +49,7 @@ const ProcessSection = () => {
           className="text-center mb-16"
         >
           <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-            How It <span className="text-gradient">Works</span>
+            How It <span className="text-gradient-glow-wrapper"><span className="text-gradient-glow">Works</span></span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Getting started with nYield is simple. Three steps to a faster PC.
