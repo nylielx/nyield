@@ -10,8 +10,8 @@ import { ArrowLeft } from "lucide-react";
 
 const ListingHeader = () => {
   return (
-    <section className="pt-32 pb-12 bg-background">
-      <div className="container mx-auto px-6">
+    <section className="pt-32 pb-16 bg-background">
+      <div className="container mx-auto px-6 max-w-6xl">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-8">
           <ArrowLeft size={16} /> Back to Home
         </Link>
