@@ -49,11 +49,6 @@ const tierToBadge = (tier: "gold" | "silver" | "bronze") => {
   return map[tier];
 };
 
-const tierTooltips: Record<string, string> = {
-  gold: "Advanced verified: latency, WiFi, FPS, stability, and multi-game benchmark tested",
-  silver: "Performance verified: basic third-party benchmark suite completed",
-  bronze: "Seller verified: trusted seller listing",
-};
 
 interface ListingCardProps {
   listing: MarketplaceListing;
