@@ -17,8 +17,8 @@ interface TierConfig {
   features: { icon: React.ElementType; label: string }[];
   iconColor: string;
   glowColor: string;
-  flagGradient: string;
-  flagBorder: string;
+  glowBorder: string;
+  glowShadow: string;
   hasRays: boolean;
   raysRotate: boolean;
 }
