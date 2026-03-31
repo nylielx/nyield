@@ -23,8 +23,8 @@ const navLinks = [
   { label: "Services", to: "/services" },
   { label: "Builds", to: "/builds" },
   { label: "Marketplace", to: "/marketplace" },
-  { label: "Process", href: "/#process" },
-  { label: "About", href: "/#about" },
+  { label: "Process", to: "/process" },
+  { label: "About", to: "/about" },
 ];
 
 const Navbar = () => {
