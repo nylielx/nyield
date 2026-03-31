@@ -354,3 +354,52 @@
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
+
+/* --------------------------------------------------------------------------
+ * GLASS BUTTON — Liquid glass effect
+ * -------------------------------------------------------------------------- */
+.glass-button-text {
+  background: linear-gradient(
+    135deg,
+    hsl(0 0% 100% / 0.12) 0%,
+    hsl(0 0% 100% / 0.06) 40%,
+    hsl(0 0% 100% / 0.02) 60%,
+    hsl(0 0% 100% / 0.08) 100%
+  );
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border: 1px solid hsl(0 0% 100% / 0.18);
+  border-radius: 9999px;
+  color: hsl(var(--foreground));
+  box-shadow:
+    inset 0 1px 0 0 hsl(0 0% 100% / 0.1),
+    inset 0 -1px 0 0 hsl(0 0% 0% / 0.05),
+    0 2px 8px hsl(0 0% 0% / 0.08),
+    0 0 0 1px hsl(0 0% 0% / 0.04);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.glass-button-text:hover {
+  background: linear-gradient(
+    135deg,
+    hsl(0 0% 100% / 0.18) 0%,
+    hsl(0 0% 100% / 0.1) 40%,
+    hsl(0 0% 100% / 0.04) 60%,
+    hsl(0 0% 100% / 0.12) 100%
+  );
+  border-color: hsl(0 0% 100% / 0.28);
+  box-shadow:
+    inset 0 1px 0 0 hsl(0 0% 100% / 0.15),
+    inset 0 -1px 0 0 hsl(0 0% 0% / 0.05),
+    0 4px 16px hsl(0 0% 0% / 0.12),
+    0 0 20px hsl(var(--glow) / 0.08),
+    0 0 0 1px hsl(0 0% 0% / 0.06);
+  transform: translateY(-1px);
+}
+
+.glass-button-text:active {
+  transform: translateY(0);
+  box-shadow:
+    inset 0 1px 0 0 hsl(0 0% 100% / 0.08),
+    0 1px 4px hsl(0 0% 0% / 0.1);
+}
