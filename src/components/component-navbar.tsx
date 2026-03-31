@@ -51,10 +51,8 @@ const Navbar = () => {
 
   const gradientBg = `linear-gradient(${rotation}deg, hsl(0 72% 51% / 0.7), hsl(0 0% 85% / 0.5), hsl(0 72% 51% / 0.7))`;
 
-  const isActive = (link: { to?: string; href?: string }) => {
-    if (link.to) return location.pathname === link.to;
-    if (link.href) return location.pathname + location.hash === link.href;
-    return false;
+  const isActive = (link: { to: string }) => {
+    return location.pathname === link.to;
   };
 
   useEffect(() => {
