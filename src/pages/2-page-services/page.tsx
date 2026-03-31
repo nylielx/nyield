@@ -2,23 +2,6 @@
  * =============================================================================
  * SERVICES PAGE — In-depth page for nYield's Custom Operating Systems
  * =============================================================================
- *
- * FILE NAME: ServicesPage.tsx
- * Named clearly so you know this is the FULL PAGE for the Services section.
- * This is different from the ServicesSection component (which is just a
- * summary section on the landing page).
- *
- * ROLE:
- * Provides detailed information about each OS edition — features, use cases,
- * comparisons, and FAQs. This is where users go to learn everything before
- * making a purchase decision.
- *
- * ROUTE: /services (defined in App.tsx)
- *
- * DATA FLOW:
- * Imports OS product data from src/data/osProducts.ts — same data source
- * as the landing page section, maintaining the "single source of truth".
- * =============================================================================
  */
 
 import { useEffect } from "react";
@@ -40,21 +23,12 @@ import { osProducts, type OSProduct } from "@/data/osProducts";
 import Navbar from "@/components/component-navbar";
 import SiteFooter from "@/components/component-site-footer";
 
-/**
- * Maps string icon names from data → real Lucide components.
- * This pattern lets us store icon names as strings in our data files
- * (since JSON can't hold React components) and resolve them at render time.
- */
 const iconMap: Record<string, React.ElementType> = {
   Zap,
   Scale,
   GraduationCap,
 };
 
-/**
- * Additional detail for each OS edition — things too long for the landing page.
- * In production, this would come from a CMS or database.
- */
 const osDetails: Record<string, { useCases: string[]; whyChoose: string }> = {
   competitive: {
     useCases: [
@@ -89,10 +63,6 @@ const osDetails: Record<string, { useCases: string[]; whyChoose: string }> = {
 };
 
 const ServicesPage = () => {
-  /**
-   * Set the page title for SEO.
-   * Each page should have a unique, descriptive title.
-   */
   useEffect(() => {
     document.title = "Custom Operating Systems — nYield Services";
   }, []);
@@ -101,14 +71,9 @@ const ServicesPage = () => {
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
 
-      {/* ----------------------------------------------------------------
-       * PAGE HERO
-       * Every dedicated page gets its own hero section. This is smaller
-       * than the landing page hero — it's informational, not promotional.
-       * ---------------------------------------------------------------- */}
+      {/* PAGE HERO */}
       <section className="pt-32 pb-16 bg-background">
         <div className="container mx-auto px-6">
-          {/* Back navigation — helps users return to landing page */}
           <Link
             to="/"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-8"
@@ -133,10 +98,7 @@ const ServicesPage = () => {
         </div>
       </section>
 
-      {/* ----------------------------------------------------------------
-       * WHY NYIELD OS — Value proposition section
-       * Explains the core benefit before diving into specific editions.
-       * ---------------------------------------------------------------- */}
+      {/* WHY CUSTOM OS */}
       <section className="py-16 bg-secondary/30">
         <div className="container mx-auto px-6">
           <motion.div
@@ -155,29 +117,12 @@ const ServicesPage = () => {
             </p>
           </motion.div>
 
-          {/* Benefit cards */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {[
-              {
-                icon: Gauge,
-                title: "Higher FPS",
-                desc: "Up to 30% more frames by eliminating background resource drain.",
-              },
-              {
-                icon: Clock,
-                title: "Lower Latency",
-                desc: "Reduced input lag for competitive advantage in fast-paced games.",
-              },
-              {
-                icon: Shield,
-                title: "Cleaner System",
-                desc: "No bloatware, no unnecessary services, no telemetry phoning home.",
-              },
-              {
-                icon: Laptop,
-                title: "Better Battery",
-                desc: "Laptop users see improved battery life from reduced background activity.",
-              },
+              { icon: Gauge, title: "Higher FPS", desc: "Up to 30% more frames by eliminating background resource drain." },
+              { icon: Clock, title: "Lower Latency", desc: "Reduced input lag for competitive advantage in fast-paced games." },
+              { icon: Shield, title: "Cleaner System", desc: "No bloatware, no unnecessary services, no telemetry phoning home." },
+              { icon: Laptop, title: "Better Battery", desc: "Laptop users see improved battery life from reduced background activity." },
             ].map((benefit, i) => (
               <motion.div
                 key={benefit.title}
@@ -185,7 +130,8 @@ const ServicesPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="p-6 rounded-xl bg-card border border-border text-center"
+                whileHover={{ y: -4, scale: 1.02 }}
+                className="p-6 rounded-xl glass-base text-center transition-shadow hover:shadow-lg"
               >
                 <benefit.icon className="w-8 h-8 text-primary mx-auto mb-3" />
                 <h3 className="font-heading font-bold text-foreground mb-2">
@@ -198,11 +144,7 @@ const ServicesPage = () => {
         </div>
       </section>
 
-      {/* ----------------------------------------------------------------
-       * OS EDITION DETAIL CARDS
-       * Each edition gets a full-width detailed breakdown with features,
-       * use cases, and a "why choose this" explanation.
-       * ---------------------------------------------------------------- */}
+      {/* OS EDITION DETAIL CARDS */}
       <section className="py-24 bg-background">
         <div className="container mx-auto px-6 space-y-20">
           {osProducts.map((product, index) => {
@@ -243,65 +185,65 @@ const ServicesPage = () => {
                     {product.description}
                   </p>
 
-                  {/* Extended description */}
                   {details && (
                     <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
                       {details.whyChoose}
                     </p>
                   )}
 
-                  <a
-                    href="#"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity"
+                  <Link
+                    to={`/booking?edition=${product.id}`}
+                    className="group inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-all relative overflow-hidden"
                   >
+                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                     Get {product.name} <ArrowRight size={16} />
-                  </a>
+                  </Link>
                 </div>
 
                 {/* Right: Features + use cases */}
                 <div className={index % 2 === 1 ? "md:order-1" : ""}>
-                  {/* Features list */}
-                  <div className="rounded-xl border border-border bg-card p-6 mb-6">
+                  <motion.div
+                    whileHover={{ y: -3 }}
+                    className="rounded-xl glass-base p-6 mb-6 transition-shadow hover:shadow-lg"
+                  >
                     <h4 className="font-heading font-bold text-foreground mb-4">
                       Features
                     </h4>
                     <ul className="space-y-3">
                       {product.features.map((feature) => (
-                        <li
+                        <motion.li
                           key={feature}
-                          className="flex items-start gap-3 text-sm text-muted-foreground"
+                          whileHover={{ x: 4 }}
+                          className="flex items-start gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
                         >
-                          <Check
-                            size={16}
-                            className="text-primary mt-0.5 flex-shrink-0"
-                          />
+                          <Check size={16} className="text-primary mt-0.5 flex-shrink-0" />
                           {feature}
-                        </li>
+                        </motion.li>
                       ))}
                     </ul>
-                  </div>
+                  </motion.div>
 
-                  {/* Use cases */}
                   {details && (
-                    <div className="rounded-xl border border-border bg-card p-6">
+                    <motion.div
+                      whileHover={{ y: -3 }}
+                      className="rounded-xl glass-base p-6 transition-shadow hover:shadow-lg"
+                    >
                       <h4 className="font-heading font-bold text-foreground mb-4">
                         Ideal For
                       </h4>
                       <ul className="space-y-3">
                         {details.useCases.map((useCase) => (
-                          <li
+                          <motion.li
                             key={useCase}
-                            className="flex items-start gap-3 text-sm text-muted-foreground"
+                            whileHover={{ x: 4 }}
+                            className="flex items-start gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
                           >
-                            <ArrowRight
-                              size={14}
-                              className="text-primary mt-0.5 flex-shrink-0"
-                            />
+                            <ArrowRight size={14} className="text-primary mt-0.5 flex-shrink-0" />
                             {useCase}
-                          </li>
+                          </motion.li>
                         ))}
                       </ul>
-                    </div>
+                    </motion.div>
                   )}
                 </div>
               </motion.div>

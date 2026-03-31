@@ -3,13 +3,13 @@
  * TIER CONFIGURATOR PAGE — Shared page component for all build tiers
  * =============================================================================
  * Each tier page renders this with different props (tier ID, name, price).
- * Layout: Left = PC image, Right = summary. Below = config sections.
+ * Now supports edition selection via URL params.
  * =============================================================================
  */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import Navbar from "@/components/component-navbar";
 import SiteFooter from "@/components/component-site-footer";
@@ -18,6 +18,7 @@ import { categoryLabels } from "@/data/temp/builds-options-mock";
 import ConfiguratorSection from "./configurator-section";
 import ConfiguratorSummary from "./configurator-summary";
 import pcBlackout from "@/assets/pc-blackout.jpg";
+import pcWhiteout from "@/assets/pc-whiteout.jpg";
 import { useToast } from "@/hooks/use-toast";
 
 interface TierConfiguratorPageProps {
@@ -28,7 +29,11 @@ interface TierConfiguratorPageProps {
 
 const TierConfiguratorPage = ({ tierId, tierName, basePrice }: TierConfiguratorPageProps) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const edition = searchParams.get("edition") || "blackout";
   const { toast } = useToast();
+  const [buildName, setBuildName] = useState("My Build");
+
   const {
     options,
     selections,
@@ -49,7 +54,7 @@ const TierConfiguratorPage = ({ tierId, tierName, basePrice }: TierConfiguratorP
     await confirmBuild();
     toast({
       title: "Build Saved!",
-      description: `Your ${tierName} configuration has been saved.`,
+      description: `Your "${buildName}" (${tierName} ${edition}) configuration has been saved.`,
     });
     navigate("/account/builds");
   };
@@ -73,6 +78,8 @@ const TierConfiguratorPage = ({ tierId, tierName, basePrice }: TierConfiguratorP
     );
   }
 
+  const editionLabel = edition.charAt(0).toUpperCase() + edition.slice(1);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
@@ -92,9 +99,12 @@ const TierConfiguratorPage = ({ tierId, tierName, basePrice }: TierConfiguratorP
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="font-heading text-3xl md:text-5xl font-bold mb-2">
+            <h1 className="font-heading text-3xl md:text-5xl font-bold mb-1">
               Configure <span className="text-gradient">{tierName}</span> Build
             </h1>
+            <p className="text-sm text-primary font-medium mb-1">
+              Configuring {editionLabel} Edition
+            </p>
             <p className="text-muted-foreground mb-8">
               Customize every component. Starting from £{basePrice.toLocaleString()}.
             </p>
@@ -106,15 +116,15 @@ const TierConfiguratorPage = ({ tierId, tierName, basePrice }: TierConfiguratorP
             <div className="lg:col-span-2">
               <div className="rounded-xl overflow-hidden glass-base">
                 <img
-                  src={pcBlackout}
-                  alt={`nYield ${tierName} Build`}
+                  src={edition === "whiteout" ? pcWhiteout : pcBlackout}
+                  alt={`nYield ${tierName} Build — ${editionLabel} Edition`}
                   className="w-full h-64 md:h-80 object-cover"
                   width={800}
                   height={400}
                 />
                 <div className="p-5 bg-card">
                   <h3 className="font-heading text-xl font-bold text-foreground mb-1">
-                    {tierName} Tier
+                    {tierName} Tier — {editionLabel} Edition
                   </h3>
                   <p className="text-sm text-muted-foreground">
                     Select your preferred components below. Each upgrade adjusts the total price in real time.
@@ -134,6 +144,9 @@ const TierConfiguratorPage = ({ tierId, tierName, basePrice }: TierConfiguratorP
                 warnings={warnings}
                 onConfirm={handleConfirm}
                 saving={saving}
+                buildName={buildName}
+                onBuildNameChange={setBuildName}
+                edition={edition}
               />
             </div>
           </div>
