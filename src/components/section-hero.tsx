@@ -47,7 +47,7 @@ const HeroSection = () => {
 
   const gradientColors = isDark
     ? ["#1a0000", "#330a00", "#ff5722", "#661a00"]
-    : ["#ffffff", "#fff0ec", "#ff5722", "#ffe0d6"];
+    : ["#ffffff", "#ffffff", "#ffe8e0", "#fff5f2"];
 
   return (
     <section
