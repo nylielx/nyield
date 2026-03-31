@@ -20,6 +20,7 @@ import TierFourPage from "./pages/3-page-builds/4-tier-four";
 import TierFivePage from "./pages/3-page-builds/5-tier-five";
 import MarketplacePage from "./pages/4-page-marketplace";
 import ListingDetailPage from "./pages/5-page-listing-detail";
+import ServicesBookingPage from "./pages/6-page-services-booking";
 import SignInPage from "./pages/7-page-sign-in";
 import SignUpPage from "./pages/8-page-sign-up";
 import ForgotPasswordPage from "./pages/9-page-forgot-password";
