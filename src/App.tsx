@@ -55,6 +55,7 @@ const App = () => (
             <Route path="/builds/tier-5" element={<TierFivePage />} />
             <Route path="/marketplace" element={<MarketplacePage />} />
             <Route path="/marketplace/:id" element={<ListingDetailPage />} />
+            <Route path="/booking" element={<ServicesBookingPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/signin" element={<SignInPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
