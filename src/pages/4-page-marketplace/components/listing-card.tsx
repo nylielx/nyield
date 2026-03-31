@@ -139,9 +139,9 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
         </div>
       )}
 
-      {/* Verification badge — TOP RIGHT */}
+      {/* Verification badge — TOP RIGHT (3D badge) */}
       {listing.isActive && (
-        <div className="absolute top-3 right-3 z-20">
+        <div className="absolute -top-2 -right-4 z-20">
           <Tooltip>
             <TooltipTrigger asChild>
               <div>
@@ -149,7 +149,7 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
               </div>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="max-w-[220px] text-xs">
-              {tierTooltips[verification.tier]}
+              {tierDescriptions[badgeProps.place]}
             </TooltipContent>
           </Tooltip>
         </div>
