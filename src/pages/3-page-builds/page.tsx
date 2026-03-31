@@ -181,7 +181,7 @@ const BuildsPage = () => {
        * Uses a card grid with detailed specs and FPS estimates.
        * ---------------------------------------------------------------- */}
       <section className="py-24 bg-background">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-6 max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

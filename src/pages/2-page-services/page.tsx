@@ -146,7 +146,7 @@ const ServicesPage = () => {
 
       {/* OS EDITION DETAIL CARDS */}
       <section className="py-24 bg-background">
-        <div className="container mx-auto px-6 space-y-20">
+        <div className="container mx-auto px-6 max-w-6xl space-y-24">
           {osProducts.map((product, index) => {
             const IconComponent = iconMap[product.icon] || Zap;
             const details = osDetails[product.id];
