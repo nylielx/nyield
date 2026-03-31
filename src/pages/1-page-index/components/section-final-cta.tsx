@@ -5,7 +5,6 @@
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { GlassButton } from "@/components/ui/glass-button";
 
 const FinalCtaSection = () => {
   return (
@@ -33,16 +32,19 @@ const FinalCtaSection = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/services">
-              <GlassButton size="lg" className="inline-flex items-center gap-2 bg-primary text-primary-foreground">
-                Get Started
-                <ArrowRight size={20} />
-              </GlassButton>
+            <Link
+              to="/services"
+              className="group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:opacity-90 transition-all glow relative overflow-hidden"
+            >
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+              Get Started
+              <ArrowRight size={20} />
             </Link>
-            <Link to="/services">
-              <GlassButton size="lg" className="inline-flex items-center gap-2 border border-border text-foreground">
-                View Editions
-              </GlassButton>
+            <Link
+              to="/services"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg border border-border text-foreground font-semibold text-lg hover:bg-secondary transition-colors"
+            >
+              View Editions
             </Link>
           </div>
         </motion.div>
