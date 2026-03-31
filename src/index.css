@@ -254,14 +254,42 @@
             drop-shadow(0 0 16px hsl(var(--glow) / 0.08));
   }
 
-  /* Glass card — for important cards only */
-  .glass-card {
+  /* ----------------------------------------------------------------
+   * GLASS SYSTEM — 3-tier glassmorphism hierarchy
+   * glass-base:     standard cards, general containers
+   * glass-elevated: tier cards, highlighted sections, important UI
+   * glass-focus:    navbar, dropdowns, modals (strongest)
+   * ---------------------------------------------------------------- */
+  .glass-base {
+    background: hsl(var(--card) / 0.55);
+    backdrop-filter: blur(8px) saturate(1.1);
+    -webkit-backdrop-filter: blur(8px) saturate(1.1);
+    border: 1px solid hsl(var(--border) / 0.25);
+    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.06);
+  }
+
+  .glass-elevated {
     background: hsl(var(--card) / 0.7);
-    backdrop-filter: blur(12px) saturate(1.3);
-    -webkit-backdrop-filter: blur(12px) saturate(1.3);
-    border: 1px solid hsl(var(--border) / 0.3);
+    backdrop-filter: blur(14px) saturate(1.3);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+    border: 1px solid hsl(var(--border) / 0.35);
     box-shadow: inset 0 1px 0 0 hsl(0 0% 100% / 0.04),
-                0 4px 16px hsl(0 0% 0% / 0.1);
+                0 4px 16px hsl(0 0% 0% / 0.1),
+                0 0 12px hsl(var(--glow) / 0.04);
+  }
+
+  .glass-focus {
+    background: hsl(var(--card) / 0.82);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    border: 1px solid hsl(var(--border) / 0.4);
+    box-shadow: inset 0 1px 0 0 hsl(0 0% 100% / 0.06),
+                0 8px 32px hsl(0 0% 0% / 0.15);
+  }
+
+  /* Legacy aliases — keep for backward compat */
+  .glass-card {
+    @apply glass-elevated;
   }
 }
 
