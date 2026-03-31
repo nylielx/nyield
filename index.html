@@ -20,6 +20,9 @@
   </head>
 
   <body>
+    <script>
+      (function(){var t=localStorage.getItem("nyield-theme");if(!t||t==="dark"){document.documentElement.classList.add("dark")}else{document.documentElement.classList.remove("dark")}})();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
