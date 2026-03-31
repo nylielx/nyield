@@ -1,4 +1,4 @@
-import TierConfiguratorPage from "../../components/tier-configurator-page";
+import TierConfiguratorPage from "../components/tier-configurator-page";
 
 const TierThreePage = () => (
   <TierConfiguratorPage tierId="pro" tierName="Pro" basePrice={1500} />

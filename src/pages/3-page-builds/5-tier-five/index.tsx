@@ -1,4 +1,4 @@
-import TierConfiguratorPage from "../../components/tier-configurator-page";
+import TierConfiguratorPage from "../components/tier-configurator-page";
 
 const TierFivePage = () => (
   <TierConfiguratorPage tierId="ultimate" tierName="Ultimate" basePrice={3500} />
