@@ -146,27 +146,16 @@ const Navbar = () => {
             className="md:hidden mt-2 rounded-2xl glass-focus overflow-hidden"
           >
             <div className="px-5 py-4 flex flex-col gap-3">
-              {navLinks.map((link) =>
-                link.to ? (
-                  <Link
-                    key={link.label}
-                    to={link.to}
-                    onClick={() => setMenuOpen(false)}
-                    className={`nav-pill ${isActive(link) ? "active" : ""}`}
-                  >
-                    {link.label}
-                  </Link>
-                ) : (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    onClick={() => setMenuOpen(false)}
-                    className={`nav-pill ${isActive(link) ? "active" : ""}`}
-                  >
-                    {link.label}
-                  </a>
-                )
-              )}
+              {navLinks.map((link) => (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  onClick={() => setMenuOpen(false)}
+                  className={`nav-pill ${isActive(link) ? "active" : ""}`}
+                >
+                  {link.label}
+                </Link>
+              ))}
               {user ? (
                 <div className="flex flex-col gap-2 pt-2 border-t border-border/50">
                   <Link
