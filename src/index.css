@@ -225,4 +225,29 @@
                 0 0 40px hsl(var(--glow) / 0.04),
                 0 2px 8px hsl(0 0% 0% / 0.15);
   }
+
+  /* Gradient glow text — red → white shimmer for key headings */
+  .text-gradient-glow {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      135deg,
+      hsl(0 72% 51%) 0%,
+      hsl(0 90% 70%) 40%,
+      hsl(0 0% 95%) 60%,
+      hsl(0 72% 51%) 100%
+    );
+    background-size: 200% 100%;
+    animation: gradient-shimmer 5s ease-in-out infinite;
+    text-shadow: none;
+  }
+
+  .text-gradient-glow-wrapper {
+    filter: drop-shadow(0 0 8px hsl(var(--glow) / 0.25))
+            drop-shadow(0 0 20px hsl(var(--glow) / 0.1));
+  }
+}
+
+@keyframes gradient-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
