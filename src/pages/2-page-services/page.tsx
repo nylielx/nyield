@@ -73,7 +73,7 @@ const ServicesPage = () => {
 
       {/* PAGE HERO */}
       <section className="pt-32 pb-16 bg-background">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-6 max-w-6xl">
           <Link
             to="/"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-8"
