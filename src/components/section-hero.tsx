@@ -98,7 +98,7 @@ const HeroSection = () => {
       </motion.div>
 
       {/* ── Overlay gradient for readability ── */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/30 to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/20 to-background/60" />
 
       {/* ── Hero Content (fades on scroll) ── */}
       <motion.div
