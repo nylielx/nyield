@@ -178,17 +178,25 @@
     );
   }
 
-  /* Glass morphism effect — trendy semi-transparent surfaces */
+  /* ----------------------------------------------------------------
+   * APPLE-STYLE GLASS — Premium frosted glass effect
+   * Semi-transparent, blurred, with subtle inner highlight.
+   * ---------------------------------------------------------------- */
   .glass {
     @apply bg-card/80 backdrop-blur-xl border border-border/50;
   }
 
+  .glass-premium {
+    background: hsl(var(--card) / 0.75);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid hsl(var(--border) / 0.3);
+    box-shadow: inset 0 1px 0 0 hsl(0 0% 100% / 0.05),
+                0 2px 8px hsl(0 0% 0% / 0.12);
+  }
+
   /* ----------------------------------------------------------------
    * NAV PILL HOVER EFFECT
-   * Creates a smooth "pill" background that animates in on hover.
-   * Default: transparent bg, muted text.
-   * Hover: red pill bg + white text + glow + slight scale-up.
-   * Active: same as hover but always visible (current page).
    * ---------------------------------------------------------------- */
   .nav-pill {
     @apply relative px-4 py-2 rounded-full text-sm font-medium text-muted-foreground;
@@ -207,7 +215,6 @@
     transform: scale(1.03);
   }
 
-  /* Active state — always shows the red pill (for current page) */
   .nav-pill.active {
     @apply text-primary-foreground;
     background-color: hsl(var(--primary));
@@ -216,9 +223,7 @@
   }
 
   /* ----------------------------------------------------------------
-   * PILL NAVBAR CONTAINER GLOW
-   * Adds a subtle red-tinted shadow around the floating pill navbar
-   * to make it feel elevated and premium.
+   * PILL NAVBAR CONTAINER
    * ---------------------------------------------------------------- */
   .nav-pill-container {
     box-shadow: 0 4px 20px hsl(var(--glow) / 0.08),
@@ -226,24 +231,37 @@
                 0 2px 8px hsl(0 0% 0% / 0.15);
   }
 
-  /* Gradient glow text — red → white shimmer for key headings */
+  /* ----------------------------------------------------------------
+   * GRADIENT GLOW TEXT — red → white shimmer for key headings
+   * Apply via: <span class="text-gradient-glow">Heading</span>
+   * Wrap in text-gradient-glow-wrapper for soft drop-shadow glow.
+   * ---------------------------------------------------------------- */
   .text-gradient-glow {
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(
       135deg,
       hsl(0 72% 51%) 0%,
-      hsl(0 90% 70%) 40%,
-      hsl(0 0% 95%) 60%,
+      hsl(0 85% 65%) 35%,
+      hsl(0 0% 92%) 55%,
       hsl(0 72% 51%) 100%
     );
     background-size: 200% 100%;
     animation: gradient-shimmer 5s ease-in-out infinite;
-    text-shadow: none;
   }
 
   .text-gradient-glow-wrapper {
-    filter: drop-shadow(0 0 8px hsl(var(--glow) / 0.25))
-            drop-shadow(0 0 20px hsl(var(--glow) / 0.1));
+    filter: drop-shadow(0 0 6px hsl(var(--glow) / 0.2))
+            drop-shadow(0 0 16px hsl(var(--glow) / 0.08));
+  }
+
+  /* Glass card — for important cards only */
+  .glass-card {
+    background: hsl(var(--card) / 0.7);
+    backdrop-filter: blur(12px) saturate(1.3);
+    -webkit-backdrop-filter: blur(12px) saturate(1.3);
+    border: 1px solid hsl(var(--border) / 0.3);
+    box-shadow: inset 0 1px 0 0 hsl(0 0% 100% / 0.04),
+                0 4px 16px hsl(0 0% 0% / 0.1);
   }
 }
 
