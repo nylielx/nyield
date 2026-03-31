@@ -162,7 +162,7 @@ const HeroSection = () => {
             <ArrowRight size={20} />
           </Link>
           <Link
-            to="/marketplace"
+            to="/builds"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg border border-border text-foreground font-semibold text-lg hover:bg-secondary transition-colors"
           >
             View Gaming PCs
