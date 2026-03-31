@@ -3,24 +3,8 @@
  * AUTH CONTEXT — Global Authentication State Manager
  * =============================================================================
  *
- * PURPOSE:
- * React Context that provides authentication state to the entire app.
- * Any component can check if a user is logged in, get user details,
- * or trigger login/logout/register actions.
- *
- * HOW CONTEXT WORKS:
- * 1. AuthProvider wraps the app (in App.tsx)
- * 2. Any child component calls useAuth() to access auth state
- * 3. When state changes (login/logout), all consumers re-render
- *
- * WHY NOT JUST USE LOCALSTORAGE?
- * localStorage doesn't trigger re-renders. Context ensures the UI
- * updates immediately when auth state changes.
- *
- * PERSISTENCE:
- * Currently uses localStorage to survive page refreshes.
- * When you connect a real backend, replace this with token-based
- * session management (JWT in httpOnly cookies is most secure).
+ * Mock credentials: hassan@nyield.com / 123
+ * Persists user in localStorage across page refreshes.
  * =============================================================================
  */
 
@@ -34,35 +18,25 @@ import {
   RegisterData,
   LoginData,
 } from "@/services/auth";
+import type { AvatarOption } from "@/data/temp/8-user-profile-mock";
 
 /* --------------------------------------------------------------------------
  * Context Type Definition
- * Describes everything the auth context provides to consumers
  * -------------------------------------------------------------------------- */
 interface AuthContextType {
-  /** The currently authenticated user, or null if logged out */
   user: AuthUser | null;
-  /** True while an auth operation is in progress */
   isLoading: boolean;
-  /** Register a new user account */
   register: (data: RegisterData) => Promise<{ success: boolean; message: string }>;
-  /** Log in with email and password */
   login: (data: LoginData) => Promise<{ success: boolean; message: string }>;
-  /** Log the current user out */
   logout: () => Promise<void>;
-  /** Send a password reset email */
   resetPassword: (email: string) => Promise<{ success: boolean; message: string }>;
+  updateProfile: (updates: Partial<Pick<AuthUser, "fullName" | "avatar">>) => void;
 }
 
-/**
- * Create the context with undefined default.
- * We check for undefined in useAuth() to catch usage outside the provider.
- */
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /* --------------------------------------------------------------------------
  * LOCAL STORAGE HELPERS
- * ⚠️ Replace these with secure token storage when connecting a real backend
  * -------------------------------------------------------------------------- */
 const STORAGE_KEY = "nyield_auth_user";
 
@@ -86,24 +60,17 @@ function clearUserFromStorage(): void {
 
 /* --------------------------------------------------------------------------
  * AUTH PROVIDER COMPONENT
- * Wraps the app and provides auth state + actions to all children
  * -------------------------------------------------------------------------- */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  /**
-   * On mount, check if there's a saved session.
-   * With a real backend, you'd validate the token here:
-   *   const response = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
-   */
   useEffect(() => {
     const savedUser = getUserFromStorage();
     if (savedUser) setUser(savedUser);
     setIsLoading(false);
   }, []);
 
-  /** Register handler — calls the service, then saves the user */
   const register = async (data: RegisterData) => {
     setIsLoading(true);
     try {
@@ -121,7 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  /** Login handler */
   const login = async (data: LoginData) => {
     setIsLoading(true);
     try {
@@ -139,7 +105,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  /** Logout handler */
   const logout = async () => {
     setIsLoading(true);
     try {
@@ -151,7 +116,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  /** Password reset handler */
   const resetPassword = async (email: string) => {
     setIsLoading(true);
     try {
@@ -165,8 +129,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /** Update user profile fields locally (name, avatar) */
+  const updateProfile = (updates: Partial<Pick<AuthUser, "fullName" | "avatar">>) => {
+    if (!user) return;
+    const updated = { ...user, ...updates };
+    setUser(updated);
+    saveUserToStorage(updated);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, register, login, logout, resetPassword }}>
+    <AuthContext.Provider value={{ user, isLoading, register, login, logout, resetPassword, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
@@ -174,11 +146,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 /* --------------------------------------------------------------------------
  * useAuth HOOK
- * Convenient way for components to access auth state and actions.
- *
- * Usage:
- *   const { user, login, logout } = useAuth();
- *   if (user) console.log('Logged in as', user.fullName);
  * -------------------------------------------------------------------------- */
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
