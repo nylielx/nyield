@@ -29,7 +29,7 @@ import pcWhiteout from "@/assets/pc-whiteout.jpg";
 
 const PCBuildSection = () => {
   return (
-    <section id="builds" className="py-24 bg-secondary/20">
+    <section id="builds" className="py-24 glass-base">
       <div className="container mx-auto px-6">
         {/* Section header */}
         <motion.div
