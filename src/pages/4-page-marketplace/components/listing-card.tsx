@@ -17,7 +17,7 @@ import {
   Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AwardBadge } from "@/components/ui/award-badge";
+import { AwardBadge, tierDescriptions } from "@/components/ui/award-badge";
 import {
   Tooltip,
   TooltipContent,
