@@ -2,7 +2,7 @@
  * =============================================================================
  * CONFIGURATOR SUMMARY — Live price & selections panel
  * =============================================================================
- * Sticky sidebar showing selected components, total, and warnings.
+ * Sticky sidebar showing selected components, total with VAT, and warnings.
  * =============================================================================
  */
 
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import type { BuildOptionsMap } from "@/data/temp/builds-options-mock";
 import { categoryLabels } from "@/data/temp/builds-options-mock";
 import type { CategoryKey, CompatibilityWarning } from "../types/configurator-types";
+import BuildNameEditor from "./build-name-editor";
 
 interface ConfiguratorSummaryProps {
   tierName: string;
@@ -22,6 +23,9 @@ interface ConfiguratorSummaryProps {
   warnings: CompatibilityWarning[];
   onConfirm: () => void;
   saving: boolean;
+  buildName: string;
+  onBuildNameChange: (name: string) => void;
+  edition?: string;
 }
 
 const ConfiguratorSummary = ({
@@ -33,15 +37,22 @@ const ConfiguratorSummary = ({
   warnings,
   onConfirm,
   saving,
+  buildName,
+  onBuildNameChange,
+  edition,
 }: ConfiguratorSummaryProps) => {
   const upgradeCost = totalPrice - basePrice;
+  const vat = totalPrice * 0.2;
+  const grandTotal = totalPrice + vat;
 
   return (
     <div className="rounded-xl glass-elevated p-5 space-y-4">
       {/* Header */}
       <div>
-        <h3 className="font-heading text-lg font-bold text-foreground">{tierName} Build</h3>
-        <p className="text-xs text-muted-foreground">Your Configuration</p>
+        <BuildNameEditor name={buildName} onChange={onBuildNameChange} />
+        <p className="text-xs text-muted-foreground mt-1">
+          {tierName} Tier{edition ? ` · ${edition.charAt(0).toUpperCase() + edition.slice(1)} Edition` : ""}
+        </p>
       </div>
 
       {/* Selected components list */}
@@ -74,15 +85,23 @@ const ConfiguratorSummary = ({
             </span>
           </div>
         )}
-        <div className="flex justify-between text-sm font-bold pt-1 border-t border-border/30">
+        <div className="flex justify-between text-xs">
+          <span className="text-muted-foreground">Subtotal</span>
+          <span className="text-foreground">£{totalPrice.toLocaleString()}</span>
+        </div>
+        <div className="flex justify-between text-xs">
+          <span className="text-muted-foreground">VAT (20%)</span>
+          <span className="text-foreground">£{vat.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between text-sm font-bold pt-2 border-t border-border/30">
           <span className="text-foreground">Total</span>
           <motion.span
-            key={totalPrice}
+            key={grandTotal}
             initial={{ scale: 1.1 }}
             animate={{ scale: 1 }}
             className="text-primary font-heading text-lg"
           >
-            £{totalPrice.toLocaleString()}
+            £{grandTotal.toFixed(2)}
           </motion.span>
         </div>
       </div>

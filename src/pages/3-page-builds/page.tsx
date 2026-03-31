@@ -269,7 +269,7 @@ const BuildsPage = () => {
                 </div>
 
                 <button
-                  onClick={() => navigate(`/builds/tier-${tierRouteMap[build.id]}`)}
+                  onClick={() => navigate(`/builds/tier-${tierRouteMap[build.id]}?edition=${selectedEdition}`)}
                   className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
                 >
                   Configure

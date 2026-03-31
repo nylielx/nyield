@@ -2,24 +2,11 @@
  * =============================================================================
  * HERO SECTION — The first thing visitors see on the nYield website
  * =============================================================================
- *
- * ROLE:
- * Creates an immediate, powerful first impression. Communicates what nYield
- * does in under 5 seconds. Includes a strong call-to-action.
- *
- * DESIGN DECISIONS:
- * - Full-viewport height to dominate the screen
- * - Dark overlay on background image for text readability
- * - Animated headline to draw attention
- * - Glowing CTA button to encourage clicks
- *
- * PROPS: None — content is hardcoded since this is a one-off landing section.
- * In a CMS-driven site, you'd pass headline/subtitle as props.
- * =============================================================================
  */
 
 import { motion } from "framer-motion";
 import { ArrowRight, Cpu } from "lucide-react";
+import { Link } from "react-router-dom";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const HeroSection = () => {
@@ -28,12 +15,6 @@ const HeroSection = () => {
       id="hero"
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
-      {/* ----------------------------------------------------------------
-       * BACKGROUND IMAGE
-       * We use an absolutely-positioned img tag instead of CSS background
-       * so we can apply object-fit and lazy loading attributes.
-       * The dark gradient overlay ensures text is always readable.
-       * ---------------------------------------------------------------- */}
       <div className="absolute inset-0">
         <img
           src={heroBg}
@@ -42,29 +23,18 @@ const HeroSection = () => {
           width={1920}
           height={1080}
         />
-        {/* Gradient overlay: dark at edges, slightly transparent in center */}
         <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background" />
       </div>
 
-      {/* ----------------------------------------------------------------
-       * HERO CONTENT
-       * Uses Framer Motion's staggerChildren to animate children one by one.
-       * This creates a cascading reveal effect.
-       * ---------------------------------------------------------------- */}
       <motion.div
         className="relative z-10 container mx-auto px-6 text-center max-w-4xl"
         initial="hidden"
         animate="visible"
-        /**
-         * staggerChildren: Each child animates 0.15s after the previous one.
-         * This creates the cascading "typewriter" reveal effect.
-         */
         variants={{
           hidden: {},
           visible: { transition: { staggerChildren: 0.15 } },
         }}
       >
-        {/* Badge — small label above the headline */}
         <motion.div
           variants={{
             hidden: { opacity: 0, y: 20 },
@@ -78,7 +48,6 @@ const HeroSection = () => {
           </span>
         </motion.div>
 
-        {/* Main headline — uses text-gradient for the brand name */}
         <motion.h1
           variants={{
             hidden: { opacity: 0, y: 30 },
@@ -92,7 +61,6 @@ const HeroSection = () => {
           </span>
         </motion.h1>
 
-        {/* Subtitle */}
         <motion.p
           variants={{
             hidden: { opacity: 0, y: 30 },
@@ -104,7 +72,6 @@ const HeroSection = () => {
           marketplace — all engineered for maximum performance.
         </motion.p>
 
-        {/* CTA Buttons */}
         <motion.div
           variants={{
             hidden: { opacity: 0, y: 30 },
@@ -112,19 +79,20 @@ const HeroSection = () => {
           }}
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
-          <a
-            href="#services"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:opacity-90 transition-opacity glow animate-pulse-glow"
+          <Link
+            to="/services"
+            className="group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:opacity-90 transition-all glow relative overflow-hidden"
           >
-            Analyze My PC
+            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+            Choose Your Edition
             <ArrowRight size={20} />
-          </a>
-          <a
-            href="#builds"
+          </Link>
+          <Link
+            to="/marketplace"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg border border-border text-foreground font-semibold text-lg hover:bg-secondary transition-colors"
           >
             View Gaming PCs
-          </a>
+          </Link>
         </motion.div>
       </motion.div>
     </section>
