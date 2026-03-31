@@ -34,6 +34,8 @@ import ListsPage from "./pages/8-page-user-management/5-lists";
 import ProfileSettingsPage from "./pages/8-page-user-management/6-profile-settings";
 import SecurityPage from "./pages/8-page-user-management/7-security";
 import HelpSupportPage from "./pages/8-page-user-management/8-help-support";
+import MyBookingsPage from "./pages/8-page-user-management/9-my-bookings";
+import BookingDetailPage from "./pages/8-page-user-management/9-my-bookings/booking-detail";
 import NotFound from "./pages/10-page-not-found";
 import ProcessPage from "./pages/11-page-process";
 import AboutPage from "./pages/12-page-about";
