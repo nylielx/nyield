@@ -7,6 +7,7 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
+  CalendarDays,
   ShoppingCart,
   Cpu,
   Heart,
@@ -22,6 +23,7 @@ import { avatarOptions } from "@/data/temp/8-user-profile-mock";
 
 const sidebarLinks = [
   { label: "Dashboard", to: "/account", icon: LayoutDashboard },
+  { label: "My Bookings", to: "/account/bookings", icon: CalendarDays },
   { label: "My Orders", to: "/account/orders", icon: ShoppingCart },
   { label: "Saved Builds", to: "/account/builds", icon: Cpu },
   { label: "Saved Items", to: "/account/saved", icon: Heart },
