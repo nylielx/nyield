@@ -13,6 +13,11 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/1-page-index";
 import ServicesPage from "./pages/2-page-services";
 import BuildsPage from "./pages/3-page-builds";
+import TierOnePage from "./pages/3-page-builds/1-tier-one";
+import TierTwoPage from "./pages/3-page-builds/2-tier-two";
+import TierThreePage from "./pages/3-page-builds/3-tier-three";
+import TierFourPage from "./pages/3-page-builds/4-tier-four";
+import TierFivePage from "./pages/3-page-builds/5-tier-five";
 import MarketplacePage from "./pages/4-page-marketplace";
 import ListingDetailPage from "./pages/5-page-listing-detail";
 import SignInPage from "./pages/7-page-sign-in";
@@ -42,6 +47,11 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/builds" element={<BuildsPage />} />
+            <Route path="/builds/tier-1" element={<TierOnePage />} />
+            <Route path="/builds/tier-2" element={<TierTwoPage />} />
+            <Route path="/builds/tier-3" element={<TierThreePage />} />
+            <Route path="/builds/tier-4" element={<TierFourPage />} />
+            <Route path="/builds/tier-5" element={<TierFivePage />} />
             <Route path="/marketplace" element={<MarketplacePage />} />
             <Route path="/marketplace/:id" element={<ListingDetailPage />} />
             <Route path="/signup" element={<SignUpPage />} />
