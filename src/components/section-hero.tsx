@@ -143,8 +143,7 @@ const HeroSection = () => {
           }}
           className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10"
         >
-          Custom operating systems, pre-built gaming PCs, and a verified
-          marketplace — all engineered for maximum performance.
+          More FPS. Lower latency. No upgrades needed.
         </motion.p>
 
         <motion.div
@@ -163,7 +162,7 @@ const HeroSection = () => {
             <ArrowRight size={20} />
           </Link>
           <Link
-            to="/marketplace"
+            to="/builds"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg border border-border text-foreground font-semibold text-lg hover:bg-secondary transition-colors"
           >
             View Gaming PCs
