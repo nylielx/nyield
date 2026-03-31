@@ -36,6 +36,10 @@ const Navbar = () => {
 
   const { scrollYProgress } = useScroll();
   const gradientX = useTransform(scrollYProgress, [0, 1], [0, 360]);
+  const gradientBg = useTransform(
+    gradientX,
+    (v) => `linear-gradient(${v}deg, hsl(0 72% 51%), hsl(0 0% 90%), hsl(0 72% 51%))`
+  );
 
   const isActive = (link: { to?: string; href?: string }) => {
     if (link.to) return location.pathname === link.to;
@@ -63,12 +67,9 @@ const Navbar = () => {
         >
           {/* Gradient border wrapper */}
           <motion.div
-            className="rounded-full p-[1.5px]"
+            className="rounded-full p-[1.5px] transition-shadow duration-300"
             style={{
-              background: useTransform(
-                gradientX,
-                (v) => `linear-gradient(${v}deg, hsl(0 72% 51%), hsl(0 0% 90%), hsl(0 72% 51%))`
-              ),
+              background: gradientBg,
               boxShadow: scrolled
                 ? '0 0 15px hsl(0 72% 51% / 0.25), 0 0 40px hsl(0 72% 51% / 0.08)'
                 : '0 0 10px hsl(0 72% 51% / 0.15), 0 0 30px hsl(0 72% 51% / 0.05)',
