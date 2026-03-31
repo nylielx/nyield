@@ -61,6 +61,19 @@ const Navbar = () => {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="pointer-events-auto max-w-[95vw]"
         >
+          {/* Gradient border wrapper */}
+          <motion.div
+            className="rounded-full p-[1.5px]"
+            style={{
+              background: useTransform(
+                gradientX,
+                (v) => `linear-gradient(${v}deg, hsl(0 72% 51%), hsl(0 0% 90%), hsl(0 72% 51%))`
+              ),
+              boxShadow: scrolled
+                ? '0 0 15px hsl(0 72% 51% / 0.25), 0 0 40px hsl(0 72% 51% / 0.08)'
+                : '0 0 10px hsl(0 72% 51% / 0.15), 0 0 30px hsl(0 72% 51% / 0.05)',
+            }}
+          >
           <nav
             className={`rounded-full glass nav-pill-container transition-all duration-300 ${
               scrolled ? "shadow-lg" : ""
