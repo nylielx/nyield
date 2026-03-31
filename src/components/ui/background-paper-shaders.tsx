@@ -1,6 +1,6 @@
 /**
  * =============================================================================
- * SHADER BACKGROUND — WebGL animated shader effects for hero sections
+ * BACKGROUND PAPER SHADERS — WebGL shader effects using Three.js
  * =============================================================================
  */
 
