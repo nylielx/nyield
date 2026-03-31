@@ -179,7 +179,7 @@ const AboutSection = () => {
 
   return (
     <section id="about" className="py-24 bg-background">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-6 max-w-6xl">
         <div className="max-w-5xl mx-auto">
           {/* Hero heading */}
           <motion.div

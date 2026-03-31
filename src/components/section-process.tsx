@@ -43,7 +43,7 @@ const ProcessSection = () => {
 
   return (
     <section id="process" className="py-24 glass-base" ref={sectionRef}>
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-6 max-w-6xl">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
