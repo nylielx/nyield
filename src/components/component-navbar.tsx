@@ -82,7 +82,7 @@ const Navbar = () => {
           }}
         >
           <nav
-            className={`rounded-full glass-premium transition-all duration-300 ${
+            className={`rounded-full glass-focus transition-all duration-300 ${
               scrolled ? "shadow-lg" : ""
             }`}
           >
