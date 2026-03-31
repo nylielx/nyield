@@ -88,7 +88,7 @@ const SignUpPage = () => {
 
       {/* Centered form container */}
       <div className="flex items-center justify-center px-4 pt-28 pb-16">
-        <Card className="w-full max-w-md border-border/50 bg-card/80 backdrop-blur-sm">
+        <Card className="w-full max-w-md glass-elevated">
           {/* Header */}
           <CardHeader className="text-center space-y-2">
             <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">

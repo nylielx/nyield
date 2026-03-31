@@ -126,7 +126,7 @@ const ListingDetailPage = () => {
             <div className="lg:col-span-3 space-y-6">
 
               {/* 1. Title + Description */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border bg-card p-6">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl glass-base p-6">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h1 className="font-heading text-2xl md:text-3xl font-bold text-foreground">{listing.title}</h1>
@@ -146,7 +146,7 @@ const ListingDetailPage = () => {
               </motion.div>
 
               {/* 2. Price + Actions */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="rounded-xl border border-border bg-card p-6">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="rounded-xl glass-base p-6">
                 <p className="text-4xl font-heading font-bold text-foreground mb-1">£{listing.price.toLocaleString()}</p>
                 <p className="text-xs text-muted-foreground mb-4">Seller: {listing.seller} · {listing.condition} · Listed {listing.listedDate}</p>
                 <div className="flex gap-3">
@@ -157,7 +157,7 @@ const ListingDetailPage = () => {
               </motion.div>
 
               {/* 3. Verification */}
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className="rounded-xl glass-base p-6">
                 <h2 className="font-heading text-sm font-bold text-foreground mb-4 flex items-center gap-2"><ShieldCheck size={16} className="text-primary" /> Verification</h2>
                 <div className="grid grid-cols-2 gap-3 text-xs mb-4">
                   <div><span className="text-muted-foreground">Last Verified:</span><p className="text-foreground font-medium">{listing.verification.lastVerified}</p></div>
@@ -178,7 +178,7 @@ const ListingDetailPage = () => {
               </div>
 
               {/* 4. Full Part List */}
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className="rounded-xl glass-base p-6">
                 <h2 className="font-heading text-sm font-bold text-foreground mb-4 flex items-center gap-2"><Wrench size={16} className="text-primary" /> Full Part List</h2>
                 <div className="space-y-2 text-xs">
                   {Object.entries(listing.fullParts).map(([key, val]) => (
@@ -191,7 +191,7 @@ const ListingDetailPage = () => {
               </div>
 
               {/* 5. Usage History */}
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className="rounded-xl glass-base p-6">
                 <h2 className="font-heading text-sm font-bold text-foreground mb-4 flex items-center gap-2"><Clock size={16} className="text-primary" /> Usage History</h2>
                 <div className="space-y-2 text-xs">
                   {Object.entries(listing.usageHistory).map(([key, val]) => (
@@ -204,7 +204,7 @@ const ListingDetailPage = () => {
               </div>
 
               {/* 6. Maintenance History */}
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className="rounded-xl glass-base p-6">
                 <h2 className="font-heading text-sm font-bold text-foreground mb-4 flex items-center gap-2"><Wrench size={16} className="text-primary" /> Maintenance History</h2>
                 <div className="space-y-2 text-xs">
                   {Object.entries(listing.maintenance).map(([key, val]) => (
@@ -217,7 +217,7 @@ const ListingDetailPage = () => {
               </div>
 
               {/* 7. Assembly + Sale Context */}
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className="rounded-xl glass-base p-6">
                 <h2 className="font-heading text-sm font-bold text-foreground mb-4 flex items-center gap-2"><Package size={16} className="text-primary" /> Assembly & Sale Context</h2>
                 <div className="space-y-2 text-xs">
                   <div className="flex justify-between py-1.5 border-b border-border/50">
@@ -232,7 +232,7 @@ const ListingDetailPage = () => {
               </div>
 
               {/* 8. Included / Not Included */}
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className="rounded-xl glass-base p-6">
                 <h2 className="font-heading text-sm font-bold text-foreground mb-4">What's Included</h2>
                 <div className="grid grid-cols-2 gap-6">
                   <div>
@@ -255,7 +255,7 @@ const ListingDetailPage = () => {
               </div>
 
               {/* 9. Verification Files */}
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className="rounded-xl glass-base p-6">
                 <h2 className="font-heading text-sm font-bold text-foreground mb-4 flex items-center gap-2"><FileText size={16} className="text-primary" /> Verification Files</h2>
                 <div className="space-y-2">
                   {listing.verificationFiles.map((file) => (
@@ -277,7 +277,7 @@ const ListingDetailPage = () => {
             <div className="lg:col-span-2 space-y-6">
 
               {/* 1. Performance Summary */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-xl border border-border bg-card p-6">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-xl glass-base p-6">
                 <h2 className="font-heading text-sm font-bold text-foreground mb-4 flex items-center gap-2"><Gauge size={16} className="text-primary" /> Performance Summary</h2>
                 <div className="text-center mb-4">
                   <p className="text-5xl font-heading font-bold text-primary">{listing.performanceSummary.score}</p>
@@ -296,7 +296,7 @@ const ListingDetailPage = () => {
               </motion.div>
 
               {/* 2. Value Indicator */}
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className="rounded-xl glass-base p-6">
                 <h2 className="font-heading text-sm font-bold text-foreground mb-4 flex items-center gap-2"><BarChart3 size={16} className="text-primary" /> Value Indicator</h2>
                 <div className="relative h-3 rounded-full overflow-hidden bg-gradient-to-r from-red-500 via-yellow-500 to-green-500">
                   <motion.div
@@ -316,7 +316,7 @@ const ListingDetailPage = () => {
               </div>
 
               {/* 3. Data Completeness */}
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className="rounded-xl glass-base p-6">
                 <h2 className="font-heading text-sm font-bold text-foreground mb-3">Data Completeness</h2>
                 <div className="flex items-center gap-3">
                   <div className="flex-1 h-2 rounded-full bg-secondary">
@@ -327,7 +327,7 @@ const ListingDetailPage = () => {
               </div>
 
               {/* DETAILED SPECS — Expandable Accordion */}
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className="rounded-xl glass-base p-6">
                 <h2 className="font-heading text-sm font-bold text-foreground mb-4 flex items-center gap-2"><Zap size={16} className="text-primary" /> Detailed Specifications</h2>
 
                 <Accordion type="multiple" className="w-full">
@@ -462,7 +462,7 @@ const ListingDetailPage = () => {
               </div>
 
               {/* Transparency */}
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className="rounded-xl glass-base p-6">
                 <h2 className="font-heading text-sm font-bold text-foreground mb-3 flex items-center gap-2"><ShieldCheck size={16} className="text-primary" /> Transparency</h2>
                 <div className="text-center mb-3">
                   <p className="text-3xl font-heading font-bold text-primary">{listing.transparency.score}%</p>
@@ -485,13 +485,13 @@ const ListingDetailPage = () => {
               </div>
 
               {/* Seller Notes */}
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className="rounded-xl glass-base p-6">
                 <h2 className="font-heading text-sm font-bold text-foreground mb-3">Seller Notes</h2>
                 <p className="text-xs text-muted-foreground leading-relaxed">{listing.sellerNotes}</p>
               </div>
 
               {/* Location */}
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className="rounded-xl glass-base p-6">
                 <h2 className="font-heading text-sm font-bold text-foreground mb-4 flex items-center gap-2"><MapPin size={16} className="text-primary" /> Location</h2>
                 <div className="space-y-2 text-xs">
                   <div className="flex justify-between py-1.5 border-b border-border/50">
