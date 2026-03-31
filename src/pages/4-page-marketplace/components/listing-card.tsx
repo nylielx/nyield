@@ -62,7 +62,7 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
     >
       {/* Disabled overlay */}
       {!listing.isActive && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/70 backdrop-blur-sm rounded-xl">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/70 backdrop-blur-md rounded-xl">
           <Lock className="w-8 h-8 text-muted-foreground mb-3" />
           <p className="font-heading text-sm font-bold text-foreground">Coming Soon</p>
           <p className="text-xs text-muted-foreground text-center max-w-[200px] mt-1">

@@ -11,7 +11,7 @@ const specIcons = [
 ];
 
 export const BuildCard = ({ build }: { build: SavedBuild }) => (
-  <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+  <Card className="glass-base">
     <CardContent className="p-4">
       <div className="flex items-start justify-between mb-3">
         <div>

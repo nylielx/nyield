@@ -37,7 +37,7 @@ const ConfiguratorSummary = ({
   const upgradeCost = totalPrice - basePrice;
 
   return (
-    <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 space-y-4">
+    <div className="rounded-xl glass-elevated p-5 space-y-4">
       {/* Header */}
       <div>
         <h3 className="font-heading text-lg font-bold text-foreground">{tierName} Build</h3>

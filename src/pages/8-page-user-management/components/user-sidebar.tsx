@@ -38,7 +38,7 @@ export const UserSidebar = () => {
 
   return (
     <aside className="w-full md:w-64 shrink-0">
-      <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-4 space-y-1">
+      <div className="rounded-xl glass-elevated p-4 space-y-1">
         {/* User info */}
         <div className="pb-3 mb-2 border-b border-border/30 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-lg">

@@ -104,7 +104,7 @@ const TierConfiguratorPage = ({ tierId, tierName, basePrice }: TierConfiguratorP
           <div className="grid lg:grid-cols-3 gap-8 mb-10">
             {/* PC Image */}
             <div className="lg:col-span-2">
-              <div className="rounded-xl overflow-hidden border border-border">
+              <div className="rounded-xl overflow-hidden glass-base">
                 <img
                   src={pcBlackout}
                   alt={`nYield ${tierName} Build`}

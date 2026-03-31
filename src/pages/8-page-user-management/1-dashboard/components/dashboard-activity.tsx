@@ -23,7 +23,7 @@ const typeIcons = {
 };
 
 export const DashboardActivity = ({ activities }: { activities: Activity[] }) => (
-  <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+  <Card className="glass-base">
     <CardHeader>
       <CardTitle className="text-lg text-foreground">Recent Activity</CardTitle>
     </CardHeader>

@@ -399,7 +399,7 @@ const MarketplaceFilters = ({ listings, onFilteredChange }: MarketplaceFiltersPr
           </button>
 
           {sortOpen && (
-            <div className="absolute top-full right-0 mt-2 z-50 min-w-[180px] rounded-xl border border-border bg-card shadow-xl p-2">
+            <div className="absolute top-full right-0 mt-2 z-50 min-w-[180px] rounded-xl glass-focus shadow-xl p-2">
               {SORT_OPTIONS.map((option) => (
                 <button
                   key={option}

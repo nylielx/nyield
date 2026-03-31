@@ -24,7 +24,7 @@ const statConfig = [
 export const DashboardStats = (props: StatsProps) => (
   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
     {statConfig.map(({ key, label, icon: Icon }) => (
-      <Card key={key} className="border-border/50 bg-card/50 backdrop-blur-sm">
+      <Card key={key} className="glass-base">
         <CardContent className="p-4 flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/10">
             <Icon className="h-5 w-5 text-primary" />

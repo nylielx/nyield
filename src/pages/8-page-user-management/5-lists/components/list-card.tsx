@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { UserList } from "../data/lists-mock";
 
 export const ListCard = ({ list }: { list: UserList }) => (
-  <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+  <Card className="glass-base">
     <CardContent className="p-4">
       <div className="flex items-start gap-3 mb-3">
         <div className="p-2 rounded-lg bg-primary/10">
