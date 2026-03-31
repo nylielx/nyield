@@ -2,12 +2,15 @@
  * =============================================================================
  * HERO SECTION — The first thing visitors see on the nYield website
  * =============================================================================
+ * Now features a WebGL shader background with energy effects.
  */
 
+import { Suspense } from "react";
+import { Canvas } from "@react-three/fiber";
 import { motion } from "framer-motion";
 import { ArrowRight, Cpu } from "lucide-react";
 import { Link } from "react-router-dom";
-import heroBg from "@/assets/hero-bg.jpg";
+import { ShaderPlane, EnergyRing } from "@/components/ui/shader-background";
 
 const HeroSection = () => {
   return (
@@ -15,17 +18,24 @@ const HeroSection = () => {
       id="hero"
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
+      {/* WebGL Shader Background */}
       <div className="absolute inset-0">
-        <img
-          src={heroBg}
-          alt="Gaming PC setup with teal lighting"
-          className="w-full h-full object-cover"
-          width={1920}
-          height={1080}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background" />
+        <Canvas
+          camera={{ position: [0, 0, 3], fov: 50 }}
+          style={{ background: "transparent" }}
+          gl={{ alpha: true, antialias: true }}
+        >
+          <Suspense fallback={null}>
+            <ShaderPlane position={[0, 0, 0]} color1="#ff5722" color2="#ffffff" />
+            <EnergyRing radius={1.5} position={[0, 0, -0.5]} />
+            <EnergyRing radius={2} position={[0, 0, -1]} />
+          </Suspense>
+        </Canvas>
+        {/* Overlay gradient for readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
       </div>
 
+      {/* Hero Content */}
       <motion.div
         className="relative z-10 container mx-auto px-6 text-center max-w-4xl"
         initial="hidden"
