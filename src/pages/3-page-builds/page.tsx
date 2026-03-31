@@ -269,12 +269,13 @@ const BuildsPage = () => {
                   </div>
                 </div>
 
-                <button
+                <GlassButton
+                  size="sm"
+                  className="w-full text-center"
                   onClick={() => navigate(`/builds/tier-${tierRouteMap[build.id]}?edition=${selectedEdition}`)}
-                  className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
                 >
                   Configure
-                </button>
+                </GlassButton>
               </motion.div>
             ))}
           </div>

@@ -189,16 +189,16 @@ const SignUpPage = () => {
               </div>
 
               {/* Submit button with loading state */}
-              <Button type="submit" className="w-full glow-sm" disabled={isSubmitting}>
+              <GlassButton type="submit" className="w-full text-center" disabled={isSubmitting}>
                 {isSubmitting ? (
-                  <>
-                    <Loader2 className="animate-spin" />
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="animate-spin w-4 h-4" />
                     Creating account...
-                  </>
+                  </span>
                 ) : (
                   "Create Account"
                 )}
-              </Button>
+              </GlassButton>
             </form>
           </CardContent>
 

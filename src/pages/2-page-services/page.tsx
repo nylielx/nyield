@@ -192,12 +192,10 @@ const ServicesPage = () => {
                     </p>
                   )}
 
-                  <Link
-                    to={`/booking?edition=${product.id}`}
-                    className="group inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-all relative overflow-hidden"
-                  >
-                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                    Get {product.name} <ArrowRight size={16} />
+                  <Link to={`/booking?edition=${product.id}`}>
+                    <GlassButton className="inline-flex items-center gap-2">
+                      Get {product.name} <ArrowRight size={16} />
+                    </GlassButton>
                   </Link>
                 </div>
 
