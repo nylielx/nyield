@@ -55,7 +55,7 @@ const MarketplaceSection = () => {
               viewport={{ once: true }}
               transition={{ delay: index * 0.15, duration: 0.5 }}
               whileHover={{ y: -5 }}
-              className="rounded-xl border border-border bg-card overflow-hidden"
+              className="rounded-xl glass-base overflow-hidden"
             >
               {/* Header with verified badge */}
               <div className="p-6 border-b border-border">

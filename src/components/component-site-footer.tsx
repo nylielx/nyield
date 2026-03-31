@@ -39,7 +39,7 @@ const footerLinks = {
 
 const SiteFooter = () => {
   return (
-    <footer className="py-16 border-t border-border bg-card">
+    <footer className="py-16 border-t border-border/30 glass-base">
       <div className="container mx-auto px-6">
         <div className="grid md:grid-cols-4 gap-12 mb-12">
           {/* Brand column */}

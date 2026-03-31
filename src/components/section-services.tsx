@@ -56,10 +56,10 @@ const OSCard = ({ product, index }: { product: OSProduct; index: number }) => {
        * The y: -5 adds a subtle upward shift.
        */
       whileHover={{ y: -5, scale: 1.02 }}
-      className={`relative rounded-xl p-8 border transition-shadow duration-300 ${
+      className={`relative rounded-xl p-8 transition-shadow duration-300 ${
         product.highlighted
-          ? "border-primary/50 bg-primary/5 shadow-lg glow-sm" /* Flagship gets glow */
-          : "border-border bg-card hover:shadow-lg"
+          ? "glass-elevated border-primary/50 shadow-lg glow-sm"
+          : "glass-base hover:shadow-lg"
       }`}
     >
       {/* "Popular" badge for highlighted product */}

@@ -91,10 +91,10 @@ const PCBuildSection = () => {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1, duration: 0.5 }}
               whileHover={{ y: -5 }}
-              className={`rounded-xl p-6 border ${
+              className={`rounded-xl p-6 ${
                 build.popular
-                  ? "border-primary/50 bg-primary/5 glow-sm relative"
-                  : "border-border bg-card"
+                  ? "glass-elevated border-primary/50 glow-sm relative"
+                  : "glass-base"
               }`}
             >
               {build.popular && (

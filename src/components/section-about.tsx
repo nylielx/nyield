@@ -63,7 +63,7 @@ const AboutSection = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.15 }}
-                className="text-center p-6 rounded-xl border border-border glass-card"
+                className="text-center p-6 rounded-xl glass-elevated"
               >
                 <value.icon className="w-10 h-10 text-primary mx-auto mb-4" />
                 <h3 className="font-heading text-lg font-bold text-foreground mb-2">
