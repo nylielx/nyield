@@ -10,6 +10,7 @@ import { ArrowRight, Cpu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MeshGradient } from "@paper-design/shaders-react";
 import CursorGridOverlay from "./ui/cursor-grid-overlay";
+import { GlassButton } from "./ui/glass-button";
 
 const HeroSection = () => {
   const [isDark, setIsDark] = useState(
