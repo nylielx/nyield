@@ -130,8 +130,8 @@ const MarketplacePage = () => {
       </section>
 
       {/* ── LISTING GRID ── */}
-      <section className="py-8 bg-background">
-        <div className="container mx-auto px-6">
+      <section className="py-12 bg-background">
+        <div className="container mx-auto px-6 max-w-6xl">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {loading ? (
               <div className="col-span-full text-center py-16">
