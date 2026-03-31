@@ -52,7 +52,17 @@ const includedWithEveryBuild = [
   "Lifetime nYield software updates",
 ];
 
+/** Maps build ID to tier route number */
+const tierRouteMap: Record<string, number> = {
+  entry: 1,
+  performance: 2,
+  pro: 3,
+  elite: 4,
+  ultimate: 5,
+};
+
 const BuildsPage = () => {
+  const navigate = useNavigate();
   /**
    * State to track which edition the user is viewing.
    * "blackout" or "whiteout" — affects the displayed images.
