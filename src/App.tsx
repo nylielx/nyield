@@ -26,6 +26,12 @@ import ListingDetailPage from "./pages/5-page-listing-detail";
 import SignInPage from "./pages/7-page-sign-in";
 import SignUpPage from "./pages/8-page-sign-up";
 import ForgotPasswordPage from "./pages/9-page-forgot-password";
+import UserManagementLayout from "./pages/8-page-user-management";
+import DashboardPage from "./pages/8-page-user-management/1-dashboard";
+import MyOrdersPage from "./pages/8-page-user-management/2-my-orders";
+import SavedBuildsPage from "./pages/8-page-user-management/3-saved-builds";
+import SavedItemsPage from "./pages/8-page-user-management/4-saved-items";
+import ListsPage from "./pages/8-page-user-management/5-lists";
 import NotFound from "./pages/10-page-not-found";
 
 const queryClient = new QueryClient();
@@ -46,6 +52,14 @@ const App = () => (
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/signin" element={<SignInPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            {/* User Management — nested routes with sidebar layout */}
+            <Route path="/account" element={<UserManagementLayout />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="orders" element={<MyOrdersPage />} />
+              <Route path="builds" element={<SavedBuildsPage />} />
+              <Route path="saved" element={<SavedItemsPage />} />
+              <Route path="lists" element={<ListsPage />} />
+            </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
