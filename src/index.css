@@ -379,6 +379,40 @@
   transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* When bg-primary is applied, inherit it as the glass tint */
+.bg-primary > .glass-button-text {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary) / 0.95) 0%,
+    hsl(var(--primary) / 0.85) 40%,
+    hsl(var(--primary) / 0.9) 60%,
+    hsl(var(--primary) / 0.95) 100%
+  );
+  border-color: hsl(var(--primary) / 0.6);
+  color: hsl(var(--primary-foreground));
+  box-shadow:
+    inset 0 1px 0 0 hsl(0 0% 100% / 0.15),
+    inset 0 -1px 0 0 hsl(0 0% 0% / 0.1),
+    0 2px 12px hsl(var(--primary) / 0.25),
+    0 0 20px hsl(var(--primary) / 0.1);
+}
+
+.bg-primary > .glass-button-text:hover {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary) / 1) 0%,
+    hsl(var(--primary) / 0.9) 40%,
+    hsl(var(--primary) / 0.95) 60%,
+    hsl(var(--primary) / 1) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 0 hsl(0 0% 100% / 0.2),
+    inset 0 -1px 0 0 hsl(0 0% 0% / 0.1),
+    0 4px 20px hsl(var(--primary) / 0.35),
+    0 0 30px hsl(var(--primary) / 0.15);
+  transform: translateY(-1px);
+}
+
 .glass-button-text:hover {
   background: linear-gradient(
     135deg,

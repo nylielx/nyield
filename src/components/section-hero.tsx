@@ -47,7 +47,7 @@ const HeroSection = () => {
 
   const gradientColors = isDark
     ? ["#1a0000", "#330a00", "#ff5722", "#661a00"]
-    : ["#ffffff", "#fff0ec", "#ff5722", "#ffe0d6"];
+    : ["#ffffff", "#ffffff", "#ffe8e0", "#fff5f2"];
 
   return (
     <section
@@ -98,7 +98,7 @@ const HeroSection = () => {
       </motion.div>
 
       {/* ── Overlay gradient for readability ── */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/30 to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/20 to-background/60" />
 
       {/* ── Hero Content (fades on scroll) ── */}
       <motion.div
@@ -155,13 +155,13 @@ const HeroSection = () => {
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
           <Link to="/services">
-            <GlassButton size="lg" className="inline-flex items-center gap-2">
+            <GlassButton size="lg" className="inline-flex items-center gap-2 bg-primary text-primary-foreground">
               Choose Your Edition
               <ArrowRight size={20} />
             </GlassButton>
           </Link>
           <Link to="/builds">
-            <GlassButton size="lg" className="inline-flex items-center gap-2">
+            <GlassButton size="lg" className="inline-flex items-center gap-2 border border-border text-foreground">
               View Gaming PCs
             </GlassButton>
           </Link>

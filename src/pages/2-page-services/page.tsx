@@ -193,7 +193,7 @@ const ServicesPage = () => {
                   )}
 
                   <Link to={`/booking?edition=${product.id}`}>
-                    <GlassButton className="inline-flex items-center gap-2">
+                    <GlassButton className="inline-flex items-center gap-2 bg-primary text-primary-foreground">
                       Get {product.name} <ArrowRight size={16} />
                     </GlassButton>
                   </Link>
