@@ -81,7 +81,7 @@ const BuildsPage = () => {
        * PAGE HERO — Introduces the builds section
        * ---------------------------------------------------------------- */}
       <section className="pt-32 pb-16 bg-background">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-6 max-w-6xl">
           <Link
             to="/"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-8"
@@ -111,8 +111,8 @@ const BuildsPage = () => {
        * Users can toggle between the two color editions.
        * This demonstrates a simple state-driven UI pattern.
        * ---------------------------------------------------------------- */}
-      <section className="py-16 bg-secondary/30">
-        <div className="container mx-auto px-6">
+      <section className="py-24 bg-secondary/30">
+        <div className="container mx-auto px-6 max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -181,7 +181,7 @@ const BuildsPage = () => {
        * Uses a card grid with detailed specs and FPS estimates.
        * ---------------------------------------------------------------- */}
       <section className="py-24 bg-background">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-6 max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

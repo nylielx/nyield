@@ -73,8 +73,8 @@ const MarketplacePage = () => {
       <ListingHeader />
 
       {/* ── VERIFICATION CARDS ── */}
-      <section className="py-8 bg-secondary/30">
-        <div className="container mx-auto px-6">
+      <section className="py-12 bg-secondary/30">
+        <div className="container mx-auto px-6 max-w-6xl">
           <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center text-sm text-muted-foreground mb-5">
             Every listing includes this data — no hidden specs
           </motion.p>
@@ -100,7 +100,7 @@ const MarketplacePage = () => {
 
       {/* ── BETA BANNER ── */}
       <section className="py-4 bg-primary/10 border-y border-primary/20">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-6 max-w-6xl">
           <div className="flex items-center justify-center gap-3 text-center">
             <AlertTriangle className="w-5 h-5 text-primary shrink-0" />
             <div>
@@ -112,8 +112,8 @@ const MarketplacePage = () => {
       </section>
 
       {/* ── FILTER BAR ── */}
-      <section className="pt-10 pb-4 bg-background">
-        <div className="container mx-auto px-6">
+      <section className="pt-12 pb-4 bg-background">
+        <div className="container mx-auto px-6 max-w-6xl">
           <div className="max-w-5xl mx-auto space-y-4">
             {loading ? (
               <div className="text-sm text-muted-foreground">Loading listings...</div>
@@ -130,8 +130,8 @@ const MarketplacePage = () => {
       </section>
 
       {/* ── LISTING GRID ── */}
-      <section className="py-8 bg-background">
-        <div className="container mx-auto px-6">
+      <section className="py-12 bg-background">
+        <div className="container mx-auto px-6 max-w-6xl">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {loading ? (
               <div className="col-span-full text-center py-16">
@@ -145,8 +145,8 @@ const MarketplacePage = () => {
       </section>
 
       {/* ── COMING SOON FEATURES ── */}
-      <section className="py-16 bg-secondary/30">
-        <div className="container mx-auto px-6">
+      <section className="py-24 bg-secondary/30">
+        <div className="container mx-auto px-6 max-w-6xl">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-10">
             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-2">
               Marketplace Features <span className="text-gradient">Coming Soon</span>
@@ -167,8 +167,8 @@ const MarketplacePage = () => {
       </section>
 
       {/* ── SELL CTA ── */}
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-6 text-center">
+      <section className="py-24 bg-background">
+        <div className="container mx-auto px-6 max-w-6xl text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-3">
               Want to <span className="text-gradient">Sell?</span>
