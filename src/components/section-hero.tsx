@@ -143,8 +143,7 @@ const HeroSection = () => {
           }}
           className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10"
         >
-          Custom operating systems, pre-built gaming PCs, and a verified
-          marketplace — all engineered for maximum performance.
+          More FPS. Lower latency. No upgrades needed.
         </motion.p>
 
         <motion.div
