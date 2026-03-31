@@ -268,7 +268,10 @@ const BuildsPage = () => {
                   </div>
                 </div>
 
-                <button className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
+                <button
+                  onClick={() => navigate(`/builds/tier-${tierRouteMap[build.id]}`)}
+                  className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+                >
                   Configure
                 </button>
               </motion.div>
