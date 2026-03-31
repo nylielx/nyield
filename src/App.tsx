@@ -75,6 +75,8 @@ const App = () => (
               <Route path="profile" element={<ProfileSettingsPage />} />
               <Route path="security" element={<SecurityPage />} />
               <Route path="help" element={<HelpSupportPage />} />
+              <Route path="bookings" element={<MyBookingsPage />} />
+              <Route path="bookings/:id" element={<BookingDetailPage />} />
             </Route>
             <Route path="/process" element={<ProcessPage />} />
             <Route path="/about" element={<AboutPage />} />
