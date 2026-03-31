@@ -70,53 +70,52 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
         </div>
       )}
 
-      {/* Like + Save — TOP LEFT */}
+      {/* Top icon row — like/save left, badge right, all same size & aligned */}
       {listing.isActive && (
-        <div className="absolute top-3 left-3 flex gap-1.5 z-20">
-          <motion.button
-            onClick={() => setFavourited(!favourited)}
-            whileHover={{ scale: 1.15 }}
-            whileTap={{ scale: 0.85 }}
-            className="w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center transition-colors"
-            title={favourited ? "Remove from favourites" : "Add to favourites"}
-          >
-            <motion.div
-              animate={favourited ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-              transition={{ duration: 0.3 }}
+        <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between">
+          {/* Like + Save */}
+          <div className="flex gap-1.5">
+            <motion.button
+              onClick={() => setFavourited(!favourited)}
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.85 }}
+              className="w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center transition-colors"
+              title={favourited ? "Remove from favourites" : "Add to favourites"}
             >
-              <Heart
-                size={14}
-                className={`transition-colors duration-200 ${
-                  favourited ? "fill-primary text-primary" : "text-muted-foreground"
-                }`}
-              />
-            </motion.div>
-          </motion.button>
-          <motion.button
-            onClick={() => setSaved(!saved)}
-            whileHover={{ scale: 1.15 }}
-            whileTap={{ scale: 0.85 }}
-            className="w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center transition-colors"
-            title={saved ? "Remove from list" : "Save to list"}
-          >
-            <motion.div
-              animate={saved ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-              transition={{ duration: 0.3 }}
+              <motion.div
+                animate={favourited ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Heart
+                  size={14}
+                  className={`transition-colors duration-200 ${
+                    favourited ? "fill-primary text-primary" : "text-muted-foreground"
+                  }`}
+                />
+              </motion.div>
+            </motion.button>
+            <motion.button
+              onClick={() => setSaved(!saved)}
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.85 }}
+              className="w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center transition-colors"
+              title={saved ? "Remove from list" : "Save to list"}
             >
-              <Bookmark
-                size={14}
-                className={`transition-colors duration-200 ${
-                  saved ? "fill-primary text-primary" : "text-muted-foreground"
-                }`}
-              />
-            </motion.div>
-          </motion.button>
-        </div>
-      )}
+              <motion.div
+                animate={saved ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Bookmark
+                  size={14}
+                  className={`transition-colors duration-200 ${
+                    saved ? "fill-primary text-primary" : "text-muted-foreground"
+                  }`}
+                />
+              </motion.div>
+            </motion.button>
+          </div>
 
-      {/* Verification badge — TOP RIGHT (small icon) */}
-      {listing.isActive && (
-        <div className="absolute top-3 right-3 z-20">
+          {/* Verification badge */}
           <VerificationBadge tier={tier} />
         </div>
       )}

@@ -90,9 +90,9 @@ const VerificationBadge = ({ tier, className = "" }: VerificationBadgeProps) => 
             </div>
           )}
 
-          {/* Icon */}
+          {/* Icon — matches w-8 h-8 like/save buttons */}
           <div
-            className={`relative z-10 w-7 h-7 rounded-full flex items-center justify-center
+            className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center
               bg-background/80 backdrop-blur-sm border border-border/50
               transition-all duration-300 ease-out
               group-hover:scale-110
@@ -101,7 +101,7 @@ const VerificationBadge = ({ tier, className = "" }: VerificationBadgeProps) => 
             `}
           >
             <ShieldCheck
-              size={15}
+              size={14}
               className={`transition-all duration-300 ${config.iconColor} ${
                 tier === "gold" ? "group-hover:drop-shadow-[0_0_4px_rgba(217,165,32,0.6)]" : ""
               }`}
