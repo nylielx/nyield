@@ -52,6 +52,14 @@ const App = () => (
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/signin" element={<SignInPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            {/* User Management — nested routes with sidebar layout */}
+            <Route path="/account" element={<UserManagementLayout />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="orders" element={<MyOrdersPage />} />
+              <Route path="builds" element={<SavedBuildsPage />} />
+              <Route path="saved" element={<SavedItemsPage />} />
+              <Route path="lists" element={<ListsPage />} />
+            </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
