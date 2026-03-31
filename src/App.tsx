@@ -26,6 +26,12 @@ import ListingDetailPage from "./pages/5-page-listing-detail";
 import SignInPage from "./pages/7-page-sign-in";
 import SignUpPage from "./pages/8-page-sign-up";
 import ForgotPasswordPage from "./pages/9-page-forgot-password";
+import UserManagementLayout from "./pages/8-page-user-management";
+import DashboardPage from "./pages/8-page-user-management/1-dashboard";
+import MyOrdersPage from "./pages/8-page-user-management/2-my-orders";
+import SavedBuildsPage from "./pages/8-page-user-management/3-saved-builds";
+import SavedItemsPage from "./pages/8-page-user-management/4-saved-items";
+import ListsPage from "./pages/8-page-user-management/5-lists";
 import NotFound from "./pages/10-page-not-found";
 
 const queryClient = new QueryClient();
