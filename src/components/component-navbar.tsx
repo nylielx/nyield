@@ -141,6 +141,7 @@ const Navbar = () => {
               </button>
             </div>
           </nav>
+          </motion.div>
 
           {/* Mobile dropdown */}
           {menuOpen && (
