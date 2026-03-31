@@ -34,6 +34,9 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
 
+  const { scrollYProgress } = useScroll();
+  const gradientX = useTransform(scrollYProgress, [0, 1], [0, 360]);
+
   const isActive = (link: { to?: string; href?: string }) => {
     if (link.to) return location.pathname === link.to;
     if (link.href) return location.pathname + location.hash === link.href;
