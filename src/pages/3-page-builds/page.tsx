@@ -271,7 +271,7 @@ const BuildsPage = () => {
 
                 <GlassButton
                   size="sm"
-                  className="w-full text-center"
+                  className="w-full text-center bg-primary text-primary-foreground"
                   onClick={() => navigate(`/builds/tier-${tierRouteMap[build.id]}?edition=${selectedEdition}`)}
                 >
                   Configure
