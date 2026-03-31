@@ -1,16 +1,13 @@
 /**
  * =============================================================================
- * HERO SECTION — Premium shader + geometric hero for nYield
+ * HERO SECTION — The first thing visitors see on the nYield website
  * =============================================================================
  */
 
-import { Suspense } from "react";
-import { Canvas } from "@react-three/fiber";
 import { motion } from "framer-motion";
 import { ArrowRight, Cpu } from "lucide-react";
 import { Link } from "react-router-dom";
-import { HeroGeometric } from "@/components/ui/shape-landing-hero";
-import { ShaderPlane, EnergyRing } from "@/components/ui/shader-background";
+import heroBg from "@/assets/hero-bg.jpg";
 
 const HeroSection = () => {
   return (
@@ -18,37 +15,69 @@ const HeroSection = () => {
       id="hero"
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
-      {/* Shader background layer */}
-      <div className="absolute inset-0 z-0">
-        <Suspense fallback={null}>
-          <Canvas
-            camera={{ position: [0, 0, 5], fov: 45 }}
-            style={{ background: "transparent" }}
-            gl={{ alpha: true, antialias: true }}
-          >
-            <ShaderPlane position={[0, 0, -2]} color1="#dc2626" color2="#1a1a2e" />
-            <EnergyRing radius={2.5} position={[0, 0, -1.5]} />
-          </Canvas>
-        </Suspense>
+      <div className="absolute inset-0">
+        <img
+          src={heroBg}
+          alt="Gaming PC setup with teal lighting"
+          className="w-full h-full object-cover"
+          width={1920}
+          height={1080}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background" />
       </div>
 
-      {/* Overlay gradient for readability */}
-      <div className="absolute inset-0 z-[1] bg-gradient-to-b from-background/80 via-background/60 to-background" />
-
-      {/* Hero content */}
-      <div className="relative z-10 w-full">
-        <HeroGeometric
-          badge="PC Optimization & Gaming Systems"
-          title1="Unlock Your PC's"
-          title2="True Power"
-        />
-
-        {/* CTA buttons */}
+      <motion.div
+        className="relative z-10 container mx-auto px-6 text-center max-w-4xl"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.15 } },
+        }}
+      >
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 1.2, ease: [0.25, 0.4, 0.25, 1] as [number, number, number, number] }}
-          className="relative z-10 flex flex-col sm:flex-row gap-4 justify-center -mt-12 px-6"
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0 },
+          }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-elevated border-primary/20 mb-8"
+        >
+          <Cpu size={16} className="text-primary" />
+          <span className="text-sm font-medium text-primary">
+            PC Optimization & Gaming Systems
+          </span>
+        </motion.div>
+
+        <motion.h1
+          variants={{
+            hidden: { opacity: 0, y: 30 },
+            visible: { opacity: 1, y: 0 },
+          }}
+          className="font-heading text-5xl md:text-7xl font-bold leading-tight mb-6"
+        >
+          <span className="text-gradient-glow-wrapper">
+            Unlock Your PC's{" "}
+            <span className="text-gradient-glow">True Power</span>
+          </span>
+        </motion.h1>
+
+        <motion.p
+          variants={{
+            hidden: { opacity: 0, y: 30 },
+            visible: { opacity: 1, y: 0 },
+          }}
+          className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10"
+        >
+          Custom operating systems, pre-built gaming PCs, and a verified
+          marketplace — all engineered for maximum performance.
+        </motion.p>
+
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 30 },
+            visible: { opacity: 1, y: 0 },
+          }}
+          className="flex flex-col sm:flex-row gap-4 justify-center"
         >
           <Link
             to="/services"
@@ -65,7 +94,7 @@ const HeroSection = () => {
             View Gaming PCs
           </Link>
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 };
