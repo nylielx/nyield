@@ -70,9 +70,11 @@ const OSCard = ({ product, index }: { product: OSProduct; index: number }) => {
       )}
 
       <IconComponent className="w-10 h-10 text-primary mb-4" />
-      <h3 className="font-heading text-xl font-bold text-foreground mb-2">
-        {product.name}
-      </h3>
+      <div className="text-gradient-glow-wrapper">
+        <h3 className="font-heading text-xl font-bold text-gradient-glow mb-2">
+          {product.name}
+        </h3>
+      </div>
       <p className="text-primary text-sm font-medium mb-3">{product.tagline}</p>
       <p className="text-muted-foreground text-sm mb-6">{product.description}</p>
 
