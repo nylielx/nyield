@@ -14,36 +14,18 @@ import {
   User,
   Check,
   Sparkles,
+  ChevronLeft,
+  ChevronRight,
+  X,
 } from "lucide-react";
 import Navbar from "@/components/component-navbar";
 import SiteFooter from "@/components/component-site-footer";
 
-/** Pricing tiers per edition */
-const editionPricing: Record<string, { name: string; tiers: { label: string; price: number; bestValue?: boolean }[] }> = {
-  competitive: {
-    name: "Competitive Edition",
-    tiers: [
-      { label: "Basic", price: 39 },
-      { label: "Standard", price: 49, bestValue: true },
-      { label: "Premium", price: 59 },
-    ],
-  },
-  balanced: {
-    name: "Balanced Edition",
-    tiers: [
-      { label: "Basic", price: 49 },
-      { label: "Standard", price: 59, bestValue: true },
-      { label: "Premium", price: 69 },
-    ],
-  },
-  education: {
-    name: "Education Edition",
-    tiers: [
-      { label: "Basic", price: 59 },
-      { label: "Standard", price: 69, bestValue: true },
-      { label: "Premium", price: 79 },
-    ],
-  },
+/* ── Fixed pricing per edition ─────────────────────────────────────────── */
+const editionPricing: Record<string, { name: string; price: number }> = {
+  competitive: { name: "Competitive Edition", price: 50 },
+  balanced: { name: "Balanced Edition", price: 50 },
+  education: { name: "Education Edition", price: 80 },
 };
 
 const technicians = [
@@ -51,44 +33,101 @@ const technicians = [
   { id: "alisher", name: "Alisher", role: "Systems Engineer" },
 ];
 
-const timeSlots = [
-  "09:00", "10:00", "11:00", "12:00", "13:00",
-  "14:00", "15:00", "16:00", "17:00",
-];
-
-const generateDays = () => {
-  const days: Date[] = [];
-  const now = new Date();
-  for (let i = 1; i <= 28; i++) {
-    const d = new Date(now);
-    d.setDate(now.getDate() + i);
-    if (d.getDay() !== 0) days.push(d); // skip sundays
-  }
-  return days;
+const timeSlots = ["13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
+const timeLabels: Record<string, string> = {
+  "13:00": "1:00 PM",
+  "14:00": "2:00 PM",
+  "15:00": "3:00 PM",
+  "16:00": "4:00 PM",
+  "17:00": "5:00 PM",
+  "18:00": "6:00 PM",
 };
 
+/* ── Calendar helpers ──────────────────────────────────────────────────── */
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function getCalendarDays(year: number, month: number) {
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  // JS getDay: 0=Sun. We want Mon=0
+  let startOffset = (firstDay.getDay() + 6) % 7;
+  const totalDays = lastDay.getDate();
+  const days: (Date | null)[] = [];
+  for (let i = 0; i < startOffset; i++) days.push(null);
+  for (let d = 1; d <= totalDays; d++) days.push(new Date(year, month, d));
+  return days;
+}
+
+function isPremiumDay(date: Date) {
+  const day = date.getDay(); // 0=Sun,1=Mon...
+  return day >= 1 && day <= 4; // Mon–Thu
+}
+
+function isSunday(date: Date) {
+  return date.getDay() === 0;
+}
+
+function isPast(date: Date) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return date < today;
+}
+
+/* ── Component ─────────────────────────────────────────────────────────── */
 const ServicesBookingPage = () => {
   const [searchParams] = useSearchParams();
   const editionId = searchParams.get("edition") || "competitive";
   const edition = editionPricing[editionId] || editionPricing.competitive;
 
-  const [selectedTier, setSelectedTier] = useState(1); // default to Standard
+  const canUpgrade = editionId === "competitive" || editionId === "balanced";
+  const [upgraded, setUpgraded] = useState(false);
+
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedTech, setSelectedTech] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [confetti, setConfetti] = useState(false);
+  const [timeModalOpen, setTimeModalOpen] = useState(false);
 
-  const days = generateDays();
-  const tier = edition.tiers[selectedTier];
-  const vat = tier.price * 0.2;
-  const total = tier.price + vat;
+  // Calendar month navigation
+  const now = new Date();
+  const [calYear, setCalYear] = useState(now.getFullYear());
+  const [calMonth, setCalMonth] = useState(now.getMonth());
+
+  const calendarDays = getCalendarDays(calYear, calMonth);
+  const monthLabel = new Date(calYear, calMonth).toLocaleDateString("en-GB", {
+    month: "long",
+    year: "numeric",
+  });
+
+  const activeEditionName = upgraded ? "Education Edition" : edition.name;
+  const basePrice = upgraded ? 80 : edition.price;
+  const surcharge = selectedDate && isPremiumDay(selectedDate) ? basePrice * 0.05 : 0;
+  const subtotal = basePrice + surcharge;
+  const vat = subtotal * 0.2;
+  const total = subtotal + vat;
 
   const canConfirm = selectedDate && selectedTime && selectedTech;
 
   useEffect(() => {
-    document.title = `Book ${edition.name} — nYield`;
-  }, [edition.name]);
+    document.title = `Book ${activeEditionName} — nYield`;
+  }, [activeEditionName]);
+
+  const prevMonth = () => {
+    if (calMonth === 0) { setCalMonth(11); setCalYear(calYear - 1); }
+    else setCalMonth(calMonth - 1);
+  };
+  const nextMonth = () => {
+    if (calMonth === 11) { setCalMonth(0); setCalYear(calYear + 1); }
+    else setCalMonth(calMonth + 1);
+  };
+
+  const handleDateClick = (date: Date) => {
+    if (isPast(date) || isSunday(date)) return;
+    setSelectedDate(date);
+    setSelectedTime(null);
+    setTimeModalOpen(true);
+  };
 
   const handleConfirm = () => {
     setConfetti(true);
@@ -112,12 +151,7 @@ const ServicesBookingPage = () => {
             {Array.from({ length: 40 }).map((_, i) => (
               <motion.div
                 key={i}
-                initial={{
-                  opacity: 1,
-                  x: 0,
-                  y: 0,
-                  scale: 1,
-                }}
+                initial={{ opacity: 1, x: 0, y: 0, scale: 1 }}
                 animate={{
                   opacity: 0,
                   x: (Math.random() - 0.5) * 600,
@@ -128,10 +162,83 @@ const ServicesBookingPage = () => {
                 transition={{ duration: 1.5 + Math.random(), ease: "easeOut" }}
                 className="absolute w-3 h-3 rounded-sm"
                 style={{
-                  backgroundColor: ["hsl(0 72% 51%)", "hsl(0 0% 95%)", "hsl(45 100% 60%)", "hsl(200 80% 60%)"][i % 4],
+                  backgroundColor: [
+                    "hsl(0 72% 51%)",
+                    "hsl(0 0% 95%)",
+                    "hsl(45 100% 60%)",
+                    "hsl(200 80% 60%)",
+                  ][i % 4],
                 }}
               />
             ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Time Selection Modal */}
+      <AnimatePresence>
+        {timeModalOpen && selectedDate && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            onClick={() => setTimeModalOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="glass-focus rounded-2xl p-6 w-full max-w-sm mx-4 relative"
+            >
+              <button
+                onClick={() => setTimeModalOpen(false)}
+                className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="flex items-center gap-2 mb-1">
+                <Clock size={18} className="text-primary" />
+                <h3 className="font-heading font-bold text-foreground">Select a Time</h3>
+              </div>
+              <p className="text-xs text-muted-foreground mb-5">
+                {selectedDate.toLocaleDateString("en-GB", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                })}
+                {isPremiumDay(selectedDate) && (
+                  <span className="ml-2 text-secondary">• Premium Day (+5%)</span>
+                )}
+              </p>
+
+              <div className="grid grid-cols-2 gap-3">
+                {timeSlots.map((time, i) => (
+                  <motion.button
+                    key={time}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    whileHover={{ y: -3, scale: 1.04 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => {
+                      setSelectedTime(time);
+                      setTimeModalOpen(false);
+                    }}
+                    className={`rounded-lg py-3 text-sm font-medium transition-all ${
+                      selectedTime === time
+                        ? "bg-primary text-primary-foreground glow-sm"
+                        : "glass-base hover:border-primary/30"
+                    }`}
+                  >
+                    {timeLabels[time]}
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -147,7 +254,7 @@ const ServicesBookingPage = () => {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h1 className="font-heading text-3xl md:text-5xl font-bold mb-2">
-              Book <span className="text-gradient-glow">{edition.name}</span>
+              Book <span className="text-gradient-glow">{activeEditionName}</span>
             </h1>
             <p className="text-muted-foreground mb-10">
               Choose your date, time, and technician.
@@ -167,8 +274,13 @@ const ServicesBookingPage = () => {
                 </div>
                 <h2 className="font-heading text-2xl font-bold mb-2">Booking Confirmed!</h2>
                 <p className="text-muted-foreground mb-4">
-                  Your {edition.name} session is booked for{" "}
-                  {selectedDate?.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} at {selectedTime}.
+                  Your {activeEditionName} session is booked for{" "}
+                  {selectedDate?.toLocaleDateString("en-GB", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  })}{" "}
+                  at {selectedTime && timeLabels[selectedTime]}.
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {/* TODO: Send confirmation email via backend */}
@@ -185,90 +297,162 @@ const ServicesBookingPage = () => {
               <motion.div key="form" className="grid lg:grid-cols-3 gap-8">
                 {/* LEFT — Booking form */}
                 <div className="lg:col-span-2 space-y-8">
-                  {/* Pricing tiers */}
-                  <div>
-                    <h3 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
-                      <Sparkles size={18} className="text-primary" /> Choose Your Plan
-                    </h3>
-                    <div className="grid sm:grid-cols-3 gap-4">
-                      {edition.tiers.map((t, i) => (
-                        <motion.button
-                          key={t.label}
-                          whileHover={{ y: -4, scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setSelectedTier(i)}
-                          className={`relative rounded-xl p-5 text-center transition-all ${
-                            selectedTier === i
-                              ? "glass-elevated border-primary glow-sm"
-                              : "glass-base hover:border-border"
-                          }`}
-                        >
-                          {t.bestValue && (
-                            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold">
-                              Best Value
+                  {/* Education Upgrade */}
+                  {canUpgrade && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      <motion.button
+                        whileHover={{ y: -4, scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setUpgraded(!upgraded)}
+                        className={`w-full rounded-xl p-5 text-left transition-all ${
+                          upgraded
+                            ? "glass-elevated border-primary glow-sm"
+                            : "glass-base hover:border-primary/30"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Sparkles size={20} className="text-primary" />
+                            <div>
+                              <p className="font-heading font-bold text-foreground text-sm">
+                                Upgrade to Education Edition
+                                <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">
+                                  Best Value
+                                </span>
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                Includes Competitive + Balanced — Save ~20%
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-heading text-xl font-bold text-foreground">£80</p>
+                            <p className="text-[10px] text-muted-foreground">
+                              vs £100 separate
+                            </p>
+                          </div>
+                        </div>
+                        {upgraded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            className="mt-3 pt-3 border-t border-border/30 flex items-center gap-2"
+                          >
+                            <Check size={14} className="text-primary" />
+                            <span className="text-xs text-muted-foreground">
+                              Education Edition selected — both editions included
                             </span>
-                          )}
-                          <p className="text-sm text-muted-foreground mb-1">{t.label}</p>
-                          <p className="font-heading text-2xl font-bold text-foreground">£{t.price}</p>
-                        </motion.button>
-                      ))}
-                    </div>
-                  </div>
+                          </motion.div>
+                        )}
+                      </motion.button>
+                    </motion.div>
+                  )}
 
-                  {/* Date selection */}
+                  {/* Calendar */}
                   <div>
                     <h3 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
                       <CalendarIcon size={18} className="text-primary" /> Select a Date
                     </h3>
-                    <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-                      {days.slice(0, 21).map((day) => {
-                        const isSelected = selectedDate?.toDateString() === day.toDateString();
-                        return (
-                          <motion.button
-                            key={day.toISOString()}
-                            whileHover={{ y: -2, scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setSelectedDate(day)}
-                            className={`rounded-lg p-2 text-center text-xs transition-all ${
-                              isSelected
-                                ? "bg-primary text-primary-foreground glow-sm"
-                                : "glass-base hover:border-primary/30"
-                            }`}
-                          >
-                            <span className="block text-[10px] opacity-70">
-                              {day.toLocaleDateString("en-GB", { weekday: "short" })}
-                            </span>
-                            <span className="block font-bold text-sm">{day.getDate()}</span>
-                            <span className="block text-[10px] opacity-70">
-                              {day.toLocaleDateString("en-GB", { month: "short" })}
-                            </span>
-                          </motion.button>
-                        );
-                      })}
-                    </div>
-                  </div>
 
-                  {/* Time selection */}
-                  <div>
-                    <h3 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
-                      <Clock size={18} className="text-primary" /> Select a Time
-                    </h3>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                      {timeSlots.map((time) => (
+                    <div className="glass-base rounded-xl p-4">
+                      {/* Month nav */}
+                      <div className="flex items-center justify-between mb-4">
                         <motion.button
-                          key={time}
-                          whileHover={{ y: -2, scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => setSelectedTime(time)}
-                          className={`rounded-lg py-3 text-sm font-medium transition-all ${
-                            selectedTime === time
-                              ? "bg-primary text-primary-foreground glow-sm"
-                              : "glass-base hover:border-primary/30"
-                          }`}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={prevMonth}
+                          className="p-1.5 rounded-lg glass-base hover:border-primary/30 transition-all"
                         >
-                          {time}
+                          <ChevronLeft size={16} />
                         </motion.button>
-                      ))}
+                        <span className="font-heading font-bold text-sm text-foreground">
+                          {monthLabel}
+                        </span>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={nextMonth}
+                          className="p-1.5 rounded-lg glass-base hover:border-primary/30 transition-all"
+                        >
+                          <ChevronRight size={16} />
+                        </motion.button>
+                      </div>
+
+                      {/* Weekday headers */}
+                      <div className="grid grid-cols-7 gap-1 mb-2">
+                        {WEEKDAYS.map((wd) => (
+                          <div
+                            key={wd}
+                            className="text-center text-[10px] font-medium text-muted-foreground py-1"
+                          >
+                            {wd}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Day grid */}
+                      <div className="grid grid-cols-7 gap-1">
+                        {calendarDays.map((date, i) => {
+                          if (!date) {
+                            return <div key={`empty-${i}`} className="aspect-square" />;
+                          }
+
+                          const past = isPast(date);
+                          const sunday = isSunday(date);
+                          const disabled = past || sunday;
+                          const premium = isPremiumDay(date);
+                          const isSelected =
+                            selectedDate?.toDateString() === date.toDateString();
+
+                          return (
+                            <motion.button
+                              key={date.toISOString()}
+                              whileHover={disabled ? {} : { y: -3, scale: 1.03 }}
+                              whileTap={disabled ? {} : { scale: 0.95 }}
+                              onClick={() => !disabled && handleDateClick(date)}
+                              disabled={disabled}
+                              className={`aspect-square rounded-lg flex flex-col items-center justify-center text-xs transition-all relative ${
+                                disabled
+                                  ? "opacity-30 cursor-not-allowed"
+                                  : isSelected
+                                  ? "bg-primary text-primary-foreground glow-sm"
+                                  : premium
+                                  ? "glass-base border-secondary/30 hover:border-secondary/60 hover:shadow-[0_0_12px_hsl(var(--secondary)/0.15)]"
+                                  : "glass-base border-primary/20 hover:border-primary/40 hover:shadow-[0_0_12px_hsl(var(--primary)/0.1)]"
+                              }`}
+                            >
+                              <span className="font-bold text-sm leading-none">
+                                {date.getDate()}
+                              </span>
+                              {!disabled && premium && !isSelected && (
+                                <span className="text-[8px] text-secondary mt-0.5 leading-none">
+                                  +5%
+                                </span>
+                              )}
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Legend */}
+                      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-border/20">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded-sm border border-primary/30 glass-base" />
+                          <span className="text-[10px] text-muted-foreground">
+                            Fri–Sun (Standard)
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded-sm border border-secondary/30 glass-base" />
+                          <span className="text-[10px] text-muted-foreground">
+                            Mon–Thu (Premium +5%)
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -295,7 +479,9 @@ const ServicesBookingPage = () => {
                               <User size={20} className="text-primary" />
                             </div>
                             <div>
-                              <p className="font-heading font-bold text-foreground">{tech.name}</p>
+                              <p className="font-heading font-bold text-foreground">
+                                {tech.name}
+                              </p>
                               <p className="text-xs text-muted-foreground">{tech.role}</p>
                             </div>
                           </div>
@@ -308,29 +494,43 @@ const ServicesBookingPage = () => {
                 {/* RIGHT — Order summary */}
                 <div className="lg:sticky lg:top-28 lg:self-start">
                   <div className="rounded-xl glass-elevated p-6 space-y-4">
-                    <h3 className="font-heading text-lg font-bold text-foreground">Order Summary</h3>
+                    <h3 className="font-heading text-lg font-bold text-foreground">
+                      Order Summary
+                    </h3>
 
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Edition</span>
-                        <span className="text-foreground font-medium">{edition.name}</span>
+                        <span className="text-foreground font-medium">
+                          {activeEditionName}
+                        </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Plan</span>
-                        <span className="text-foreground font-medium">{tier.label}</span>
-                      </div>
+                      {upgraded && canUpgrade && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Upgrade</span>
+                          <span className="text-primary font-medium text-xs">
+                            Education Bundle Applied
+                          </span>
+                        </div>
+                      )}
                       {selectedDate && (
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Date</span>
                           <span className="text-foreground font-medium">
-                            {selectedDate.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                            {selectedDate.toLocaleDateString("en-GB", {
+                              day: "numeric",
+                              month: "short",
+                              weekday: "short",
+                            })}
                           </span>
                         </div>
                       )}
                       {selectedTime && (
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Time</span>
-                          <span className="text-foreground font-medium">{selectedTime}</span>
+                          <span className="text-foreground font-medium">
+                            {timeLabels[selectedTime]}
+                          </span>
                         </div>
                       )}
                       {selectedTech && (
@@ -346,8 +546,16 @@ const ServicesBookingPage = () => {
                     <div className="border-t border-border/30 pt-3 space-y-1">
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Subtotal</span>
-                        <span className="text-foreground">£{tier.price.toFixed(2)}</span>
+                        <span className="text-foreground">£{basePrice.toFixed(2)}</span>
                       </div>
+                      {surcharge > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-secondary">Premium Day (+5%)</span>
+                          <span className="text-secondary">
+                            £{surcharge.toFixed(2)}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">VAT (20%)</span>
                         <span className="text-foreground">£{vat.toFixed(2)}</span>
