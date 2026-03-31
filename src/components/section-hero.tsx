@@ -10,6 +10,7 @@ import { ArrowRight, Cpu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MeshGradient } from "@paper-design/shaders-react";
 import CursorGridOverlay from "./ui/cursor-grid-overlay";
+import { GlassButton } from "./ui/glass-button";
 
 const HeroSection = () => {
   const [isDark, setIsDark] = useState(
@@ -97,7 +98,7 @@ const HeroSection = () => {
       </motion.div>
 
       {/* ── Overlay gradient for readability ── */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/30 to-background" />
 
       {/* ── Hero Content (fades on scroll) ── */}
       <motion.div
@@ -153,19 +154,16 @@ const HeroSection = () => {
           }}
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
-          <Link
-            to="/services"
-            className="group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-primary text-primary-foreground font-semibold text-lg hover:opacity-90 transition-all glow relative overflow-hidden"
-          >
-            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-            Choose Your Edition
-            <ArrowRight size={20} />
+          <Link to="/services">
+            <GlassButton size="lg" className="inline-flex items-center gap-2">
+              Choose Your Edition
+              <ArrowRight size={20} />
+            </GlassButton>
           </Link>
-          <Link
-            to="/builds"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg border border-border text-foreground font-semibold text-lg hover:bg-secondary transition-colors"
-          >
-            View Gaming PCs
+          <Link to="/builds">
+            <GlassButton size="lg" className="inline-flex items-center gap-2">
+              View Gaming PCs
+            </GlassButton>
           </Link>
         </motion.div>
       </motion.div>

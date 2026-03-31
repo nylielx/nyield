@@ -21,6 +21,7 @@ import { Link } from "react-router-dom";
 import { KeyRound, Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/utils/validation";
+import { GlassButton } from "@/components/ui/glass-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -122,16 +123,16 @@ const ForgotPasswordPage = () => {
                   )}
                 </div>
 
-                <Button type="submit" className="w-full glow-sm" disabled={isSubmitting}>
+                <GlassButton type="submit" className="w-full text-center" disabled={isSubmitting}>
                   {isSubmitting ? (
-                    <>
-                      <Loader2 className="animate-spin" />
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 className="animate-spin w-4 h-4" />
                       Sending...
-                    </>
+                    </span>
                   ) : (
                     "Send Reset Link"
                   )}
-                </Button>
+                </GlassButton>
               </form>
             )}
           </CardContent>
