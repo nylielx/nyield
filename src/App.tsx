@@ -10,6 +10,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import ScrollToTop from "@/components/scroll-to-top";
 import Index from "./pages/1-page-index";
 import ServicesPage from "./pages/2-page-services";
 import BuildsPage from "./pages/3-page-builds";
