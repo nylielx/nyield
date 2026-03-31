@@ -9,6 +9,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Cpu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MeshGradient } from "@paper-design/shaders-react";
+import CursorGridOverlay from "./ui/cursor-grid-overlay";
 
 const HeroSection = () => {
   const [isDark, setIsDark] = useState(
