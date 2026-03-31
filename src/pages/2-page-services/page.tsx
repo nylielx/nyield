@@ -22,6 +22,7 @@ import {
 import { osProducts, type OSProduct } from "@/data/osProducts";
 import Navbar from "@/components/component-navbar";
 import SiteFooter from "@/components/component-site-footer";
+import { GlassButton } from "@/components/ui/glass-button";
 
 const iconMap: Record<string, React.ElementType> = {
   Zap,
