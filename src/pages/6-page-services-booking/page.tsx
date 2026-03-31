@@ -1,6 +1,6 @@
 /**
  * =============================================================================
- * SERVICES BOOKING PAGE — Calendar + scheduling for OS editions
+ * SERVICES BOOKING PAGE — PC Spec → Date → Time → Confirm flow
  * =============================================================================
  */
 
@@ -18,9 +18,21 @@ import {
   ChevronRight,
   X,
   ShieldCheck,
+  Cpu,
+  Monitor,
+  MemoryStick,
+  HardDrive,
+  Fan,
+  Zap,
+  Lock,
 } from "lucide-react";
 import Navbar from "@/components/component-navbar";
 import SiteFooter from "@/components/component-site-footer";
+import PCSpecForm from "./components/pc-spec-form";
+import AuthBookingModal from "./components/auth-booking-modal";
+import { useAuth } from "@/contexts/AuthContext";
+import { createBooking, savePCSpecs } from "./services/booking-service";
+import type { PCSpecs } from "./types/booking-types";
 
 /* ── Fixed pricing per edition ─────────────────────────────────────────── */
 const editionPricing: Record<string, { name: string; price: number }> = {
@@ -58,7 +70,6 @@ function getCalendarDays(year: number, month: number) {
   return days;
 }
 
-/** Mon–Thu = Premium days (10% surcharge) */
 function isPremiumDay(date: Date) {
   const day = date.getDay();
   return day >= 1 && day <= 4;
@@ -74,15 +85,37 @@ function isPast(date: Date) {
   return date < today;
 }
 
+/* ── PC Spec icon mapping for summary ─────────────────────────────────── */
+const specIcons: Record<string, React.ElementType> = {
+  gpu: Monitor,
+  cpu: Cpu,
+  ram: MemoryStick,
+  storage: HardDrive,
+  cooling: Fan,
+  powerSupply: Zap,
+};
+
+const specLabels: Record<string, string> = {
+  gpu: "GPU",
+  cpu: "CPU",
+  ram: "RAM",
+  storage: "Storage",
+  cooling: "Cooling",
+  powerSupply: "PSU",
+};
+
 /* ── Component ─────────────────────────────────────────────────────────── */
 const ServicesBookingPage = () => {
   const [searchParams] = useSearchParams();
   const editionId = searchParams.get("edition") || "competitive";
   const edition = editionPricing[editionId] || editionPricing.competitive;
+  const { user } = useAuth();
 
   const canUpgrade = editionId === "competitive" || editionId === "balanced";
   const [upgraded, setUpgraded] = useState(false);
 
+  // Flow state
+  const [pcSpecs, setPcSpecs] = useState<PCSpecs | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedTech, setSelectedTech] = useState<string | null>(null);
@@ -90,6 +123,7 @@ const ServicesBookingPage = () => {
   const [confirmed, setConfirmed] = useState(false);
   const [confetti, setConfetti] = useState(false);
   const [timeModalOpen, setTimeModalOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   // Calendar month navigation
   const now = new Date();
@@ -103,15 +137,30 @@ const ServicesBookingPage = () => {
   });
 
   const activeEditionName = upgraded ? "Education Edition" : edition.name;
+  const activeEditionId = upgraded ? "education" : editionId;
   const basePrice = upgraded ? 80 : edition.price;
-  /* 10% surcharge for Mon–Thu */
   const surcharge = selectedDate && isPremiumDay(selectedDate) ? basePrice * 0.1 : 0;
   const subtotal = basePrice + surcharge;
   const vat = subtotal * 0.2;
   const total = subtotal + vat;
 
-  /* All conditions including explicit technician confirmation */
-  const canConfirm = selectedDate && selectedTime && selectedTech && techConfirmed;
+  // Progressive unlock
+  const specsComplete = !!pcSpecs;
+  const dateSelected = !!selectedDate;
+  const timeSelected = !!selectedTime;
+  const techReady = !!selectedTech && techConfirmed;
+  const canConfirm = specsComplete && dateSelected && timeSelected && techReady;
+
+  // CTA label
+  const ctaLabel = !specsComplete
+    ? "Complete your PC setup"
+    : !dateSelected
+    ? "Select a date"
+    : !timeSelected
+    ? "Select a time"
+    : !techReady
+    ? "Confirm your technician"
+    : "Confirm Booking";
 
   useEffect(() => {
     document.title = `Book ${activeEditionName} — nYield`;
@@ -127,7 +176,7 @@ const ServicesBookingPage = () => {
   };
 
   const handleDateClick = (date: Date) => {
-    if (isPast(date) || isSunday(date)) return;
+    if (!specsComplete || isPast(date) || isSunday(date)) return;
     setSelectedDate(date);
     setSelectedTime(null);
     setTimeModalOpen(true);
@@ -135,7 +184,6 @@ const ServicesBookingPage = () => {
 
   const handleTechSelect = (techId: string) => {
     if (selectedTech === techId && techConfirmed) {
-      // Deselect
       setSelectedTech(null);
       setTechConfirmed(false);
     } else {
@@ -144,7 +192,39 @@ const ServicesBookingPage = () => {
     }
   };
 
-  const handleConfirm = () => {
+  const handleConfirmClick = () => {
+    if (!canConfirm) return;
+    // If not logged in, show auth modal
+    if (!user) {
+      setAuthModalOpen(true);
+      return;
+    }
+    finalizeBooking();
+  };
+
+  const finalizeBooking = async (guestEmail?: string) => {
+    if (!pcSpecs || !selectedDate || !selectedTime || !selectedTech) return;
+    const tech = technicians.find((t) => t.id === selectedTech)!;
+
+    await createBooking({
+      userId: user?.id,
+      guestEmail,
+      edition: activeEditionId,
+      editionName: activeEditionName,
+      pcSpecs,
+      date: selectedDate.toISOString().split("T")[0],
+      time: selectedTime,
+      timeLabel: timeLabels[selectedTime],
+      technicianId: tech.id,
+      technicianName: tech.name,
+      price: basePrice,
+      surcharge,
+      vat,
+      total,
+    });
+
+    await savePCSpecs(pcSpecs);
+
     setConfetti(true);
     setTimeout(() => setConfirmed(true), 600);
     setTimeout(() => setConfetti(false), 3000);
@@ -258,6 +338,20 @@ const ServicesBookingPage = () => {
         )}
       </AnimatePresence>
 
+      {/* Auth Modal */}
+      <AuthBookingModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onAuthenticated={() => {
+          setAuthModalOpen(false);
+          finalizeBooking();
+        }}
+        onGuest={(email) => {
+          setAuthModalOpen(false);
+          finalizeBooking(email);
+        }}
+      />
+
       <section className="pt-32 pb-16">
         <div className="container mx-auto px-6">
           <Link
@@ -272,7 +366,7 @@ const ServicesBookingPage = () => {
               Book <span className="text-gradient-glow">{activeEditionName}</span>
             </h1>
             <p className="text-muted-foreground mb-10">
-              Choose your date, time, and technician.
+              Tell us about your PC, pick a date, and we'll handle the rest.
             </p>
           </motion.div>
 
@@ -297,16 +391,25 @@ const ServicesBookingPage = () => {
                   })}{" "}
                   at {selectedTime && timeLabels[selectedTime]}.
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  {/* TODO: Send confirmation email via backend */}
+                <p className="text-xs text-muted-foreground mb-6">
                   A confirmation email will be sent shortly.
                 </p>
-                <Link
-                  to="/"
-                  className="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity"
-                >
-                  Back to Home
-                </Link>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  {user && (
+                    <Link
+                      to="/account/bookings"
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-lg glass-base hover:border-primary/30 font-semibold text-sm transition-all"
+                    >
+                      View My Bookings
+                    </Link>
+                  )}
+                  <Link
+                    to="/"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity"
+                  >
+                    Back to Home
+                  </Link>
+                </div>
               </motion.div>
             ) : (
               <motion.div key="form" className="grid lg:grid-cols-3 gap-8">
@@ -346,9 +449,7 @@ const ServicesBookingPage = () => {
                           </div>
                           <div className="text-right">
                             <p className="font-heading text-xl font-bold text-foreground">£80</p>
-                            <p className="text-[10px] text-muted-foreground">
-                              vs £100 separate
-                            </p>
+                            <p className="text-[10px] text-muted-foreground">vs £100 separate</p>
                           </div>
                         </div>
                         {upgraded && (
@@ -367,245 +468,304 @@ const ServicesBookingPage = () => {
                     </motion.div>
                   )}
 
-                  {/* Calendar */}
-                  <div>
-                    <h3 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
-                      <CalendarIcon size={18} className="text-primary" /> Select a Date
-                    </h3>
+                  {/* Step 1: PC Specs */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="glass-base rounded-xl p-5"
+                  >
+                    <PCSpecForm
+                      onComplete={(specs) => setPcSpecs(specs)}
+                    />
+                  </motion.div>
 
-                    <div className="glass-base rounded-xl p-4">
-                      {/* Month nav */}
-                      <div className="flex items-center justify-between mb-4">
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={prevMonth}
-                          className="p-1.5 rounded-lg glass-base hover:border-primary/30 transition-all"
-                        >
-                          <ChevronLeft size={16} />
-                        </motion.button>
-                        <span className="font-heading font-bold text-sm text-foreground">
-                          {monthLabel}
-                        </span>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={nextMonth}
-                          className="p-1.5 rounded-lg glass-base hover:border-primary/30 transition-all"
-                        >
-                          <ChevronRight size={16} />
-                        </motion.button>
+                  {/* Step 2: Calendar — locked until specs complete */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: specsComplete ? 1 : 0.4, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="relative"
+                  >
+                    {!specsComplete && (
+                      <div className="absolute inset-0 z-10 rounded-xl flex items-center justify-center bg-background/60 backdrop-blur-[2px]">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Lock size={16} />
+                          <span>Complete your PC setup to unlock</span>
+                        </div>
                       </div>
+                    )}
 
-                      {/* Weekday headers */}
-                      <div className="grid grid-cols-7 gap-1 mb-2">
-                        {WEEKDAYS.map((wd) => (
-                          <div
-                            key={wd}
-                            className="text-center text-[10px] font-medium text-muted-foreground py-1"
+                    <div>
+                      <h3 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
+                        <CalendarIcon size={18} className="text-primary" /> Select a Date
+                      </h3>
+
+                      <div className="glass-base rounded-xl p-4">
+                        {/* Month nav */}
+                        <div className="flex items-center justify-between mb-4">
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={prevMonth}
+                            disabled={!specsComplete}
+                            className="p-1.5 rounded-lg glass-base hover:border-primary/30 transition-all"
                           >
-                            {wd}
+                            <ChevronLeft size={16} />
+                          </motion.button>
+                          <span className="font-heading font-bold text-sm text-foreground">
+                            {monthLabel}
+                          </span>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={nextMonth}
+                            disabled={!specsComplete}
+                            className="p-1.5 rounded-lg glass-base hover:border-primary/30 transition-all"
+                          >
+                            <ChevronRight size={16} />
+                          </motion.button>
+                        </div>
+
+                        {/* Weekday headers */}
+                        <div className="grid grid-cols-7 gap-1 mb-2">
+                          {WEEKDAYS.map((wd) => (
+                            <div
+                              key={wd}
+                              className="text-center text-[10px] font-medium text-muted-foreground py-1"
+                            >
+                              {wd}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Day grid */}
+                        <div className="grid grid-cols-7 gap-1">
+                          {calendarDays.map((date, i) => {
+                            if (!date) {
+                              return <div key={`empty-${i}`} className="aspect-square" />;
+                            }
+
+                            const past = isPast(date);
+                            const sunday = isSunday(date);
+                            const disabled = past || sunday || !specsComplete;
+                            const premium = isPremiumDay(date);
+                            const isSelected =
+                              selectedDate?.toDateString() === date.toDateString();
+
+                            let dayClasses: string;
+                            if (disabled) {
+                              dayClasses = "opacity-30 cursor-not-allowed bg-transparent";
+                            } else if (isSelected && premium) {
+                              dayClasses =
+                                "bg-primary text-primary-foreground glow ring-2 ring-primary/50 shadow-[0_0_20px_hsl(var(--primary)/0.4)]";
+                            } else if (isSelected) {
+                              dayClasses =
+                                "bg-primary text-primary-foreground glow-sm ring-2 ring-primary/40";
+                            } else if (premium) {
+                              dayClasses =
+                                "bg-muted/60 border border-muted-foreground/20 text-foreground hover:bg-muted hover:border-muted-foreground/40 hover:shadow-[0_0_14px_hsl(var(--muted-foreground)/0.12)]";
+                            } else {
+                              dayClasses =
+                                "glass-base border-primary/20 text-foreground hover:border-primary/40 hover:bg-primary/10 hover:shadow-[0_0_12px_hsl(var(--primary)/0.12)]";
+                            }
+
+                            return (
+                              <motion.button
+                                key={date.toISOString()}
+                                whileHover={disabled ? {} : { y: -3, scale: 1.05 }}
+                                whileTap={disabled ? {} : { scale: 0.95 }}
+                                onClick={() => handleDateClick(date)}
+                                disabled={disabled}
+                                className={`aspect-square rounded-lg flex flex-col items-center justify-center text-xs transition-all relative ${dayClasses}`}
+                              >
+                                <span className="font-bold text-sm leading-none">
+                                  {date.getDate()}
+                                </span>
+                                {!disabled && premium && !isSelected && (
+                                  <span className="text-[8px] text-muted-foreground mt-0.5 leading-none">
+                                    +10%
+                                  </span>
+                                )}
+                              </motion.button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Legend */}
+                        <div className="flex flex-col gap-2.5 mt-5 pt-3 border-t border-border/20">
+                          <div className="flex items-center gap-2.5">
+                            <div className="relative w-3.5 h-3.5 flex items-center justify-center">
+                              <div
+                                className="absolute inset-0 rounded-full"
+                                style={{
+                                  background: "conic-gradient(from 0deg, hsl(var(--muted-foreground) / 0.05), hsl(var(--muted-foreground) / 0.35), hsl(var(--muted-foreground) / 0.05))",
+                                  animation: "spin 3s linear infinite",
+                                }}
+                              />
+                              <div
+                                className="relative w-2 h-2 rounded-full bg-muted-foreground/60"
+                                style={{
+                                  boxShadow: "0 0 6px hsl(var(--muted-foreground) / 0.3)",
+                                  animation: "pulse 2s ease-in-out infinite",
+                                }}
+                              />
+                            </div>
+                            <span className="text-[11px] text-muted-foreground">
+                              Mon – Thu — <span className="text-foreground font-medium">Premium (+10%)</span>
+                            </span>
                           </div>
-                        ))}
+                          <div className="flex items-center gap-2.5">
+                            <div className="relative w-3.5 h-3.5 flex items-center justify-center">
+                              <div
+                                className="absolute inset-0 rounded-full"
+                                style={{
+                                  background: "conic-gradient(from 0deg, hsl(var(--primary) / 0.05), hsl(var(--primary) / 0.4), hsl(var(--primary) / 0.05))",
+                                  animation: "spin 3s linear infinite",
+                                }}
+                              />
+                              <div
+                                className="relative w-2 h-2 rounded-full bg-primary/70"
+                                style={{
+                                  boxShadow: "0 0 6px hsl(var(--primary) / 0.35)",
+                                  animation: "pulse 2s ease-in-out infinite",
+                                }}
+                              />
+                            </div>
+                            <span className="text-[11px] text-muted-foreground">
+                              Fri – Sun — <span className="text-foreground font-medium">Standard</span>
+                            </span>
+                          </div>
+                        </div>
                       </div>
+                    </div>
+                  </motion.div>
 
-                      {/* Day grid */}
-                      <div className="grid grid-cols-7 gap-1">
-                        {calendarDays.map((date, i) => {
-                          if (!date) {
-                            return <div key={`empty-${i}`} className="aspect-square" />;
-                          }
+                  {/* Step 3: Technician selection — locked until time selected */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: timeSelected ? 1 : 0.4, y: 0 }}
+                    transition={{ delay: 0.25 }}
+                    className="relative"
+                  >
+                    {!timeSelected && (
+                      <div className="absolute inset-0 z-10 rounded-xl flex items-center justify-center bg-background/60 backdrop-blur-[2px]">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Lock size={16} />
+                          <span>{!specsComplete ? "Complete PC setup first" : !dateSelected ? "Select a date first" : "Select a time slot"}</span>
+                        </div>
+                      </div>
+                    )}
 
-                          const past = isPast(date);
-                          const sunday = isSunday(date);
-                          const disabled = past || sunday;
-                          const premium = isPremiumDay(date);
-                          const isSelected =
-                            selectedDate?.toDateString() === date.toDateString();
-
-                          /* ── Day cell styling ──
-                           * Premium (Mon–Thu): darker, amber-tinted border, distinct from standard
-                           * Standard (Fri–Sat): primary-tinted, feels like the better-value pick
-                           * Selected: strong primary bg + glow for both groups
-                           */
-                          let dayClasses: string;
-                          if (disabled) {
-                            dayClasses = "opacity-30 cursor-not-allowed bg-transparent";
-                          } else if (isSelected && premium) {
-                            dayClasses =
-                              "bg-primary text-primary-foreground glow ring-2 ring-primary/50 shadow-[0_0_20px_hsl(var(--primary)/0.4)]";
-                          } else if (isSelected) {
-                            dayClasses =
-                              "bg-primary text-primary-foreground glow-sm ring-2 ring-primary/40";
-                          } else if (premium) {
-                            dayClasses =
-                              "bg-muted/60 border border-muted-foreground/20 text-foreground hover:bg-muted hover:border-muted-foreground/40 hover:shadow-[0_0_14px_hsl(var(--muted-foreground)/0.12)]";
-                          } else {
-                            dayClasses =
-                              "glass-base border-primary/20 text-foreground hover:border-primary/40 hover:bg-primary/10 hover:shadow-[0_0_12px_hsl(var(--primary)/0.12)]";
-                          }
+                    <div>
+                      <h3 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
+                        <User size={18} className="text-primary" /> Choose Your Technician
+                      </h3>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        {technicians.map((tech) => {
+                          const isSelected = selectedTech === tech.id;
+                          const isConfirmed = isSelected && techConfirmed;
 
                           return (
-                            <motion.button
-                              key={date.toISOString()}
-                              whileHover={disabled ? {} : { y: -3, scale: 1.05 }}
-                              whileTap={disabled ? {} : { scale: 0.95 }}
-                              onClick={() => !disabled && handleDateClick(date)}
-                              disabled={disabled}
-                              className={`aspect-square rounded-lg flex flex-col items-center justify-center text-xs transition-all relative ${dayClasses}`}
-                            >
-                              <span className="font-bold text-sm leading-none">
-                                {date.getDate()}
-                              </span>
-                              {!disabled && premium && !isSelected && (
-                                <span className="text-[8px] text-muted-foreground mt-0.5 leading-none">
-                                  +10%
-                                </span>
-                              )}
-                            </motion.button>
+                            <div key={tech.id} className="space-y-0">
+                              <motion.button
+                                whileHover={{ y: -4, scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => timeSelected && handleTechSelect(tech.id)}
+                                disabled={!timeSelected}
+                                className={`w-full rounded-xl p-5 text-left transition-all ${
+                                  isConfirmed
+                                    ? "glass-elevated border-primary glow-sm"
+                                    : isSelected
+                                    ? "glass-elevated border-primary/50"
+                                    : "glass-base hover:border-border"
+                                }`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                                      isConfirmed ? "bg-primary/30" : "bg-primary/20"
+                                    }`}
+                                  >
+                                    {isConfirmed ? (
+                                      <ShieldCheck size={20} className="text-primary" />
+                                    ) : (
+                                      <User size={20} className="text-primary" />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-heading font-bold text-foreground">{tech.name}</p>
+                                    <p className="text-xs text-muted-foreground">{tech.role}</p>
+                                  </div>
+                                  {isConfirmed && (
+                                    <Check size={16} className="ml-auto text-primary" />
+                                  )}
+                                </div>
+                              </motion.button>
+
+                              <AnimatePresence>
+                                {isSelected && !isConfirmed && (
+                                  <motion.div
+                                    initial={{ opacity: 0, height: 0, y: -8 }}
+                                    animate={{ opacity: 1, height: "auto", y: 0 }}
+                                    exit={{ opacity: 0, height: 0, y: -8 }}
+                                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                    className="overflow-hidden"
+                                  >
+                                    <div className="mt-2 p-3 rounded-lg glass-base border border-primary/20 flex items-center justify-between gap-3">
+                                      <p className="text-xs text-muted-foreground">
+                                        Confirm <span className="text-foreground font-medium">{tech.name}</span> as your technician?
+                                      </p>
+                                      <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => setTechConfirmed(true)}
+                                        className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold glow-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+                                      >
+                                        Confirm {tech.name}
+                                      </motion.button>
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
                           );
                         })}
                       </div>
-
-                      {/* ── Legend with animated indicators ── */}
-                      <div className="flex flex-col gap-2.5 mt-5 pt-3 border-t border-border/20">
-                        {/* Premium legend */}
-                        <div className="flex items-center gap-2.5">
-                          <div className="relative w-3.5 h-3.5 flex items-center justify-center">
-                            {/* Outer revolving glow ring */}
-                            <div
-                              className="absolute inset-0 rounded-full"
-                              style={{
-                                background:
-                                  "conic-gradient(from 0deg, hsl(var(--muted-foreground) / 0.05), hsl(var(--muted-foreground) / 0.35), hsl(var(--muted-foreground) / 0.05))",
-                                animation: "spin 3s linear infinite",
-                              }}
-                            />
-                            {/* Inner dot */}
-                            <div
-                              className="relative w-2 h-2 rounded-full bg-muted-foreground/60"
-                              style={{
-                                boxShadow: "0 0 6px hsl(var(--muted-foreground) / 0.3)",
-                                animation: "pulse 2s ease-in-out infinite",
-                              }}
-                            />
-                          </div>
-                          <span className="text-[11px] text-muted-foreground">
-                            Mon – Thu — <span className="text-foreground font-medium">Premium (+10%)</span>
-                          </span>
-                        </div>
-                        {/* Standard legend */}
-                        <div className="flex items-center gap-2.5">
-                          <div className="relative w-3.5 h-3.5 flex items-center justify-center">
-                            <div
-                              className="absolute inset-0 rounded-full"
-                              style={{
-                                background:
-                                  "conic-gradient(from 0deg, hsl(var(--primary) / 0.05), hsl(var(--primary) / 0.4), hsl(var(--primary) / 0.05))",
-                                animation: "spin 3s linear infinite",
-                              }}
-                            />
-                            <div
-                              className="relative w-2 h-2 rounded-full bg-primary/70"
-                              style={{
-                                boxShadow: "0 0 6px hsl(var(--primary) / 0.35)",
-                                animation: "pulse 2s ease-in-out infinite",
-                              }}
-                            />
-                          </div>
-                          <span className="text-[11px] text-muted-foreground">
-                            Fri – Sun — <span className="text-foreground font-medium">Standard</span>
-                          </span>
-                        </div>
-                      </div>
                     </div>
-                  </div>
-
-                  {/* ── Technician selection with confirmation dropdown ── */}
-                  <div>
-                    <h3 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
-                      <User size={18} className="text-primary" /> Choose Your Technician
-                    </h3>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      {technicians.map((tech) => {
-                        const isSelected = selectedTech === tech.id;
-                        const isConfirmed = isSelected && techConfirmed;
-
-                        return (
-                          <div key={tech.id} className="space-y-0">
-                            <motion.button
-                              whileHover={{ y: -4, scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => handleTechSelect(tech.id)}
-                              className={`w-full rounded-xl p-5 text-left transition-all ${
-                                isConfirmed
-                                  ? "glass-elevated border-primary glow-sm"
-                                  : isSelected
-                                  ? "glass-elevated border-primary/50"
-                                  : "glass-base hover:border-border"
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                                    isConfirmed
-                                      ? "bg-primary/30"
-                                      : "bg-primary/20"
-                                  }`}
-                                >
-                                  {isConfirmed ? (
-                                    <ShieldCheck size={20} className="text-primary" />
-                                  ) : (
-                                    <User size={20} className="text-primary" />
-                                  )}
-                                </div>
-                                <div>
-                                  <p className="font-heading font-bold text-foreground">
-                                    {tech.name}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">{tech.role}</p>
-                                </div>
-                                {isConfirmed && (
-                                  <Check size={16} className="ml-auto text-primary" />
-                                )}
-                              </div>
-                            </motion.button>
-
-                            {/* Confirmation dropdown — appears after selecting, before confirming */}
-                            <AnimatePresence>
-                              {isSelected && !isConfirmed && (
-                                <motion.div
-                                  initial={{ opacity: 0, height: 0, y: -8 }}
-                                  animate={{ opacity: 1, height: "auto", y: 0 }}
-                                  exit={{ opacity: 0, height: 0, y: -8 }}
-                                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                                  className="overflow-hidden"
-                                >
-                                  <div className="mt-2 p-3 rounded-lg glass-base border border-primary/20 flex items-center justify-between gap-3">
-                                    <p className="text-xs text-muted-foreground">
-                                      Confirm <span className="text-foreground font-medium">{tech.name}</span> as your technician?
-                                    </p>
-                                    <motion.button
-                                      whileHover={{ scale: 1.05 }}
-                                      whileTap={{ scale: 0.95 }}
-                                      onClick={() => setTechConfirmed(true)}
-                                      className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold glow-sm hover:opacity-90 transition-opacity whitespace-nowrap"
-                                    >
-                                      Confirm {tech.name}
-                                    </motion.button>
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+                  </motion.div>
                 </div>
 
-                {/* RIGHT — Order summary */}
-                <div className="lg:sticky lg:top-28 lg:self-start">
+                {/* RIGHT — Summary panel */}
+                <div className="lg:sticky lg:top-28 lg:self-start space-y-4">
+                  {/* PC Summary Card */}
+                  {pcSpecs && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="rounded-xl glass-elevated p-5"
+                    >
+                      <h4 className="font-heading text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                        <Cpu size={14} className="text-primary" /> Your PC
+                      </h4>
+                      <div className="space-y-2">
+                        {(Object.keys(specLabels) as Array<keyof typeof specLabels>).map((key) => {
+                          const val = pcSpecs[key as keyof PCSpecs];
+                          if (!val) return null;
+                          const Icon = specIcons[key];
+                          return (
+                            <div key={key} className="flex items-center gap-2 text-xs">
+                              {Icon && <Icon size={12} className="text-muted-foreground shrink-0" />}
+                              <span className="text-muted-foreground">{specLabels[key]}</span>
+                              <span className="ml-auto text-foreground font-medium text-right">{val}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Order Summary */}
                   <div className="rounded-xl glass-elevated p-6 space-y-4">
                     <h3 className="font-heading text-lg font-bold text-foreground">
                       Order Summary
@@ -614,36 +774,26 @@ const ServicesBookingPage = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Edition</span>
-                        <span className="text-foreground font-medium">
-                          {activeEditionName}
-                        </span>
+                        <span className="text-foreground font-medium">{activeEditionName}</span>
                       </div>
                       {upgraded && canUpgrade && (
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Upgrade</span>
-                          <span className="text-primary font-medium text-xs">
-                            Education Bundle Applied
-                          </span>
+                          <span className="text-primary font-medium text-xs">Education Bundle Applied</span>
                         </div>
                       )}
                       {selectedDate && (
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Date</span>
                           <span className="text-foreground font-medium">
-                            {selectedDate.toLocaleDateString("en-GB", {
-                              day: "numeric",
-                              month: "short",
-                              weekday: "short",
-                            })}
+                            {selectedDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", weekday: "short" })}
                           </span>
                         </div>
                       )}
                       {selectedTime && (
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Time</span>
-                          <span className="text-foreground font-medium">
-                            {timeLabels[selectedTime]}
-                          </span>
+                          <span className="text-foreground font-medium">{timeLabels[selectedTime]}</span>
                         </div>
                       )}
                       {selectedTech && (
@@ -651,9 +801,7 @@ const ServicesBookingPage = () => {
                           <span className="text-muted-foreground">Technician</span>
                           <span className="text-foreground font-medium">
                             {technicians.find((t) => t.id === selectedTech)?.name}
-                            {techConfirmed && (
-                              <span className="ml-1.5 text-primary text-[10px]">✓ Confirmed</span>
-                            )}
+                            {techConfirmed && <span className="ml-1.5 text-primary text-[10px]">✓</span>}
                           </span>
                         </div>
                       )}
@@ -667,9 +815,7 @@ const ServicesBookingPage = () => {
                       {surcharge > 0 && (
                         <div className="flex justify-between text-sm">
                           <span className="text-primary/70">Premium Day (+10%)</span>
-                          <span className="text-primary/70">
-                            £{surcharge.toFixed(2)}
-                          </span>
+                          <span className="text-primary/70">£{surcharge.toFixed(2)}</span>
                         </div>
                       )}
                       <div className="flex justify-between text-sm">
@@ -689,12 +835,10 @@ const ServicesBookingPage = () => {
                       </div>
                     </div>
 
-                    {/* TODO: Integrate Stripe payment */}
-                    {/* TODO: Connect to backend booking system */}
                     <motion.button
                       whileHover={canConfirm ? { scale: 1.02 } : {}}
                       whileTap={canConfirm ? { scale: 0.98 } : {}}
-                      onClick={handleConfirm}
+                      onClick={handleConfirmClick}
                       disabled={!canConfirm}
                       className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
                         canConfirm
@@ -702,14 +846,16 @@ const ServicesBookingPage = () => {
                           : "bg-muted text-muted-foreground cursor-not-allowed"
                       }`}
                     >
-                      {canConfirm ? "Confirm Booking" : "Complete all selections"}
+                      {ctaLabel}
                     </motion.button>
 
                     {!canConfirm && (
                       <p className="text-[10px] text-muted-foreground text-center">
-                        {!selectedDate
+                        {!specsComplete
+                          ? "Fill in your PC specifications above"
+                          : !dateSelected
                           ? "Select a date to continue"
-                          : !selectedTime
+                          : !timeSelected
                           ? "Select a time slot"
                           : !selectedTech
                           ? "Choose a technician"
