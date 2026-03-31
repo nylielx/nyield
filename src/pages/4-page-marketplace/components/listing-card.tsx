@@ -1,16 +1,12 @@
 /**
- * =============================================================================
- * LISTING CARD — Single marketplace listing card component
- * =============================================================================
- * Includes favourite heart icon and save-to-list button.
- * =============================================================================
+ * LISTING CARD — Marketplace card with AwardBadge verification tiers,
+ * animated like/save controls (top-left), and badge (top-right).
  */
 
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
-  ShieldCheck,
   Cpu,
   Monitor,
   MemoryStick,
@@ -21,9 +17,14 @@ import {
   Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AwardBadge } from "@/components/ui/award-badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { MarketplaceListing } from "../types/marketplace-types";
 
-/** Tag color styles */
 const getTagStyle = (tag: string) => {
   switch (tag) {
     case "Best Value":
@@ -38,6 +39,22 @@ const getTagStyle = (tag: string) => {
   }
 };
 
+/** Map verification tier to AwardBadge props */
+const tierToBadge = (tier: "gold" | "silver" | "bronze") => {
+  const map = {
+    gold: { type: "product-of-the-month" as const, place: 1 as const },
+    silver: { type: "product-of-the-week" as const, place: 2 as const },
+    bronze: { type: "product-of-the-day" as const, place: 3 as const },
+  };
+  return map[tier];
+};
+
+const tierTooltips: Record<string, string> = {
+  gold: "Advanced verified: latency, WiFi, FPS, stability, and multi-game benchmark tested",
+  silver: "Performance verified: basic third-party benchmark suite completed",
+  bronze: "Seller verified: trusted seller listing",
+};
+
 interface ListingCardProps {
   listing: MarketplaceListing;
   index: number;
@@ -46,6 +63,13 @@ interface ListingCardProps {
 const ListingCard = ({ listing, index }: ListingCardProps) => {
   const [favourited, setFavourited] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  const verification = (listing as any).verification_tier ?? {
+    tier: listing.verified ? "gold" : "bronze",
+    label: listing.verified ? "Advanced Verified" : "Seller Verified",
+  };
+
+  const badgeProps = tierToBadge(verification.tier);
 
   return (
     <motion.div
@@ -71,42 +95,71 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
         </div>
       )}
 
-      {/* Favourite + Save buttons — top right */}
+      {/* Like + Save — TOP LEFT */}
       {listing.isActive && (
-        <div className="absolute top-3 right-3 z-10 flex gap-1.5">
-          <button
+        <div className="absolute top-3 left-3 flex gap-1.5 z-20">
+          <motion.button
             onClick={() => setFavourited(!favourited)}
-            className="w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background transition-colors"
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.85 }}
+            className="w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center transition-colors"
             title={favourited ? "Remove from favourites" : "Add to favourites"}
           >
-            <Heart
-              size={14}
-              className={favourited ? "fill-primary text-primary" : "text-muted-foreground"}
-            />
-          </button>
-          <button
+            <motion.div
+              animate={favourited ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Heart
+                size={14}
+                className={`transition-colors duration-200 ${
+                  favourited ? "fill-primary text-primary" : "text-muted-foreground"
+                }`}
+              />
+            </motion.div>
+          </motion.button>
+          <motion.button
             onClick={() => setSaved(!saved)}
-            className="w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background transition-colors"
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.85 }}
+            className="w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center transition-colors"
             title={saved ? "Remove from list" : "Save to list"}
           >
-            <Bookmark
-              size={14}
-              className={saved ? "fill-primary text-primary" : "text-muted-foreground"}
-            />
-          </button>
+            <motion.div
+              animate={saved ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Bookmark
+                size={14}
+                className={`transition-colors duration-200 ${
+                  saved ? "fill-primary text-primary" : "text-muted-foreground"
+                }`}
+              />
+            </motion.div>
+          </motion.button>
+        </div>
+      )}
+
+      {/* Verification badge — TOP RIGHT */}
+      {listing.isActive && (
+        <div className="absolute top-3 right-3 z-20">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <AwardBadge type={badgeProps.type} place={badgeProps.place} size="sm" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-[220px] text-xs">
+              {tierTooltips[verification.tier]}
+            </TooltipContent>
+          </Tooltip>
         </div>
       )}
 
       {/* Card Header */}
-      <div className="p-5 border-b border-border">
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="font-heading text-lg font-bold text-foreground leading-tight pr-16">{listing.title}</h3>
-          {listing.verified && (
-            <div className="flex items-center gap-1 text-primary text-xs font-semibold shrink-0 ml-2">
-              <ShieldCheck size={14} /> Verified
-            </div>
-          )}
-        </div>
+      <div className="p-5 pt-14 border-b border-border">
+        <h3 className="font-heading text-lg font-bold text-foreground leading-tight mb-2">
+          {listing.title}
+        </h3>
 
         <div className="flex flex-wrap gap-1.5 mb-3">
           {listing.tags.map((tag) => (
@@ -131,7 +184,6 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
       {/* Stress Test Summary */}
       <div className="p-5 border-b border-border">
         <p className="text-xs font-semibold text-primary mb-3 flex items-center gap-1"><Gauge size={12} /> STRESS TEST RESULTS</p>
-
         <div className="space-y-2.5">
           <div>
             <div className="flex justify-between text-xs mb-1">
@@ -142,7 +194,6 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
               <motion.div className="h-1.5 rounded-full bg-primary" initial={{ width: 0 }} whileInView={{ width: `${listing.benchmarks.cpuScore}%` }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2 }} />
             </div>
           </div>
-
           <div>
             <div className="flex justify-between text-xs mb-1">
               <span className="text-muted-foreground">GPU Score</span>
@@ -152,7 +203,6 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
               <motion.div className="h-1.5 rounded-full bg-primary" initial={{ width: 0 }} whileInView={{ width: `${listing.benchmarks.gpuScore}%` }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.3 }} />
             </div>
           </div>
-
           <div className="flex justify-between text-xs">
             <span className="text-muted-foreground">RAM Stability</span>
             <span className="text-foreground font-semibold">{listing.benchmarks.ramStability}%</span>
@@ -164,12 +214,11 @@ const ListingCard = ({ listing, index }: ListingCardProps) => {
         </div>
       </div>
 
-      {/* Best For + Buttons */}
+      {/* Best For + Buttons — pinned to bottom */}
       <div className="p-5 mt-auto">
         <p className="text-xs text-muted-foreground mb-3">
           <span className="font-semibold text-foreground">Best For:</span> {listing.bestFor}
         </p>
-
         <div className="space-y-2">
           {listing.isActive ? (
             <Link to={`/marketplace/${listing.id}`}>

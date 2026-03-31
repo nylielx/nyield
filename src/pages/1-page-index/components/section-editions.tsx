@@ -1,6 +1,6 @@
 /**
  * EDITIONS SECTION — Choose Your Performance Level
- * Core conversion section with 3 edition cards
+ * Core conversion section with 3 equal-height edition cards
  */
 
 import { useState } from "react";
@@ -61,16 +61,12 @@ const EditionsSection = () => {
 
   return (
     <section className="py-24 bg-background relative overflow-hidden">
-      {/* Subtle background glow */}
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-[0.04] pointer-events-none"
-        style={{
-          background: "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)",
-        }}
+        style={{ background: "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)" }}
       />
 
       <div className="container mx-auto px-6 max-w-6xl relative z-10">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -85,8 +81,7 @@ const EditionsSection = () => {
           </p>
         </motion.div>
 
-        {/* Edition Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
           {editions.map((edition, index) => {
             const Icon = edition.icon;
             const isHovered = hoveredId === edition.id;
@@ -100,7 +95,7 @@ const EditionsSection = () => {
                 transition={{ delay: index * 0.12, duration: 0.5 }}
                 onMouseEnter={() => setHoveredId(edition.id)}
                 onMouseLeave={() => setHoveredId(null)}
-                className={`relative rounded-2xl border p-8 transition-all duration-500 cursor-pointer group ${
+                className={`relative rounded-2xl border p-8 transition-all duration-500 cursor-pointer group flex flex-col ${
                   edition.popular
                     ? "border-primary/40 bg-card"
                     : "border-border/50 bg-card/50"
@@ -112,58 +107,58 @@ const EditionsSection = () => {
                   transform: isHovered ? "translateY(-8px)" : "translateY(0)",
                 }}
               >
-                {/* Popular badge */}
                 {edition.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
                     Most Popular
                   </div>
                 )}
 
-                {/* Icon */}
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
-                  <Icon className="w-6 h-6 text-primary" />
+                {/* Main content area — flex-1 pushes CTA down */}
+                <div className="flex-1">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
+                    <Icon className="w-6 h-6 text-primary" />
+                  </div>
+
+                  <h3 className="font-heading text-2xl font-bold text-foreground mb-2">
+                    {edition.name}
+                  </h3>
+                  <p className="text-muted-foreground text-sm mb-6">
+                    {edition.tagline}
+                  </p>
+
+                  <ul className="space-y-3 mb-6">
+                    {edition.benefits.map((benefit) => (
+                      <li key={benefit} className="flex items-start gap-3 text-sm text-foreground/80">
+                        <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <AnimatePresence>
+                    {isHovered && (
+                      <motion.p
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="text-sm text-muted-foreground mb-6 overflow-hidden"
+                      >
+                        {edition.details}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
                 </div>
 
-                {/* Title & tagline */}
-                <h3 className="font-heading text-2xl font-bold text-foreground mb-2">
-                  {edition.name}
-                </h3>
-                <p className="text-muted-foreground text-sm mb-6">
-                  {edition.tagline}
-                </p>
-
-                {/* Benefits */}
-                <ul className="space-y-3 mb-6">
-                  {edition.benefits.map((benefit) => (
-                    <li key={benefit} className="flex items-start gap-3 text-sm text-foreground/80">
-                      <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                      <span>{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* Expanded details on hover */}
-                <AnimatePresence>
-                  {isHovered && (
-                    <motion.p
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="text-sm text-muted-foreground mb-6 overflow-hidden"
-                    >
-                      {edition.details}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-
-                {/* CTA */}
-                <Link
-                  to="/services"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-primary group-hover:gap-3 transition-all duration-300"
-                >
-                  Learn More <ArrowRight className="w-4 h-4" />
-                </Link>
+                {/* CTA — always at bottom */}
+                <div className="mt-6">
+                  <Link
+                    to="/services"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-primary group-hover:gap-3 transition-all duration-300"
+                  >
+                    Learn More <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
               </motion.div>
             );
           })}

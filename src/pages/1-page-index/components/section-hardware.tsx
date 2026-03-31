@@ -1,5 +1,5 @@
 /**
- * HARDWARE ECOSYSTEM SECTION — Lightweight cards linking to Builds & Marketplace
+ * HARDWARE ECOSYSTEM SECTION — Equal-height cards with bottom-aligned CTAs
  */
 
 import { motion } from "framer-motion";
@@ -34,7 +34,6 @@ const HardwareSection = () => {
   return (
     <section className="py-24 bg-background border-y border-border/20">
       <div className="container mx-auto px-6 max-w-6xl">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -49,8 +48,7 @@ const HardwareSection = () => {
           </p>
         </motion.div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
           {hardware.map((item, index) => {
             const Icon = item.icon;
             return (
@@ -60,7 +58,7 @@ const HardwareSection = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
-                className="group rounded-2xl border border-border/50 bg-card/50 p-8 hover:border-primary/30 transition-all duration-500"
+                className="group rounded-2xl border border-border/50 bg-card/50 p-8 hover:border-primary/30 transition-all duration-500 flex flex-col"
                 style={{
                   transition: "transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease",
                 }}
@@ -73,24 +71,26 @@ const HardwareSection = () => {
                   (e.currentTarget as HTMLElement).style.boxShadow = "none";
                 }}
               >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
-                  <Icon className="w-6 h-6 text-primary" />
+                <div className="flex-1">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
+                    <Icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-heading text-xl font-bold text-foreground mb-3">
+                    {item.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {item.description}
+                  </p>
                 </div>
 
-                <h3 className="font-heading text-xl font-bold text-foreground mb-3">
-                  {item.title}
-                </h3>
-
-                <p className="text-muted-foreground text-sm mb-8 leading-relaxed">
-                  {item.description}
-                </p>
-
-                <Link
-                  to={item.link}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-primary group-hover:gap-3 transition-all duration-300"
-                >
-                  {item.cta} <ArrowRight className="w-4 h-4" />
-                </Link>
+                <div className="mt-8">
+                  <Link
+                    to={item.link}
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-primary group-hover:gap-3 transition-all duration-300"
+                  >
+                    {item.cta} <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
               </motion.div>
             );
           })}
