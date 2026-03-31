@@ -122,7 +122,7 @@ const ServicesPage = () => {
             transition={{ duration: 0.5 }}
           >
             <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4">
-              Custom <span className="text-gradient">Operating Systems</span>
+              Custom <span className="text-gradient-glow-wrapper"><span className="text-gradient-glow">Operating Systems</span></span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-3xl">
               Performance-tuned Windows configurations that squeeze every last

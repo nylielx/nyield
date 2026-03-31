@@ -46,7 +46,7 @@ const AboutSection = () => {
             className="text-center mb-16"
           >
             <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-              The <span className="text-gradient">Mission</span>
+              The <span className="text-gradient-glow-wrapper"><span className="text-gradient-glow">Mission</span></span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8">
               nYield exists to democratize PC performance. We believe every
@@ -63,7 +63,7 @@ const AboutSection = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.15 }}
-                className="text-center p-6 rounded-xl border border-border bg-card"
+                className="text-center p-6 rounded-xl border border-border glass-card"
               >
                 <value.icon className="w-10 h-10 text-primary mx-auto mb-4" />
                 <h3 className="font-heading text-lg font-bold text-foreground mb-2">
