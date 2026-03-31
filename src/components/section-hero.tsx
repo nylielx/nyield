@@ -65,31 +65,12 @@ const HeroSection = () => {
         />
       </motion.div>
 
-      {/* ── LAYER 2: Grid overlay (mid parallax) ── */}
+      {/* ── LAYER 2: Cursor-follow grid overlay ── */}
       <motion.div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0"
         style={{ y: midLayerY }}
       >
-        {/* SVG grid pattern */}
-        <svg className="absolute inset-0 w-full h-full opacity-[0.04]">
-          <defs>
-            <pattern
-              id="hero-grid"
-              width="60"
-              height="60"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M 60 0 L 0 0 0 60"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="0.5"
-                className="text-foreground"
-              />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#hero-grid)" />
-        </svg>
+        <CursorGridOverlay />
       </motion.div>
 
       {/* ── LAYER 3: Glow blobs (fastest parallax) ── */}
