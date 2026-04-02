@@ -33,7 +33,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ success: boolean; message: string }>;
   updateProfile: (updates: Partial<Pick<AuthUser, "fullName" | "avatar">>) => void;
-  isAdmin: boolean;
+  isBusiness: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
