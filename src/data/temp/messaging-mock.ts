@@ -5,6 +5,7 @@
  */
 
 export type MessageType = "text" | "build-card" | "listing-card" | "specs-card" | "ai-suggestion";
+export type ConversationType = "business" | "user" | "support" | "order";
 
 export interface ChatMessage {
   id: string;
@@ -14,24 +15,63 @@ export interface ChatMessage {
   type: MessageType;
   timestamp: string;
   read: boolean;
-  /** Structured data for rich message cards */
   cardData?: Record<string, string | number>;
+}
+
+export interface LinkedListing {
+  id: string;
+  title: string;
+  price: number;
+  cpu?: string;
+  gpu?: string;
+  ram?: string;
+  storage?: string;
+}
+
+export interface LinkedOrder {
+  orderId: string;
+  status: "building" | "testing" | "shipped" | "delivered";
+  estimatedDelivery: string;
+  trackingNumber?: string;
+}
+
+export interface LinkedOffer {
+  offerAmount: number;
+  listingPrice: number;
+  listingTitle: string;
+  status: "pending" | "accepted" | "declined";
+}
+
+export interface ConversationParticipant {
+  userId: string;
+  name: string;
+  avatar: string;
+  role: "buyer" | "seller" | "support";
+  isOnline: boolean;
+  lastSeen?: string;
+  username?: string;
 }
 
 export interface Conversation {
   id: string;
-  type: "buyer-seller" | "support";
-  participants: { userId: string; name: string; avatar: string; role: "buyer" | "seller" | "support"; isOnline: boolean; lastSeen?: string }[];
+  type: ConversationType;
+  participants: ConversationParticipant[];
   lastMessage: string;
   lastMessageTime: string;
   unreadCount: number;
-  /** Context: linked listing */
-  linkedListingId?: string;
-  linkedListingTitle?: string;
-  /** Business info for seller conversations */
+  /** Linked listing context */
+  linkedListing?: LinkedListing;
+  /** Order context (for order-type conversations) */
+  linkedOrder?: LinkedOrder;
+  /** Offer context (for offer-type conversations) */
+  linkedOffer?: LinkedOffer;
+  /** Business info — only present for business-type conversations */
   businessName?: string;
+  businessSlug?: string;
   businessRating?: number;
   verified?: boolean;
+  /** User profile references */
+  userProfileUsername?: string;
 }
 
 export interface AiSuggestion {
@@ -49,43 +89,73 @@ export interface AiSuggestion {
 export const conversationsMock: Conversation[] = [
   {
     id: "conv-1",
-    type: "buyer-seller",
+    type: "business",
     participants: [
-      { userId: "user-001", name: "Hassan", avatar: "dragon", role: "buyer", isOnline: true },
-      { userId: "user-004", name: "Alex Chen", avatar: "eagle", role: "seller", isOnline: true, lastSeen: "2026-04-02T10:00:00Z" },
+      { userId: "user-001", name: "Hassan", avatar: "dragon", role: "buyer", isOnline: true, username: "hassan" },
+      { userId: "user-004", name: "Alex Chen", avatar: "eagle", role: "seller", isOnline: true, lastSeen: "2026-04-02T10:00:00Z", username: "probuilder" },
     ],
     lastMessage: "The RTX 4070 Ti build is still available — want me to run benchmarks?",
     lastMessageTime: "2026-04-02T10:15:00Z",
     unreadCount: 2,
-    linkedListingId: "mp-001",
-    linkedListingTitle: "RTX 4070 Ti Gaming PC",
+    linkedListing: {
+      id: "mp-001",
+      title: "RTX 4070 Ti Gaming PC",
+      price: 1849,
+      cpu: "AMD Ryzen 7 7800X3D",
+      gpu: "RTX 4070 Ti Super",
+      ram: "32GB DDR5",
+      storage: "2TB NVMe",
+    },
     businessName: "ProBuilder PCs",
+    businessSlug: "probuilder-pcs",
     businessRating: 4.9,
     verified: true,
   },
   {
     id: "conv-2",
-    type: "buyer-seller",
+    type: "order",
     participants: [
-      { userId: "user-001", name: "Hassan", avatar: "dragon", role: "buyer", isOnline: true },
-      { userId: "user-005", name: "Kai Martinez", avatar: "ninja", role: "seller", isOnline: false, lastSeen: "2026-04-01T22:30:00Z" },
+      { userId: "user-001", name: "Hassan", avatar: "dragon", role: "buyer", isOnline: true, username: "hassan" },
+      { userId: "user-005", name: "Kai Martinez", avatar: "ninja", role: "seller", isOnline: false, lastSeen: "2026-04-01T22:30:00Z", username: "speedrunner" },
     ],
     lastMessage: "Shipped today! Tracking number sent to your email.",
     lastMessageTime: "2026-04-01T14:30:00Z",
     unreadCount: 0,
-    linkedListingId: "mp-003",
-    linkedListingTitle: "Ultra Low Latency Rig",
+    linkedListing: {
+      id: "mp-003",
+      title: "Ultra Low Latency Rig",
+      price: 2199,
+    },
+    linkedOrder: {
+      orderId: "ORD-2026-0412",
+      status: "shipped",
+      estimatedDelivery: "2026-04-05",
+      trackingNumber: "RM1234567890GB",
+    },
+    userProfileUsername: "speedrunner",
   },
   {
     id: "conv-3",
     type: "support",
     participants: [
-      { userId: "user-001", name: "Hassan", avatar: "dragon", role: "buyer", isOnline: true },
+      { userId: "user-001", name: "Hassan", avatar: "dragon", role: "buyer", isOnline: true, username: "hassan" },
       { userId: "support-001", name: "nYield Support", avatar: "robot", role: "support", isOnline: true },
     ],
     lastMessage: "Your optimisation service has been scheduled for tomorrow at 3 PM.",
     lastMessageTime: "2026-03-31T16:00:00Z",
     unreadCount: 1,
+  },
+  {
+    id: "conv-4",
+    type: "user",
+    participants: [
+      { userId: "user-001", name: "Hassan", avatar: "dragon", role: "buyer", isOnline: true, username: "hassan" },
+      { userId: "user-002", name: "Demo User", avatar: "fox", role: "buyer", isOnline: false, lastSeen: "2026-04-01T18:00:00Z", username: "demouser" },
+    ],
+    lastMessage: "Hey, what GPU are you running? Want to compare setups.",
+    lastMessageTime: "2026-04-01T18:05:00Z",
+    unreadCount: 1,
+    userProfileUsername: "demouser",
   },
 ];
 
@@ -121,6 +191,11 @@ export const messagesMock: Record<string, ChatMessage[]> = {
     },
     { id: "m16", conversationId: "conv-3", senderId: "support-001", content: "Your optimisation service has been scheduled for tomorrow at 3 PM.", type: "text", timestamp: "2026-03-31T16:00:00Z", read: false },
   ],
+  "conv-4": [
+    { id: "m17", conversationId: "conv-4", senderId: "user-002", content: "Hey Hassan! Saw your profile — nice setup!", type: "text", timestamp: "2026-04-01T17:50:00Z", read: true },
+    { id: "m18", conversationId: "conv-4", senderId: "user-001", content: "Thanks! Just upgraded the GPU last month.", type: "text", timestamp: "2026-04-01T17:55:00Z", read: true },
+    { id: "m19", conversationId: "conv-4", senderId: "user-002", content: "Hey, what GPU are you running? Want to compare setups.", type: "text", timestamp: "2026-04-01T18:05:00Z", read: false },
+  ],
 };
 
 export const aiSuggestionsMock: AiSuggestion[] = [
@@ -130,7 +205,6 @@ export const aiSuggestionsMock: AiSuggestion[] = [
   { id: "ai-4", type: "compatibility", title: "PSU Check", description: "The RTX 4070 Ti requires a 700W+ PSU. Verify your power supply rating.", emoji: "🔌", actionLabel: "Check Compatibility" },
 ];
 
-/** Quick action buttons for chat */
 export const quickActions = [
   { id: "qa-1", label: "Recommend Upgrade", emoji: "⬆️" },
   { id: "qa-2", label: "View Full Specs", emoji: "📋" },
@@ -140,7 +214,6 @@ export const quickActions = [
   { id: "qa-6", label: "Request Invoice", emoji: "🧾" },
 ];
 
-/** Total unread count across all conversations */
 export function getTotalUnread(): number {
   return conversationsMock.reduce((sum, c) => sum + c.unreadCount, 0);
 }
