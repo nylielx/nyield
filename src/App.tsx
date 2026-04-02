@@ -86,6 +86,16 @@ const App = () => (
               <Route path="bookings" element={<MyBookingsPage />} />
               <Route path="bookings/:id" element={<BookingDetailPage />} />
             </Route>
+            {/* Seller Dashboard — nested routes with sidebar layout */}
+            <Route path="/seller" element={<SellerDashboardLayout />}>
+              <Route index element={<SellerOverviewPage />} />
+              <Route path="orders" element={<SellerOrdersPage />} />
+              <Route path="listings" element={<SellerListingsPage />} />
+              <Route path="analytics" element={<SellerAnalyticsPage />} />
+              <Route path="customers" element={<SellerCustomersPage />} />
+              <Route path="marketing" element={<SellerMarketingPage />} />
+              <Route path="settings" element={<SellerSettingsPage />} />
+            </Route>
             <Route path="/process" element={<ProcessPage />} />
             <Route path="/about" element={<AboutPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -29,6 +29,7 @@ import { avatarOptions } from "@/data/temp/8-user-profile-mock";
 
 const dropdownLinks = [
   { label: "Dashboard", to: "/account", icon: LayoutDashboard },
+  { label: "Seller Dashboard", to: "/seller", icon: Store },
   { label: "My Bookings", to: "/account/bookings", icon: CalendarDays },
   { label: "My Orders", to: "/account/orders", icon: ShoppingCart },
   { label: "Saved Builds", to: "/account/builds", icon: Cpu },
