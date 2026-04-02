@@ -29,6 +29,7 @@ import {
   DollarSign,
   Settings,
   Store,
+  MessageCircle,
   type LucideIcon,
 } from "lucide-react";
 
