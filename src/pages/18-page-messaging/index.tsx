@@ -840,6 +840,7 @@ const ContextPanel = ({
  * ══════════════════════════════════════════════════════════════════════════════ */
 const MessagingPage = () => {
   const { user } = useAuth();
+  const currentUserId = user?.id ?? FALLBACK_USER_ID;
   const [activeConv, setActiveConv] = useState<string | null>("conv-1");
   const [search, setSearch] = useState("");
   const [showContext, setShowContext] = useState(true);
@@ -921,8 +922,9 @@ const MessagingPage = () => {
                   onSelect={selectConversation}
                   search={search}
                   onSearchChange={setSearch}
-                  onNewMessage={() => setShowIntentModal(true)}
-                />
+                   onNewMessage={() => setShowIntentModal(true)}
+                   currentUserId={currentUserId}
+                 />
               </div>
 
               <div className={`flex-1 flex flex-col ${mobileView === "list" ? "hidden md:flex" : "flex"}`}>
@@ -962,7 +964,7 @@ const MessagingPage = () => {
                     transition={{ duration: 0.25 }}
                     className="border-l border-border/30 hidden lg:flex flex-col overflow-hidden shrink-0"
                   >
-                    <ContextPanel conversation={activeConversation} onClose={() => setShowContext(false)} />
+                    <ContextPanel conversation={activeConversation} onClose={() => setShowContext(false)} currentUserId={currentUserId} />
                   </motion.div>
                 )}
               </AnimatePresence>
