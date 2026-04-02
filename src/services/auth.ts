@@ -20,6 +20,9 @@ import type { AvatarOption } from "@/data/temp/8-user-profile-mock";
 
 export type UserRole = "standard" | "business";
 
+/** Application status for seller conversion flow */
+export type SellerApplicationStatus = "none" | "pending" | "approved" | "rejected";
+
 export interface RegisterData {
   fullName: string;
   email: string;
@@ -35,10 +38,18 @@ export interface AuthUser {
   id: string;
   email: string;
   fullName: string;
+  /** Canonical username for public profile URL (/user/:username) */
+  username: string;
   avatar: AvatarOption;
-  avatarUrl?: string; // uploaded profile picture (base64 data URL)
+  avatarUrl?: string;
   role: UserRole;
-  memberSince: string; // ISO date string
+  memberSince: string;
+  /** Business slug for /business/:slug (only set for business accounts) */
+  businessSlug?: string;
+  /** Business display name (only set for business accounts) */
+  businessName?: string;
+  /** Seller application status for standard users */
+  sellerApplicationStatus: SellerApplicationStatus;
 }
 
 export interface AuthResponse {
@@ -60,7 +71,21 @@ function getRegistry(): StoredUser[] {
   const raw = localStorage.getItem(USERS_STORAGE_KEY);
   if (!raw) return getDefaultRegistry();
   try {
-    return JSON.parse(raw) as StoredUser[];
+    const parsed = JSON.parse(raw) as StoredUser[];
+    // Migration: ensure all users have username + sellerApplicationStatus
+    let needsSave = false;
+    for (const u of parsed) {
+      if (!u.username) {
+        u.username = deriveUsername(u.fullName, u.id);
+        needsSave = true;
+      }
+      if (!u.sellerApplicationStatus) {
+        u.sellerApplicationStatus = "none";
+        needsSave = true;
+      }
+    }
+    if (needsSave) saveRegistry(parsed);
+    return parsed;
   } catch {
     return getDefaultRegistry();
   }
@@ -70,6 +95,13 @@ function saveRegistry(users: StoredUser[]): void {
   localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
 }
 
+/** Derive a URL-safe username from full name + id suffix for uniqueness */
+function deriveUsername(fullName: string, id: string): string {
+  const base = fullName.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const suffix = id.replace("user-", "").slice(-4);
+  return base ? `${base}-${suffix}` : `user-${suffix}`;
+}
+
 function getDefaultRegistry(): StoredUser[] {
   const defaults: StoredUser[] = [
     {
@@ -77,27 +109,35 @@ function getDefaultRegistry(): StoredUser[] {
       email: "hassan@nyield.com",
       password: "123",
       fullName: "Hassan",
+      username: "hassan",
       avatar: "dragon",
       role: "standard",
       memberSince: "2025-09-14",
+      sellerApplicationStatus: "none",
     },
     {
       id: "user-002",
       email: "demo@nyield.com",
       password: "demo",
       fullName: "Demo User",
+      username: "demouser",
       avatar: "fox",
       role: "standard",
       memberSince: "2026-01-10",
+      sellerApplicationStatus: "none",
     },
     {
       id: "user-003",
       email: "hassan@business.com",
       password: "123",
       fullName: "Hassan",
+      username: "hassan-biz",
       avatar: "dragon",
       role: "business",
       memberSince: "2025-06-01",
+      businessSlug: "probuilder-pcs",
+      businessName: "ProBuilder PCs",
+      sellerApplicationStatus: "approved",
     },
   ];
   saveRegistry(defaults);
@@ -116,14 +156,17 @@ export async function registerUser(data: RegisterData): Promise<AuthResponse> {
     return { success: false, message: "An account with this email already exists." };
   }
 
+  const id = `user-${Date.now()}`;
   const newUser: StoredUser = {
-    id: `user-${Date.now()}`,
+    id,
     email: data.email.toLowerCase(),
     password: data.password,
     fullName: data.fullName,
+    username: deriveUsername(data.fullName, id),
     avatar: "man",
     role: "standard",
     memberSince: new Date().toISOString().split("T")[0],
+    sellerApplicationStatus: "none",
   };
 
   registry.push(newUser);
@@ -191,4 +234,53 @@ export function updateUserInRegistry(user: AuthUser): void {
     registry[idx] = { ...registry[idx], ...user, password: registry[idx].password };
     saveRegistry(registry);
   }
+}
+
+/* --------------------------------------------------------------------------
+ * SELLER APPLICATION — Submit and manage application state
+ * -------------------------------------------------------------------------- */
+export async function submitSellerApplication(
+  userId: string,
+  _data: { sellType: string; description: string }
+): Promise<{ success: boolean; message: string }> {
+  await new Promise((resolve) => setTimeout(resolve, 800));
+
+  const registry = getRegistry();
+  const idx = registry.findIndex((u) => u.id === userId);
+  if (idx === -1) return { success: false, message: "User not found." };
+
+  registry[idx].sellerApplicationStatus = "pending";
+  saveRegistry(registry);
+
+  return {
+    success: true,
+    message: "Application submitted! We'll review it within 24–48 hours.",
+  };
+}
+
+/* --------------------------------------------------------------------------
+ * LOOKUP HELPERS — Resolve users by various identifiers
+ * -------------------------------------------------------------------------- */
+export function getUserByUsername(username: string): Omit<StoredUser, "password"> | undefined {
+  const registry = getRegistry();
+  const found = registry.find((u) => u.username === username);
+  if (!found) return undefined;
+  const { password: _, ...user } = found;
+  return user;
+}
+
+export function getUserById(id: string): Omit<StoredUser, "password"> | undefined {
+  const registry = getRegistry();
+  const found = registry.find((u) => u.id === id);
+  if (!found) return undefined;
+  const { password: _, ...user } = found;
+  return user;
+}
+
+export function getBusinessBySlug(slug: string): Omit<StoredUser, "password"> | undefined {
+  const registry = getRegistry();
+  const found = registry.find((u) => u.role === "business" && u.businessSlug === slug);
+  if (!found) return undefined;
+  const { password: _, ...user } = found;
+  return user;
 }
