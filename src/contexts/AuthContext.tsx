@@ -141,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateUserInRegistry(updated);
   };
 
-  const isAdmin = user?.role === "admin";
+  const isBusiness = user?.role === "business";
 
   return (
     <AuthContext.Provider value={{ user, isLoading, register, login, logout, resetPassword, updateProfile, isAdmin }}>
