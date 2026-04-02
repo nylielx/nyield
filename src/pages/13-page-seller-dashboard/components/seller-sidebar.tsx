@@ -1,6 +1,8 @@
 /**
  * =============================================================================
- * SELLER SIDEBAR — Navigation for the seller dashboard
+ * BUSINESS SIDEBAR — Navigation for the business dashboard
+ * =============================================================================
+ * Visible only to users with role = "business".
  * =============================================================================
  */
 
