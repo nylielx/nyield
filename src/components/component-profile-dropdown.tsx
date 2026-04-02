@@ -100,7 +100,7 @@ const ProfileDropdown = () => {
 
             {/* Navigation links */}
             <div className="py-1">
-              {dropdownLinks.map(({ label, to, icon: Icon }) => (
+              {getDropdownLinks(user.role).map(({ label, to, icon: Icon }) => (
                 <Link
                   key={to}
                   to={to}
