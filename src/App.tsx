@@ -53,6 +53,7 @@ import PcAnalyzerPage from "./pages/16-page-pc-analyzer";
 import MessagingPage from "./pages/18-page-messaging";
 import BusinessProfilePage from "./pages/19-page-business-profile";
 import AffiliatePage from "./pages/20-page-affiliate";
+import AffiliateLandingPage from "./pages/20-page-affiliate/landing";
 
 const queryClient = new QueryClient();
 
@@ -109,6 +110,7 @@ const App = () => (
             <Route path="/quiz" element={<OnboardingQuizPage />} />
             <Route path="/pc-analyzer" element={<PcAnalyzerPage />} />
             <Route path="/messages" element={<MessagingPage />} />
+            <Route path="/earn" element={<AffiliateLandingPage />} />
             <Route path="/affiliate" element={<AffiliatePage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
