@@ -51,6 +51,7 @@ import PublicProfilePage from "./pages/14-page-public-profile";
 import OnboardingQuizPage from "./pages/15-page-onboarding-quiz";
 import PcAnalyzerPage from "./pages/16-page-pc-analyzer";
 import CommunityPage from "./pages/17-page-community";
+import MessagingPage from "./pages/18-page-messaging";
 
 const queryClient = new QueryClient();
 
