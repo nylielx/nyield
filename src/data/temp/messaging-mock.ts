@@ -2,6 +2,11 @@
  * =============================================================================
  * MESSAGING MOCK DATA — Intent-driven conversations
  * =============================================================================
+ *
+ * IMPORTANT: Identity resolution uses authenticated user ID, NOT role-based
+ * assumptions. The getMyParticipant/getOtherParticipant helpers require the
+ * actual user ID from AuthContext.
+ * =============================================================================
  */
 
 export type MessageType = "text" | "build-card" | "listing-card" | "specs-card" | "ai-suggestion";
@@ -56,6 +61,7 @@ export interface Conversation {
   id: string;
   type: ConversationType;
   participants: ConversationParticipant[];
+  /** Derived at render time — kept for seeding only */
   lastMessage: string;
   lastMessageTime: string;
   unreadCount: number;
@@ -273,23 +279,48 @@ export const messageIntents: MessageIntent[] = [
   },
 ];
 
+/* --------------------------------------------------------------------------
+ * IDENTITY RESOLUTION — Based on authenticated user ID, not role
+ * -------------------------------------------------------------------------- */
+
+/**
+ * Get total unread count for a specific user across all their conversations.
+ * Returns 0 if userId is not provided.
+ */
+export function getTotalUnreadForUser(userId: string | undefined, conversations: Conversation[], messages: Record<string, ChatMessage[]>): number {
+  if (!userId) return 0;
+  let total = 0;
+  for (const conv of conversations) {
+    // Only count conversations this user is a participant in
+    if (!conv.participants.some((p) => p.userId === userId)) continue;
+    const msgs = messages[conv.id] ?? [];
+    total += msgs.filter((m) => m.senderId !== userId && !m.read).length;
+  }
+  return total;
+}
+
+/**
+ * @deprecated Use getTotalUnreadForUser instead. Kept for backward compat.
+ */
 export function getTotalUnread(): number {
   return conversationsMock.reduce((sum, c) => sum + c.unreadCount, 0);
 }
 
 /**
- * Resolve the "my" participant in a conversation based on user role.
- * Standard users own the "buyer" participant; business users own the "seller" participant.
+ * Get conversations that the given user is a participant in.
+ */
+export function getConversationsForUser(userId: string, conversations: Conversation[]): Conversation[] {
+  return conversations.filter((c) => c.participants.some((p) => p.userId === userId));
+}
+
+/**
+ * Resolve the "my" participant in a conversation using the authenticated user's ID.
  */
 export function getMyParticipant(
   conversation: Conversation,
-  userRole: "standard" | "business",
+  userId: string,
 ): ConversationParticipant | undefined {
-  if (userRole === "business") {
-    return conversation.participants.find((p) => p.role === "seller");
-  }
-  return conversation.participants.find((p) => p.role === "buyer" && p.userId === "user-001")
-    ?? conversation.participants.find((p) => p.role === "buyer");
+  return conversation.participants.find((p) => p.userId === userId);
 }
 
 /**
@@ -297,21 +328,37 @@ export function getMyParticipant(
  */
 export function getOtherParticipant(
   conversation: Conversation,
-  userRole: "standard" | "business",
+  userId: string,
 ): ConversationParticipant | undefined {
-  const me = getMyParticipant(conversation, userRole);
-  if (!me) return conversation.participants[0];
-  return conversation.participants.find((p) => p.userId !== me.userId);
+  return conversation.participants.find((p) => p.userId !== userId);
 }
 
 /**
- * Check if a message was sent by "me" based on role-based ownership.
+ * Check if a message was sent by the authenticated user.
  */
 export function isMyMessage(
   message: ChatMessage,
-  conversation: Conversation,
-  userRole: "standard" | "business",
+  userId: string,
 ): boolean {
-  const me = getMyParticipant(conversation, userRole);
-  return me ? message.senderId === me.userId : false;
+  return message.senderId === userId;
+}
+
+/**
+ * Derive conversation preview data from live message state.
+ */
+export function deriveConversationPreview(
+  conversation: Conversation,
+  messages: ChatMessage[],
+  userId: string,
+): { lastMessage: string; lastMessageTime: string; unreadCount: number } {
+  if (messages.length === 0) {
+    return { lastMessage: conversation.lastMessage, lastMessageTime: conversation.lastMessageTime, unreadCount: 0 };
+  }
+  const last = messages[messages.length - 1];
+  const unreadCount = messages.filter((m) => m.senderId !== userId && !m.read).length;
+  return {
+    lastMessage: last.content || (last.type !== "text" ? `[${last.type.replace("-", " ")}]` : ""),
+    lastMessageTime: last.timestamp,
+    unreadCount,
+  };
 }

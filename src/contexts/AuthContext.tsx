@@ -12,11 +12,13 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import {
   AuthUser,
   UserRole,
+  SellerApplicationStatus,
   registerUser,
   loginUser,
   logoutUser,
   forgotPassword,
   updateUserInRegistry,
+  submitSellerApplication,
   RegisterData,
   LoginData,
 } from "@/services/auth";
@@ -33,6 +35,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ success: boolean; message: string }>;
   updateProfile: (updates: Partial<Pick<AuthUser, "fullName" | "avatar" | "avatarUrl">>) => void;
+  applyForSeller: (data: { sellType: string; description: string }) => Promise<{ success: boolean; message: string }>;
   isBusiness: boolean;
 }
 
@@ -51,7 +54,17 @@ function getUserFromStorage(): AuthUser | null {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) return null;
   try {
-    return JSON.parse(stored) as AuthUser;
+    const user = JSON.parse(stored) as AuthUser;
+    // Migration: ensure stored user has new fields
+    if (!user.username) {
+      const base = user.fullName.toLowerCase().replace(/[^a-z0-9]+/g, "");
+      const suffix = user.id.replace("user-", "").slice(-4);
+      user.username = base ? `${base}-${suffix}` : `user-${suffix}`;
+    }
+    if (!user.sellerApplicationStatus) {
+      user.sellerApplicationStatus = "none";
+    }
+    return user;
   } catch {
     return null;
   }
@@ -141,10 +154,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateUserInRegistry(updated);
   };
 
+  /** Submit seller application — transitions to pending state */
+  const applyForSeller = async (data: { sellType: string; description: string }) => {
+    if (!user) return { success: false, message: "Not authenticated" };
+    const result = await submitSellerApplication(user.id, data);
+    if (result.success) {
+      const updated = { ...user, sellerApplicationStatus: "pending" as SellerApplicationStatus };
+      setUser(updated);
+      saveUserToStorage(updated);
+    }
+    return result;
+  };
+
   const isBusiness = user?.role === "business";
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, register, login, logout, resetPassword, updateProfile, isBusiness }}>
+    <AuthContext.Provider value={{ user, isLoading, register, login, logout, resetPassword, updateProfile, applyForSeller, isBusiness }}>
       {children}
     </AuthContext.Provider>
   );
