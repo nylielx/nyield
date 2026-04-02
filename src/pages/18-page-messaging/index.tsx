@@ -1076,7 +1076,6 @@ const MessagingPage = () => {
       />
     </div>
   );
-  );
 };
 
 export default MessagingPage;
