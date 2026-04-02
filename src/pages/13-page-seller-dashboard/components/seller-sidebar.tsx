@@ -30,7 +30,7 @@ import { businessSidebarSections } from "@/data/navigation-config";
 export const SellerSidebar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
-  const avatarEmoji = avatarOptions.find((a) => a.value === user?.avatar)?.emoji ?? "👤";
+  const avatarEmoji = getAvatarById(user?.avatar ?? "man").emoji;
 
   return (
     <aside className="w-full md:w-64 shrink-0">

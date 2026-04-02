@@ -50,7 +50,7 @@ const BusinessPanel = () => {
 
   if (!user) return null;
 
-  const avatarEmoji = avatarOptions.find((a) => a.value === user.avatar)?.emoji ?? "👤";
+  const avatarEmoji = getAvatarById(user.avatar).emoji;
 
   return (
     <div className="relative" ref={ref}>

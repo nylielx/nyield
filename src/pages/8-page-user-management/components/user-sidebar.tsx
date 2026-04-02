@@ -28,7 +28,7 @@ export const UserSidebar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [sellerModalOpen, setSellerModalOpen] = useState(false);
-  const avatarEmoji = avatarOptions.find((a) => a.value === user?.avatar)?.emoji ?? "👤";
+  const avatarEmoji = getAvatarById(user?.avatar ?? "man").emoji;
 
   return (
     <>
