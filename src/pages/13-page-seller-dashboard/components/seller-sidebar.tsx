@@ -1,36 +1,31 @@
 /**
  * =============================================================================
- * BUSINESS SIDEBAR — Navigation for the business dashboard
+ * BUSINESS SIDEBAR — Hierarchical navigation for business (seller) users
  * =============================================================================
- * Visible only to users with role = "business".
+ * Sections follow enterprise UX grouping:
+ *   Overview → Operations → Growth → Account → Support → System
+ *
+ * Includes "My Account" link to switch back to buyer view.
+ *
+ * DATA FLOW:
+ *   navigation-config.ts → businessSidebarSections → rendered here
+ *   AuthContext → user info, logout
  * =============================================================================
  */
 
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
-  ShoppingCart,
-  Package,
-  BarChart3,
-  Users,
-  Megaphone,
-  Settings,
   LogOut,
   Store,
+  CheckCircle2,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { avatarOptions } from "@/data/temp/8-user-profile-mock";
-
-const sidebarLinks = [
-  { label: "Dashboard", to: "/seller", icon: LayoutDashboard },
-  { label: "My Orders", to: "/seller/orders", icon: ShoppingCart },
-  { label: "Listings", to: "/seller/listings", icon: Package },
-  { label: "Analytics", to: "/seller/analytics", icon: BarChart3 },
-  { label: "Customers", to: "/seller/customers", icon: Users },
-  { label: "Marketing", to: "/seller/marketing", icon: Megaphone },
-  { label: "Settings", to: "/seller/settings", icon: Settings },
-];
+import { Badge } from "@/components/ui/badge";
+import { businessSidebarSections } from "@/data/navigation-config";
 
 export const SellerSidebar = () => {
   const location = useLocation();
@@ -40,8 +35,8 @@ export const SellerSidebar = () => {
   return (
     <aside className="w-full md:w-64 shrink-0">
       <div className="rounded-xl glass-elevated p-4 space-y-1">
-        {/* Seller info */}
-        <div className="pb-3 mb-2 border-b border-border/30">
+        {/* ── Seller info + badges ── */}
+        <div className="pb-3 mb-1 border-b border-border/30">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-lg">
               {avatarEmoji}
@@ -53,34 +48,60 @@ export const SellerSidebar = () => {
               <p className="text-xs text-muted-foreground truncate">{user?.email ?? ""}</p>
             </div>
           </div>
-          <div className="mt-2 flex items-center gap-1.5">
-            <Store className="h-3 w-3 text-primary" />
-            <span className="text-[11px] font-medium text-primary">Business Dashboard</span>
+          <div className="flex items-center gap-2 mt-2.5">
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[10px]">
+              <Store className="h-2.5 w-2.5 mr-1" />
+              Business
+            </Badge>
+            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/30 text-[10px]">
+              <CheckCircle2 className="h-2.5 w-2.5 mr-1" />
+              Verified
+            </Badge>
           </div>
         </div>
 
-        {/* Navigation links */}
-        {sidebarLinks.map(({ label, to, icon: Icon }) => {
-          const active = location.pathname === to;
-          return (
-            <Link
-              key={to}
-              to={to}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                active
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-              )}
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </Link>
-          );
-        })}
+        {/* ── Grouped navigation sections ── */}
+        {businessSidebarSections.map((section) => (
+          <div key={section.group}>
+            <p className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+              {section.group}
+            </p>
+            {section.items.map(({ label, to, icon: Icon }) => {
+              const active = location.pathname === to;
+              return (
+                <Link
+                  key={to}
+                  to={to}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group relative",
+                    active
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                  )}
+                >
+                  {active && (
+                    <motion.div
+                      layoutId="sidebar-active-business"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-full bg-primary glow-sm"
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                  <Icon className={cn(
+                    "h-4 w-4 transition-transform duration-200",
+                    "group-hover:scale-110"
+                  )} />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
 
-        {/* Back to account */}
-        <div className="pt-2 mt-2 border-t border-border/30 space-y-1">
+        {/* ── System: Account switch + Sign Out ── */}
+        <div className="pt-2 mt-1 border-t border-border/30">
+          <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            System
+          </p>
           <Link
             to="/account"
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
