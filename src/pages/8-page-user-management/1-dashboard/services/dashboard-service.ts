@@ -2,9 +2,6 @@
  * =============================================================================
  * DASHBOARD SERVICE — Data fetching layer
  * =============================================================================
- * Abstracts data access so the UI never imports mock files directly.
- * To connect a real backend, replace the import with a fetch() call.
- * =============================================================================
  */
 
 import type { DashboardData } from "../data/dashboard-mock";

@@ -23,6 +23,9 @@ export const ProfileForm = ({ profile, onUpdate, saving }: ProfileFormProps) => 
         onChange={(e) => onUpdate("fullName", e.target.value)}
         className="bg-background/50"
       />
+      <p className="text-xs text-muted-foreground mt-1">
+        This name appears in your dashboard greeting and across your account.
+      </p>
     </div>
 
     <div>
@@ -35,6 +38,19 @@ export const ProfileForm = ({ profile, onUpdate, saving }: ProfileFormProps) => 
       <label className="text-sm font-medium text-foreground mb-1 block">Password</label>
       <Input type="password" value="••••••••" disabled className="bg-background/50 opacity-60" />
       <p className="text-xs text-muted-foreground mt-1">Password changes are not available in mock mode</p>
+    </div>
+
+    <div>
+      <label className="text-sm font-medium text-foreground mb-1 block">Phone Number</label>
+      <Input placeholder="Optional" className="bg-background/50" disabled />
+      <p className="text-xs text-muted-foreground mt-1">Phone number support coming soon</p>
+    </div>
+
+    <div>
+      <label className="text-sm font-medium text-foreground mb-1 block">Delivery Address</label>
+      <Input placeholder="Address line 1" className="bg-background/50 mb-2" disabled />
+      <Input placeholder="City, Postcode" className="bg-background/50" disabled />
+      <p className="text-xs text-muted-foreground mt-1">Delivery address support coming soon</p>
     </div>
 
     <Button disabled={saving} className="mt-2" size="sm">

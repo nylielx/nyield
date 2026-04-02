@@ -3,18 +3,20 @@
  * AUTH CONTEXT — Global Authentication State Manager
  * =============================================================================
  *
- * Mock credentials: hassan@nyield.com / 123
  * Persists user in localStorage across page refreshes.
+ * Supports role, memberSince, and profile updates synced to user registry.
  * =============================================================================
  */
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import {
   AuthUser,
+  UserRole,
   registerUser,
   loginUser,
   logoutUser,
   forgotPassword,
+  updateUserInRegistry,
   RegisterData,
   LoginData,
 } from "@/services/auth";
@@ -31,6 +33,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ success: boolean; message: string }>;
   updateProfile: (updates: Partial<Pick<AuthUser, "fullName" | "avatar">>) => void;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -129,16 +132,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  /** Update user profile fields locally (name, avatar) */
+  /** Update user profile fields locally (name, avatar) and sync to registry */
   const updateProfile = (updates: Partial<Pick<AuthUser, "fullName" | "avatar">>) => {
     if (!user) return;
     const updated = { ...user, ...updates };
     setUser(updated);
     saveUserToStorage(updated);
+    updateUserInRegistry(updated);
   };
 
+  const isAdmin = user?.role === "admin";
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, register, login, logout, resetPassword, updateProfile }}>
+    <AuthContext.Provider value={{ user, isLoading, register, login, logout, resetPassword, updateProfile, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
