@@ -231,7 +231,7 @@ const ChatWindow = ({
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">{other?.name}</span>
+            <Link to={`/user/${other?.name?.toLowerCase().replace(/\s/g, "")}`} className="text-sm font-semibold hover:text-primary transition-colors">{other?.name}</Link>
             {conversation.verified && <Badge variant="outline" className="text-[9px] px-1 py-0 bg-primary/10 text-primary border-primary/30">Verified</Badge>}
           </div>
           <p className="text-[10px] text-muted-foreground">
