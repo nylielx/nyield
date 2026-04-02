@@ -11,7 +11,7 @@ import { DashboardActivity } from "./components/dashboard-activity";
 import { Badge } from "@/components/ui/badge";
 
 const DashboardPage = () => {
-  const { user, isAdmin } = useAuth();
+  const { user, isBusiness } = useAuth();
   const { data, loading } = useDashboard();
 
   if (loading || !data) {
