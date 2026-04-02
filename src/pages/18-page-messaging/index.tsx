@@ -491,29 +491,33 @@ const ContextPanel = ({
           {/* ─── PRODUCT INQUIRY: Business + Listing + Specs + AI ─── */}
           {conversation.type === "product_inquiry" && (
             <>
-              {/* Business Card */}
-              {conversation.businessName && !isBusinessView && (
+              {/* Seller info for standard users */}
+              {!isBusinessView && (
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Business</p>
-                  <Link to={`/business/${conversation.businessSlug ?? "unknown"}`}>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Seller</p>
+                  <Link to={conversation.businessSlug ? `/business/${conversation.businessSlug}` : `/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
                     <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
                       <CardContent className="p-3 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{conversation.businessName}</span>
-                          {conversation.verified && (
-                            <Badge className="text-[9px] bg-primary/10 text-primary border-primary/30">
-                              <ShieldCheck className="h-2.5 w-2.5 mr-0.5" /> Verified
-                            </Badge>
-                          )}
-                        </div>
-                        {conversation.businessRating && (
-                          <div className="flex items-center gap-1 text-xs">
-                            <span>⭐</span>
-                            <span className="font-medium">{conversation.businessRating}</span>
-                            <span className="text-muted-foreground">rating</span>
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center text-xl">{otherAvatar.emoji}</div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-sm font-medium">{other?.name}</span>
+                              {conversation.verified && (
+                                <Badge className="text-[9px] bg-primary/10 text-primary border-primary/30">
+                                  <ShieldCheck className="h-2.5 w-2.5 mr-0.5" /> Verified
+                                </Badge>
+                              )}
+                            </div>
+                            {conversation.businessName && (
+                              <p className="text-[10px] text-muted-foreground">🏢 {conversation.businessName}</p>
+                            )}
+                            {conversation.businessRating && (
+                              <p className="text-[10px] text-muted-foreground">⭐ {conversation.businessRating} rating</p>
+                            )}
+                            <p className="text-[10px] text-primary mt-0.5">View profile →</p>
                           </div>
-                        )}
-                        <p className="text-[10px] text-primary">View business profile →</p>
+                        </div>
                       </CardContent>
                     </Card>
                   </Link>
