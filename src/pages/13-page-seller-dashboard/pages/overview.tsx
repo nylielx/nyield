@@ -51,9 +51,9 @@ const SellerOverviewPage = () => {
           <h1 className="text-2xl font-bold text-foreground">
             Welcome back, {firstName}
           </h1>
-          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">
-            Seller
-          </Badge>
+           <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">
+             Business
+           </Badge>
         </div>
         <p className="text-sm text-muted-foreground">
           Track and manage your orders, from placement to delivery, all in one place.

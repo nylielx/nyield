@@ -1,6 +1,8 @@
 /**
  * =============================================================================
- * SELLER SIDEBAR — Navigation for the seller dashboard
+ * BUSINESS SIDEBAR — Navigation for the business dashboard
+ * =============================================================================
+ * Visible only to users with role = "business".
  * =============================================================================
  */
 
@@ -53,7 +55,7 @@ export const SellerSidebar = () => {
           </div>
           <div className="mt-2 flex items-center gap-1.5">
             <Store className="h-3 w-3 text-primary" />
-            <span className="text-[11px] font-medium text-primary">Seller Dashboard</span>
+            <span className="text-[11px] font-medium text-primary">Business Dashboard</span>
           </div>
         </div>
 

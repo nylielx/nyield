@@ -1,6 +1,9 @@
 /**
  * =============================================================================
- * SELLER LAYOUT — Wraps all /seller/* pages with sidebar
+ * BUSINESS DASHBOARD LAYOUT — Wraps all /seller/* pages with sidebar
+ * =============================================================================
+ * Auth-gated: requires login AND role = "business".
+ * Standard users are redirected to /account.
  * =============================================================================
  */
 
@@ -11,7 +14,7 @@ import { SellerSidebar } from "./components/seller-sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 
 const SellerDashboardLayout = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isBusiness } = useAuth();
 
   if (isLoading) {
     return (
@@ -23,6 +26,11 @@ const SellerDashboardLayout = () => {
 
   if (!user) {
     return <Navigate to="/signin" replace />;
+  }
+
+  /* Standard users cannot access the business dashboard */
+  if (!isBusiness) {
+    return <Navigate to="/account" replace />;
   }
 
   return (

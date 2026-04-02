@@ -33,7 +33,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ success: boolean; message: string }>;
   updateProfile: (updates: Partial<Pick<AuthUser, "fullName" | "avatar">>) => void;
-  isAdmin: boolean;
+  isBusiness: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -141,10 +141,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateUserInRegistry(updated);
   };
 
-  const isAdmin = user?.role === "admin";
+  const isBusiness = user?.role === "business";
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, register, login, logout, resetPassword, updateProfile, isAdmin }}>
+    <AuthContext.Provider value={{ user, isLoading, register, login, logout, resetPassword, updateProfile, isBusiness }}>
       {children}
     </AuthContext.Provider>
   );
