@@ -1,11 +1,11 @@
 /**
  * =============================================================================
- * MESSAGING MOCK DATA — Conversations, messages, and context
+ * MESSAGING MOCK DATA — Intent-driven conversations
  * =============================================================================
  */
 
 export type MessageType = "text" | "build-card" | "listing-card" | "specs-card" | "ai-suggestion";
-export type ConversationType = "business" | "user" | "support" | "order";
+export type ConversationType = "product_inquiry" | "offer" | "order" | "general";
 
 export interface ChatMessage {
   id: string;
@@ -59,18 +59,13 @@ export interface Conversation {
   lastMessage: string;
   lastMessageTime: string;
   unreadCount: number;
-  /** Linked listing context */
   linkedListing?: LinkedListing;
-  /** Order context (for order-type conversations) */
   linkedOrder?: LinkedOrder;
-  /** Offer context (for offer-type conversations) */
   linkedOffer?: LinkedOffer;
-  /** Business info — only present for business-type conversations */
   businessName?: string;
   businessSlug?: string;
   businessRating?: number;
   verified?: boolean;
-  /** User profile references */
   userProfileUsername?: string;
 }
 
@@ -87,9 +82,10 @@ export interface AiSuggestion {
 /* -------------------------------------------------------------------------- */
 
 export const conversationsMock: Conversation[] = [
+  // 1. PRODUCT INQUIRY — asking about specs, FPS, performance
   {
     id: "conv-1",
-    type: "business",
+    type: "product_inquiry",
     participants: [
       { userId: "user-001", name: "Hassan", avatar: "dragon", role: "buyer", isOnline: true, username: "hassan" },
       { userId: "user-004", name: "Alex Chen", avatar: "eagle", role: "seller", isOnline: true, lastSeen: "2026-04-02T10:00:00Z", username: "probuilder" },
@@ -111,6 +107,38 @@ export const conversationsMock: Conversation[] = [
     businessRating: 4.9,
     verified: true,
   },
+  // 2. OFFER — user making a price offer
+  {
+    id: "conv-5",
+    type: "offer",
+    participants: [
+      { userId: "user-001", name: "Hassan", avatar: "dragon", role: "buyer", isOnline: true, username: "hassan" },
+      { userId: "user-004", name: "Alex Chen", avatar: "eagle", role: "seller", isOnline: true, lastSeen: "2026-04-02T10:00:00Z", username: "probuilder" },
+    ],
+    lastMessage: "Would you accept £1,600 for the RTX 4070 Ti build?",
+    lastMessageTime: "2026-04-02T11:00:00Z",
+    unreadCount: 1,
+    linkedListing: {
+      id: "mp-001",
+      title: "RTX 4070 Ti Gaming PC",
+      price: 1849,
+      cpu: "AMD Ryzen 7 7800X3D",
+      gpu: "RTX 4070 Ti Super",
+      ram: "32GB DDR5",
+      storage: "2TB NVMe",
+    },
+    linkedOffer: {
+      offerAmount: 1600,
+      listingPrice: 1849,
+      listingTitle: "RTX 4070 Ti Gaming PC",
+      status: "pending",
+    },
+    businessName: "ProBuilder PCs",
+    businessSlug: "probuilder-pcs",
+    businessRating: 4.9,
+    verified: true,
+  },
+  // 3. ORDER — tracking a purchased build
   {
     id: "conv-2",
     type: "order",
@@ -134,20 +162,10 @@ export const conversationsMock: Conversation[] = [
     },
     userProfileUsername: "speedrunner",
   },
-  {
-    id: "conv-3",
-    type: "support",
-    participants: [
-      { userId: "user-001", name: "Hassan", avatar: "dragon", role: "buyer", isOnline: true, username: "hassan" },
-      { userId: "support-001", name: "nYield Support", avatar: "robot", role: "support", isOnline: true },
-    ],
-    lastMessage: "Your optimisation service has been scheduled for tomorrow at 3 PM.",
-    lastMessageTime: "2026-03-31T16:00:00Z",
-    unreadCount: 1,
-  },
+  // 4. GENERAL — casual user-to-user chat, no listing
   {
     id: "conv-4",
-    type: "user",
+    type: "general",
     participants: [
       { userId: "user-001", name: "Hassan", avatar: "dragon", role: "buyer", isOnline: true, username: "hassan" },
       { userId: "user-002", name: "Demo User", avatar: "fox", role: "buyer", isOnline: false, lastSeen: "2026-04-01T18:00:00Z", username: "demouser" },
@@ -176,20 +194,16 @@ export const messagesMock: Record<string, ChatMessage[]> = {
     { id: "m7", conversationId: "conv-1", senderId: "user-001", content: "That's incredible. Can I compare it with my current setup?", type: "text", timestamp: "2026-04-02T10:00:00Z", read: false },
     { id: "m8", conversationId: "conv-1", senderId: "user-004", content: "The RTX 4070 Ti build is still available — want me to run benchmarks?", type: "text", timestamp: "2026-04-02T10:15:00Z", read: false },
   ],
+  "conv-5": [
+    { id: "m20", conversationId: "conv-5", senderId: "user-001", content: "Hi Alex, I really like the RTX 4070 Ti build. Would you accept £1,600 for it?", type: "text", timestamp: "2026-04-02T10:50:00Z", read: true },
+    { id: "m21", conversationId: "conv-5", senderId: "user-004", content: "Thanks for the offer! The build includes premium components — let me think about it.", type: "text", timestamp: "2026-04-02T10:55:00Z", read: true },
+    { id: "m22", conversationId: "conv-5", senderId: "user-001", content: "Would you accept £1,600 for the RTX 4070 Ti build?", type: "text", timestamp: "2026-04-02T11:00:00Z", read: false },
+  ],
   "conv-2": [
     { id: "m9", conversationId: "conv-2", senderId: "user-005", content: "Order confirmed! I'll prepare the build today.", type: "text", timestamp: "2026-03-30T11:00:00Z", read: true },
     { id: "m10", conversationId: "conv-2", senderId: "user-005", content: "Build is complete and tested. Packaging now.", type: "text", timestamp: "2026-03-31T16:00:00Z", read: true },
     { id: "m11", conversationId: "conv-2", senderId: "user-005", content: "Shipped today! Tracking number sent to your email.", type: "text", timestamp: "2026-04-01T14:30:00Z", read: true },
     { id: "m12", conversationId: "conv-2", senderId: "user-001", content: "Thanks! Looking forward to it 🎮", type: "text", timestamp: "2026-04-01T14:35:00Z", read: true },
-  ],
-  "conv-3": [
-    { id: "m13", conversationId: "conv-3", senderId: "user-001", content: "Hi, I booked an optimisation service. When will it start?", type: "text", timestamp: "2026-03-31T14:00:00Z", read: true },
-    { id: "m14", conversationId: "conv-3", senderId: "support-001", content: "Hi Hassan! Let me check your booking.", type: "text", timestamp: "2026-03-31T14:05:00Z", read: true },
-    {
-      id: "m15", conversationId: "conv-3", senderId: "support-001", content: "", type: "ai-suggestion", timestamp: "2026-03-31T14:06:00Z", read: true,
-      cardData: { title: "System Analysis Complete", description: "Based on your specs, we recommend the Performance Optimisation package with latency tuning.", emoji: "🔬", type: "optimisation" },
-    },
-    { id: "m16", conversationId: "conv-3", senderId: "support-001", content: "Your optimisation service has been scheduled for tomorrow at 3 PM.", type: "text", timestamp: "2026-03-31T16:00:00Z", read: false },
   ],
   "conv-4": [
     { id: "m17", conversationId: "conv-4", senderId: "user-002", content: "Hey Hassan! Saw your profile — nice setup!", type: "text", timestamp: "2026-04-01T17:50:00Z", read: true },
@@ -212,6 +226,51 @@ export const quickActions = [
   { id: "qa-4", label: "Apply Optimisation", emoji: "⚡" },
   { id: "qa-5", label: "Share My Setup", emoji: "📤" },
   { id: "qa-6", label: "Request Invoice", emoji: "🧾" },
+];
+
+/** Intent options for "Message Seller" modal */
+export interface MessageIntent {
+  id: string;
+  type: ConversationType;
+  label: string;
+  description: string;
+  emoji: string;
+  prefillMessage: string;
+}
+
+export const messageIntents: MessageIntent[] = [
+  {
+    id: "intent-inquiry",
+    type: "product_inquiry",
+    label: "Ask about this product",
+    description: "Ask about specs, FPS, performance, or availability",
+    emoji: "💬",
+    prefillMessage: "Hi, I'm interested in this build. What FPS can I expect in Valorant at 1440p?",
+  },
+  {
+    id: "intent-offer",
+    type: "offer",
+    label: "Make an offer",
+    description: "Propose a price for this listing",
+    emoji: "💰",
+    prefillMessage: "Hi, would you accept £{price} for this build?",
+  },
+  {
+    id: "intent-order",
+    type: "order",
+    label: "Ask about delivery / order",
+    description: "Get an update on shipping or delivery status",
+    emoji: "📦",
+    prefillMessage: "Hi, can I get an update on my order?",
+  },
+  {
+    id: "intent-general",
+    type: "general",
+    label: "General question",
+    description: "Ask anything else",
+    emoji: "🗨️",
+    prefillMessage: "Hi, I have a question.",
+  },
 ];
 
 export function getTotalUnread(): number {
