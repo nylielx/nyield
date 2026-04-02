@@ -2,10 +2,14 @@
  * =============================================================================
  * MESSAGING PAGE — Intent-driven chat with dynamic context panel
  * =============================================================================
+ * Auth-gated: redirects to /signin if not logged in.
+ * All identity resolution uses authenticated user ID.
+ * Conversation state derived from live message data.
+ * =============================================================================
  */
 
-import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Link, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Send, Search, ChevronRight, ChevronLeft, MessageCircle, Sparkles,
@@ -23,13 +27,13 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
-import type { AuthUser } from "@/services/auth";
 import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 import { toast } from "@/hooks/use-toast";
 import { getUserProfile } from "@/data/temp/profile-mock";
 import {
   conversationsMock, messagesMock, aiSuggestionsMock, quickActions, messageIntents,
-  getMyParticipant, getOtherParticipant, isMyMessage,
+  getMyParticipant, getOtherParticipant, isMyMessage, getConversationsForUser,
+  deriveConversationPreview,
   type Conversation, type ChatMessage, type ConversationType,
 } from "@/data/temp/messaging-mock";
 
@@ -74,9 +78,12 @@ const MessageSellerModal = ({
   <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
     <DialogContent className="sm:max-w-md glass-focus border-border/30">
       <DialogHeader>
-        <DialogTitle className="text-lg font-heading">What would you like to do?</DialogTitle>
+        <DialogTitle className="text-lg font-heading">Start a New Conversation</DialogTitle>
       </DialogHeader>
-      <div className="space-y-2 mt-2">
+      <p className="text-xs text-muted-foreground -mt-1 mb-2">
+        Choose a conversation type. A new thread will be created with a prefilled message.
+      </p>
+      <div className="space-y-2">
         {messageIntents.map((intent) => (
           <button
             key={intent.id}
@@ -102,7 +109,7 @@ const MessageSellerModal = ({
  * CONVERSATION LIST COMPONENT
  * ══════════════════════════════════════════════════════════════════════════════ */
 const ConversationList = ({
-  conversations, activeId, onSelect, search, onSearchChange, onNewMessage, userRole,
+  conversations, activeId, onSelect, search, onSearchChange, onNewMessage, userId, localMessages,
 }: {
   conversations: Conversation[];
   activeId: string | null;
@@ -110,7 +117,8 @@ const ConversationList = ({
   search: string;
   onSearchChange: (v: string) => void;
   onNewMessage: () => void;
-  userRole: "standard" | "business";
+  userId: string;
+  localMessages: Record<string, ChatMessage[]>;
 }) => {
   const filtered = conversations.filter((c) => {
     const names = c.participants.map((p) => p.name.toLowerCase()).join(" ");
@@ -144,11 +152,12 @@ const ConversationList = ({
       <ScrollArea className="min-h-0 flex-1">
         <div className="space-y-2 p-3">
           {filtered.map((conv) => {
-            const other = getOtherParticipant(conv, userRole);
+            const other = getOtherParticipant(conv, userId);
             if (!other) return null;
 
             const avatar = getAvatarById(other.avatar);
             const isActive = conv.id === activeId;
+            const preview = deriveConversationPreview(conv, localMessages[conv.id] ?? [], userId);
 
             return (
               <motion.button
@@ -187,7 +196,7 @@ const ConversationList = ({
                         </div>
                       </div>
                       <span className="shrink-0 pt-0.5 text-[10px] text-muted-foreground">
-                        {timeAgo(conv.lastMessageTime)}
+                        {timeAgo(preview.lastMessageTime)}
                       </span>
                     </div>
 
@@ -203,16 +212,16 @@ const ConversationList = ({
                       </span>
                     </div>
 
-                    <p className="mt-1 truncate pr-2 text-xs text-muted-foreground">{conv.lastMessage}</p>
+                    <p className="mt-1 truncate pr-2 text-xs text-muted-foreground">{preview.lastMessage}</p>
                     {conv.linkedListing && (
                       <p className="mt-1 truncate pr-2 text-[10px] text-primary/70">📦 {conv.linkedListing.title}</p>
                     )}
                   </div>
 
                   <div className="flex items-start justify-end pt-0.5">
-                    {conv.unreadCount > 0 && (
+                    {preview.unreadCount > 0 && (
                       <div className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5">
-                        <span className="text-[10px] font-bold text-primary-foreground">{conv.unreadCount}</span>
+                        <span className="text-[10px] font-bold text-primary-foreground">{preview.unreadCount}</span>
                       </div>
                     )}
                   </div>
@@ -280,21 +289,19 @@ const AiCard = ({ data }: { data: Record<string, string | number> }) => (
  * CHAT WINDOW COMPONENT
  * ══════════════════════════════════════════════════════════════════════════════ */
 const ChatWindow = ({
-  conversation, messages, onSendMessage, prefillMessage, onClearPrefill, userRole,
+  conversation, messages, onSendMessage, prefillMessage, onClearPrefill, userId,
 }: {
   conversation: Conversation;
   messages: ChatMessage[];
   onSendMessage: (text: string) => void;
   prefillMessage: string;
   onClearPrefill: () => void;
-  userRole: "standard" | "business";
+  userId: string;
 }) => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
-  const myParticipant = getMyParticipant(conversation, userRole);
-  const myParticipantId = myParticipant?.userId;
+  const prevMsgCountRef = useRef(messages.length);
 
   // Apply prefill message
   useEffect(() => {
@@ -306,21 +313,30 @@ const ChatWindow = ({
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
+  // Typing indicator: only triggers when the OTHER person sends a message
+  // In mock mode, simulate typing after user sends (the "other" is typing a reply)
   useEffect(() => {
-    const last = messages[messages.length - 1];
-    if (last && myParticipantId && last.senderId === myParticipantId) {
-      setIsTyping(true);
-      const timer = setTimeout(() => setIsTyping(false), 2000);
-      return () => clearTimeout(timer);
+    if (messages.length > prevMsgCountRef.current) {
+      const last = messages[messages.length - 1];
+      // Only show typing if *I* just sent a message (simulating other person drafting a reply)
+      if (last && last.senderId === userId) {
+        setIsTyping(true);
+        const timer = setTimeout(() => setIsTyping(false), 2500);
+        prevMsgCountRef.current = messages.length;
+        return () => clearTimeout(timer);
+      }
     }
-  }, [messages, myParticipantId]);
+    prevMsgCountRef.current = messages.length;
+  }, [messages, userId]);
 
-  const other = getOtherParticipant(conversation, userRole);
+  const other = getOtherParticipant(conversation, userId);
   const otherAvatar = getAvatarById(other?.avatar ?? "man");
+  const userRole = getMyParticipant(conversation, userId)?.role;
+  const isBusinessView = userRole === "seller";
 
-  const profileLink = conversation.businessSlug
+  const profileLink = conversation.businessSlug && !isBusinessView
     ? `/business/${conversation.businessSlug}`
-    : `/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`;
+    : `/user/${other?.username ?? "unknown"}`;
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -352,8 +368,8 @@ const ChatWindow = ({
             {other?.isOnline ? "Online" : `Last seen ${timeAgo(other?.lastSeen ?? "")}`}
           </p>
         </div>
-        {/* Show business badge ONLY when standard user is talking to a business */}
-        {conversation.businessName && userRole === "standard" && (
+        {/* Show business badge when talking to a business */}
+        {conversation.businessName && !isBusinessView && (
           <Badge variant="secondary" className="text-xs gap-1">🏢 {conversation.businessName}</Badge>
         )}
         {conversation.linkedOrder && (
@@ -379,7 +395,7 @@ const ChatWindow = ({
       <ScrollArea className="min-h-0 flex-1 p-4">
         <div className="space-y-4">
           {messages.map((msg) => {
-            const isMine = isMyMessage(msg, conversation, userRole);
+            const isMine = isMyMessage(msg, userId);
             return (
               <motion.div
                 key={msg.id}
@@ -447,7 +463,7 @@ const ChatWindow = ({
             variant="ghost"
             size="sm"
             className="text-[10px] h-7 px-2 shrink-0 gap-1 bg-muted/15 hover:bg-muted/30"
-            onClick={() => toast({ title: qa.label, description: "Quick action triggered (mock)" })}
+            onClick={() => toast({ title: qa.label, description: "Quick action triggered (demo)" })}
           >
             {qa.emoji} {qa.label}
           </Button>
@@ -477,19 +493,18 @@ const ChatWindow = ({
  * DYNAMIC CONTEXT PANEL — Renders strictly based on conversation.type
  * ══════════════════════════════════════════════════════════════════════════════ */
 const ContextPanel = ({
-  conversation, onClose, userRole,
+  conversation, onClose, userId,
 }: {
   conversation: Conversation;
   onClose: () => void;
-  userRole: "standard" | "business";
+  userId: string;
 }) => {
-  const me = getMyParticipant(conversation, userRole);
-  const other = getOtherParticipant(conversation, userRole);
+  const me = getMyParticipant(conversation, userId);
+  const other = getOtherParticipant(conversation, userId);
   const otherAvatar = getAvatarById(other?.avatar ?? "man");
   const userProfile = other?.username ? getUserProfile(other.username) : undefined;
 
-  // Determine labels based on role perspective
-  const isBusinessView = userRole === "business";
+  const isBusinessView = me?.role === "seller";
   const otherRoleLabel = isBusinessView ? "Customer" : (other?.role === "seller" ? "Seller" : "User");
 
   const panelTitle = (() => {
@@ -500,6 +515,10 @@ const ContextPanel = ({
       case "general": return other?.name ?? "Profile";
     }
   })();
+
+  const otherProfileLink = other?.username
+    ? (conversation.businessSlug && !isBusinessView ? `/business/${conversation.businessSlug}` : `/user/${other.username}`)
+    : "#";
 
   return (
     <div className="flex h-full min-w-0 flex-col overflow-hidden">
@@ -518,14 +537,13 @@ const ContextPanel = ({
       <ScrollArea className="min-h-0 flex-1 p-4">
         <div className="space-y-5">
 
-          {/* ─── PRODUCT INQUIRY: Business + Listing + Specs + AI ─── */}
+          {/* ─── PRODUCT INQUIRY ─── */}
           {conversation.type === "product_inquiry" && (
             <>
-              {/* Seller info for standard users */}
               {!isBusinessView && (
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Seller</p>
-                  <Link to={conversation.businessSlug ? `/business/${conversation.businessSlug}` : `/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
+                  <Link to={otherProfileLink} className="block">
                     <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
                       <CardContent className="p-3 space-y-2">
                         <div className="flex items-center gap-3">
@@ -554,11 +572,10 @@ const ContextPanel = ({
                 </div>
               )}
 
-              {/* Customer Card (business perspective) */}
               {isBusinessView && other && (
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Customer</p>
-                  <Link to={`/user/${other.username ?? other.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
+                  <Link to={`/user/${other.username ?? "unknown"}`} className="block">
                     <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
                       <CardContent className="p-3 flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center text-xl">{otherAvatar.emoji}</div>
@@ -573,7 +590,6 @@ const ContextPanel = ({
                 </div>
               )}
 
-              {/* Linked Listing with Specs */}
               {conversation.linkedListing ? (
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Product</p>
@@ -603,7 +619,6 @@ const ContextPanel = ({
 
               <Separator className="bg-border/20" />
 
-              {/* AI Insights */}
               <div className="space-y-3">
                 <div className="flex items-center gap-1.5">
                   <Sparkles className="h-3.5 w-3.5 text-purple-400" />
@@ -621,7 +636,7 @@ const ContextPanel = ({
                             <Button
                               variant="ghost" size="sm"
                               className="text-[10px] h-6 px-2 mt-1.5 text-purple-400 hover:text-purple-300 gap-1"
-                              onClick={() => toast({ title: sug.actionLabel, description: "AI action triggered" })}
+                              onClick={() => toast({ title: sug.actionLabel, description: "AI action triggered (demo)" })}
                             >
                               <Zap className="h-2.5 w-2.5" /> {sug.actionLabel}
                             </Button>
@@ -635,7 +650,7 @@ const ContextPanel = ({
             </>
           )}
 
-          {/* ─── OFFER: Role-aware — buyer sees status, seller sees accept/decline ─── */}
+          {/* ─── OFFER ─── */}
           {conversation.type === "offer" && (
             <>
               {conversation.linkedOffer ? (
@@ -677,25 +692,23 @@ const ContextPanel = ({
                         </div>
                       </div>
 
-                      {/* Accept/Decline ONLY for business (seller) */}
                       {isBusinessView && conversation.linkedOffer.status === "pending" && (
                         <div className="flex gap-2 pt-1">
                           <Button
                             size="sm" className="flex-1 text-xs h-8 gap-1 bg-green-600 hover:bg-green-700 text-white"
-                            onClick={() => toast({ title: "Offer Accepted", description: "Mock: Offer accepted" })}
+                            onClick={() => toast({ title: "Offer Accepted", description: "Demo: Offer accepted" })}
                           >
                             <ThumbsUp className="h-3 w-3" /> Accept
                           </Button>
                           <Button
                             size="sm" variant="outline" className="flex-1 text-xs h-8 gap-1 border-red-500/30 text-red-400 hover:bg-red-500/10"
-                            onClick={() => toast({ title: "Offer Declined", description: "Mock: Offer declined" })}
+                            onClick={() => toast({ title: "Offer Declined", description: "Demo: Offer declined" })}
                           >
                             <ThumbsDown className="h-3 w-3" /> Decline
                           </Button>
                         </div>
                       )}
 
-                      {/* Waiting status for standard (buyer) */}
                       {!isBusinessView && conversation.linkedOffer.status === "pending" && (
                         <p className="text-[10px] text-muted-foreground italic pt-1 flex items-center gap-1">
                           <Clock className="h-3 w-3" /> Waiting for seller to respond…
@@ -710,7 +723,6 @@ const ContextPanel = ({
                 </div>
               )}
 
-              {/* Linked listing */}
               {conversation.linkedListing && (
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Product</p>
@@ -726,10 +738,9 @@ const ContextPanel = ({
                 </div>
               )}
 
-              {/* Other participant */}
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{otherRoleLabel}</p>
-                <Link to={`/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
+                <Link to={`/user/${other?.username ?? "unknown"}`} className="block">
                   <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
                     <CardContent className="p-3 flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center text-xl">{otherAvatar.emoji}</div>
@@ -745,7 +756,7 @@ const ContextPanel = ({
             </>
           )}
 
-          {/* ─── ORDER: Order status + tracking + listing ─── */}
+          {/* ─── ORDER ─── */}
           {conversation.type === "order" && (
             <>
               {conversation.linkedOrder ? (
@@ -826,7 +837,7 @@ const ContextPanel = ({
 
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{otherRoleLabel}</p>
-                <Link to={`/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
+                <Link to={`/user/${other?.username ?? "unknown"}`} className="block">
                   <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
                     <CardContent className="p-3 flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center text-xl">{otherAvatar.emoji}</div>
@@ -842,12 +853,12 @@ const ContextPanel = ({
             </>
           )}
 
-          {/* ─── GENERAL: Profile only, NO business/listing data ─── */}
+          {/* ─── GENERAL ─── */}
           {conversation.type === "general" && (
             <>
               <div className="space-y-3">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Profile</p>
-                <Link to={`/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
+                <Link to={`/user/${other?.username ?? "unknown"}`} className="block">
                   <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
                     <CardContent className="p-3 flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-muted/30 flex items-center justify-center text-2xl">
@@ -910,28 +921,60 @@ const ContextPanel = ({
  * MAIN MESSAGING PAGE
  * ══════════════════════════════════════════════════════════════════════════════ */
 const MessagingPage = () => {
-  const { user } = useAuth();
-  const userRole = user?.role ?? "standard";
-  const [activeConv, setActiveConv] = useState<string | null>("conv-1");
+  const { user, isLoading } = useAuth();
+
+  // Auth gate
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/signin" replace />;
+  }
+
+  return <MessagingPageContent userId={user.id} userRole={user.role} />;
+};
+
+const MessagingPageContent = ({ userId, userRole }: { userId: string; userRole: string }) => {
+  const [activeConv, setActiveConv] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [showContext, setShowContext] = useState(true);
-  const [localMessages, setLocalMessages] = useState(messagesMock);
+  const [localMessages, setLocalMessages] = useState<Record<string, ChatMessage[]>>(messagesMock);
+  const [localConversations, setLocalConversations] = useState<Conversation[]>(conversationsMock);
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
   const [showIntentModal, setShowIntentModal] = useState(false);
   const [prefillMessage, setPrefillMessage] = useState("");
 
   useEffect(() => { document.title = "Messages — nYield"; }, []);
 
-  const activeConversation = conversationsMock.find((c) => c.id === activeConv);
+  // Filter conversations to only those this user participates in
+  const myConversations = getConversationsForUser(userId, localConversations);
+
+  // Auto-select first conversation
+  useEffect(() => {
+    if (!activeConv && myConversations.length > 0) {
+      setActiveConv(myConversations[0].id);
+    }
+  }, [myConversations, activeConv]);
+
+  const activeConversation = myConversations.find((c) => c.id === activeConv);
   const activeMessages = activeConv ? (localMessages[activeConv] ?? []) : [];
 
-  const handleSend = (text: string) => {
-    if (!activeConv || !user) return;
-    const myParticipant = activeConversation ? getMyParticipant(activeConversation, userRole) : null;
+  const totalUnread = myConversations.reduce((sum, conv) => {
+    const msgs = localMessages[conv.id] ?? [];
+    return sum + msgs.filter((m) => m.senderId !== userId && !m.read).length;
+  }, 0);
+
+  const handleSend = useCallback((text: string) => {
+    if (!activeConv) return;
     const newMsg: ChatMessage = {
       id: `m-${Date.now()}`,
       conversationId: activeConv,
-      senderId: myParticipant?.userId ?? "user-001",
+      senderId: userId,
       content: text,
       type: "text",
       timestamp: new Date().toISOString(),
@@ -941,20 +984,35 @@ const MessagingPage = () => {
       ...prev,
       [activeConv]: [...(prev[activeConv] ?? []), newMsg],
     }));
-  };
+  }, [activeConv, userId]);
 
   const selectConversation = (id: string) => {
     setActiveConv(id);
     setMobileView("chat");
   };
 
-  const handleIntentSelect = (_type: ConversationType, prefill: string) => {
+  const handleIntentSelect = (type: ConversationType, prefill: string) => {
     setShowIntentModal(false);
+
+    // Create a new conversation
+    const newConvId = `conv-new-${Date.now()}`;
+    const newConv: Conversation = {
+      id: newConvId,
+      type,
+      participants: [
+        { userId, name: "You", avatar: "man", role: "buyer", isOnline: true, username: "you" },
+        { userId: "user-new", name: "New Contact", avatar: "man", role: "seller", isOnline: false, username: "new-contact" },
+      ],
+      lastMessage: prefill,
+      lastMessageTime: new Date().toISOString(),
+      unreadCount: 0,
+    };
+    setLocalConversations((prev) => [newConv, ...prev]);
+    setLocalMessages((prev) => ({ ...prev, [newConvId]: [] }));
+    setActiveConv(newConvId);
     setPrefillMessage(prefill);
-    // For demo, select the first conversation — in production this would create a new one
-    if (activeConv) {
-      toast({ title: "Conversation started", description: `Intent: ${TYPE_LABELS[_type]}` });
-    }
+    setMobileView("chat");
+    toast({ title: "New conversation created", description: `Type: ${TYPE_LABELS[type]}` });
   };
 
   return (
@@ -971,12 +1029,14 @@ const MessagingPage = () => {
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5 text-primary" />
                 <h1 className="text-xl font-heading font-bold">Messages</h1>
-                <Badge variant="secondary" className="text-xs">
-                  {conversationsMock.reduce((s, c) => s + c.unreadCount, 0)} unread
-                </Badge>
+                {totalUnread > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {totalUnread} unread
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground">
-                Keep inquiries, offers, orders, and direct chats separated without the sidebar bleeding into the thread.
+                Keep inquiries, offers, orders, and direct chats organised.
               </p>
             </div>
 
@@ -1003,13 +1063,14 @@ const MessagingPage = () => {
               className={`${mobileView === "chat" ? "hidden md:flex" : "flex"} min-h-0 min-w-0 flex-col overflow-hidden border-b border-border/30 bg-card/30 md:border-b-0 md:border-r`}
             >
               <ConversationList
-                conversations={conversationsMock}
+                conversations={myConversations}
                 activeId={activeConv}
                 onSelect={selectConversation}
                 search={search}
                 onSearchChange={setSearch}
                 onNewMessage={() => setShowIntentModal(true)}
-                userRole={userRole}
+                userId={userId}
+                localMessages={localMessages}
               />
             </section>
 
@@ -1030,7 +1091,7 @@ const MessagingPage = () => {
                       onSendMessage={handleSend}
                       prefillMessage={prefillMessage}
                       onClearPrefill={() => setPrefillMessage("")}
-                      userRole={userRole}
+                      userId={userId}
                     />
                   </div>
                 </>
@@ -1038,9 +1099,13 @@ const MessagingPage = () => {
                 <div className="flex flex-1 items-center justify-center px-6 text-muted-foreground">
                   <div className="max-w-sm text-center">
                     <MessageCircle className="mx-auto mb-3 h-12 w-12 text-muted-foreground/30" />
-                    <p className="text-sm font-medium text-foreground">Select a conversation</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {myConversations.length === 0 ? "No conversations yet" : "Select a conversation"}
+                    </p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Choose a chat from the left column to open the full thread and context details.
+                      {myConversations.length === 0
+                        ? "Start a new conversation from a listing or profile page."
+                        : "Choose a chat from the left column to open the full thread and context details."}
                     </p>
                   </div>
                 </div>
@@ -1060,7 +1125,7 @@ const MessagingPage = () => {
                   <ContextPanel
                     conversation={activeConversation}
                     onClose={() => setShowContext(false)}
-                    userRole={userRole}
+                    userId={userId}
                   />
                 </motion.aside>
               )}

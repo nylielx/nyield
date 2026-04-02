@@ -2,16 +2,8 @@
  * =============================================================================
  * BUSINESS QUICK PANEL — Structured mini-dashboard popover for business users
  * =============================================================================
- * Replaces the basic profile dropdown for business accounts.
- * Includes: account overview, badges, quick actions, performance snapshot,
- * and utility links.
- *
- * Uses glassmorphism + Framer Motion for premium feel.
- *
- * DATA FLOW:
- *   AuthContext → user info
- *   seller-mock.ts → live insight metrics
- *   navigation-config.ts → quick action links
+ * Uses canonical username/businessSlug for profile URLs.
+ * Does NOT link to /account (standard account shell) — uses /seller routes.
  * =============================================================================
  */
 
@@ -26,7 +18,8 @@ import {
   BarChart3,
   CheckCircle2,
   Store,
-  LayoutDashboard,
+  User,
+  MessageCircle,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +44,7 @@ const BusinessPanel = () => {
   if (!user) return null;
 
   const avatarId = user.avatar;
+  const businessProfileLink = user.businessSlug ? `/business/${user.businessSlug}` : `/user/${user.username}`;
 
   return (
     <div className="relative" ref={ref}>
@@ -91,6 +85,26 @@ const BusinessPanel = () => {
               </div>
             </div>
 
+            {/* ── Profile & Messages ── */}
+            <div className="p-2 border-b border-border/30">
+              <Link
+                to={businessProfileLink}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
+              >
+                <User className="h-4 w-4" />
+                View Business Profile
+              </Link>
+              <Link
+                to="/messages"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Messages
+              </Link>
+            </div>
+
             {/* ── Quick Actions ── */}
             <div className="p-2 border-b border-border/30">
               <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
@@ -98,7 +112,7 @@ const BusinessPanel = () => {
               </p>
               {businessDropdownQuickActions.map(({ label, to, icon: Icon }) => (
                 <Link
-                  key={to}
+                  key={to + label}
                   to={to}
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors group"
@@ -155,14 +169,6 @@ const BusinessPanel = () => {
               </Link>
 
               <div className="mt-1 pt-1 border-t border-border/30">
-                <Link
-                  to="/account"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
-                >
-                  <LayoutDashboard className="h-4 w-4" />
-                  My Account
-                </Link>
                 <button
                   onClick={() => {
                     setOpen(false);
