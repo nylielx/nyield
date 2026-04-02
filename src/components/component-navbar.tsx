@@ -18,6 +18,7 @@ import { Link, useLocation } from "react-router-dom";
 import ThemeToggle from "./component-theme-toggle";
 import ProfileDropdown from "./component-profile-dropdown";
 import { useAuth } from "@/contexts/AuthContext";
+import { getTotalUnread } from "@/data/temp/messaging-mock";
 
 const navLinks = [
   { label: "Services", to: "/services" },
