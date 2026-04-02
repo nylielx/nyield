@@ -28,7 +28,6 @@ const SellerDashboardLayout = () => {
     return <Navigate to="/signin" replace />;
   }
 
-  /* Standard users cannot access the business dashboard */
   if (!isBusiness) {
     return <Navigate to="/account" replace />;
   }
@@ -36,7 +35,7 @@ const SellerDashboardLayout = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="container mx-auto px-4 pt-32 pb-16">
+      <div className="max-w-7xl mx-auto px-6 pt-32 pb-16">
         <div className="flex flex-col md:flex-row gap-8">
           <SellerSidebar />
           <main className="flex-1 min-w-0">
