@@ -13,7 +13,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, useScroll, useTransform, useVelocity, useSpring } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, MessageCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import ThemeToggle from "./component-theme-toggle";
 import ProfileDropdown from "./component-profile-dropdown";
