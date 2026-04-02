@@ -2,6 +2,11 @@
  * =============================================================================
  * PUBLIC USER PROFILE PAGE — /user/:username (eBay-style)
  * =============================================================================
+ * Ownership detection uses canonical user.id, not fullName comparison.
+ * Profile resolution checks auth registry for dynamically registered users.
+ * Reviewer links use canonical reviewerUsername.
+ * Message button opens messaging with context.
+ * =============================================================================
  */
 
 import { useState } from "react";
@@ -11,7 +16,6 @@ import {
   Copy, Share2, MessageCircle, MapPin, Calendar, Star,
   Cpu, Monitor, HardDrive, MemoryStick, ExternalLink,
   ShieldCheck, Clock, TrendingUp, Package, Filter,
-  SortAsc, SortDesc,
 } from "lucide-react";
 import Navbar from "@/components/component-navbar";
 import SiteFooter from "@/components/component-site-footer";
@@ -46,32 +50,29 @@ const PublicProfilePage = () => {
   const { username } = useParams<{ username: string }>();
   const { user: authUser } = useAuth();
 
-  // Review filters
   const [reviewSort, setReviewSort] = useState<"newest" | "oldest" | "highest" | "lowest">("newest");
   const [reviewFilter, setReviewFilter] = useState<"all" | "5" | "4" | "3" | "2" | "1">("all");
-
-  // Listing filters
   const [listingSort, setListingSort] = useState<"newest" | "price-asc" | "price-desc">("newest");
 
-  const profile = getUserProfile(username ?? "hassan");
+  // Resolve profile — getUserProfile now checks auth registry too
+  const profile = username ? getUserProfile(username) : undefined;
 
-  // Check if this is the logged-in user's own profile — merge auth changes
-  const isOwnProfile = authUser && profile && (
-    authUser.id === profile.id ||
-    authUser.fullName.toLowerCase().replace(/\s/g, "") === username?.toLowerCase()
-  );
+  // Own-profile detection: canonical ID check only
+  const isOwnProfile = !!(authUser && profile && authUser.id === profile.id);
 
-  // Merge auth context changes into profile display
+  // Merge auth context for live data on own profile
   const displayName = isOwnProfile ? authUser!.fullName : profile?.fullName ?? "";
   const displayAvatar = isOwnProfile ? (authUser!.avatar ?? profile?.avatar ?? "dragon") : (profile?.avatar ?? "dragon");
-  const displayAvatarUrl = isOwnProfile ? authUser!.avatarUrl : undefined;
+  const displayAvatarUrl = isOwnProfile ? authUser!.avatarUrl : profile?.avatarUrl;
 
-  if (!profile) {
+  if (!username || !profile) {
     return (
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
         <main className="pt-28 pb-16 text-center">
-          <p className="text-muted-foreground">User not found.</p>
+          <p className="text-lg font-medium text-foreground mb-2">User not found</p>
+          <p className="text-muted-foreground text-sm">The profile you're looking for doesn't exist or has been removed.</p>
+          <Link to="/" className="text-primary text-sm hover:underline mt-4 inline-block">← Back to home</Link>
         </main>
         <SiteFooter />
       </div>
@@ -81,7 +82,6 @@ const PublicProfilePage = () => {
   const avatar = getAvatarById(displayAvatar);
   const userListings = marketplaceListings.filter((l) => profile.listings.includes(l.id));
 
-  // Filter & sort reviews
   const filteredReviews = profile.reviews
     .filter((r) => reviewFilter === "all" || r.rating === Number(reviewFilter))
     .sort((a, b) => {
@@ -94,7 +94,6 @@ const PublicProfilePage = () => {
       }
     });
 
-  // Sort listings
   const sortedListings = [...userListings].sort((a, b) => {
     switch (listingSort) {
       case "price-asc": return a.price - b.price;
@@ -147,8 +146,15 @@ const PublicProfilePage = () => {
                     <StarRating rating={profile.rating} count={profile.reviews.length} />
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    {!isOwnProfile && (
-                      <Link to="/messages">
+                    {!isOwnProfile && authUser && (
+                      <Link to={`/messages?to=${profile.username}`}>
+                        <Button size="sm" className="gap-1.5">
+                          <MessageCircle className="h-3.5 w-3.5" /> Message
+                        </Button>
+                      </Link>
+                    )}
+                    {!isOwnProfile && !authUser && (
+                      <Link to="/signin">
                         <Button size="sm" className="gap-1.5">
                           <MessageCircle className="h-3.5 w-3.5" /> Message
                         </Button>
@@ -164,7 +170,7 @@ const PublicProfilePage = () => {
                     <Button size="sm" variant="outline" onClick={copyLink} className="gap-1.5">
                       <Copy className="h-3.5 w-3.5" /> Copy Link
                     </Button>
-                    <Button size="sm" variant="outline" className="gap-1.5">
+                    <Button size="sm" variant="outline" className="gap-1.5" onClick={() => toast({ title: "Share", description: "Share feature coming soon (demo)" })}>
                       <Share2 className="h-3.5 w-3.5" /> Share
                     </Button>
                   </div>
@@ -207,13 +213,11 @@ const PublicProfilePage = () => {
                 <TabsTrigger value="setup">PC Setup</TabsTrigger>
               </TabsList>
 
-              {/* LISTINGS */}
               <TabsContent value="listings">
                 {userListings.length === 0 ? (
                   <Card className="border-border/30 bg-card/50"><CardContent className="p-8 text-center text-muted-foreground text-sm">No listings yet.</CardContent></Card>
                 ) : (
                   <div className="space-y-4">
-                    {/* Listing filters */}
                     <div className="flex items-center gap-2">
                       <Filter className="h-3.5 w-3.5 text-muted-foreground" />
                       <Select value={listingSort} onValueChange={(v) => setListingSort(v as typeof listingSort)}>
@@ -258,7 +262,6 @@ const PublicProfilePage = () => {
                 )}
               </TabsContent>
 
-              {/* ABOUT */}
               <TabsContent value="about">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Card className="border-border/30 bg-card/50 backdrop-blur-md">
@@ -299,10 +302,8 @@ const PublicProfilePage = () => {
                 </div>
               </TabsContent>
 
-              {/* REVIEWS */}
               <TabsContent value="reviews">
                 <div className="space-y-4">
-                  {/* Review filters */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <Filter className="h-3.5 w-3.5 text-muted-foreground" />
                     <Select value={reviewFilter} onValueChange={(v) => setReviewFilter(v as typeof reviewFilter)}>
@@ -348,7 +349,7 @@ const PublicProfilePage = () => {
                               <div className="w-9 h-9 rounded-full bg-muted/30 flex items-center justify-center text-lg">{reviewerAvatar.emoji}</div>
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <Link to={`/user/${review.reviewerName.toLowerCase().replace(/\s/g, "")}`} className="text-sm font-medium hover:text-primary transition-colors">{review.reviewerName}</Link>
+                                  <Link to={`/user/${review.reviewerUsername}`} className="text-sm font-medium hover:text-primary transition-colors">{review.reviewerName}</Link>
                                   <div className="flex gap-0.5">
                                     {[1, 2, 3, 4, 5].map((i) => <Star key={i} className={`h-3 w-3 ${i <= review.rating ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground/20"}`} />)}
                                   </div>
@@ -366,7 +367,6 @@ const PublicProfilePage = () => {
                 </div>
               </TabsContent>
 
-              {/* PC SETUP */}
               <TabsContent value="setup">
                 <Card className="border-border/30 bg-card/50 backdrop-blur-md">
                   <CardContent className="p-5 space-y-3">
