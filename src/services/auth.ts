@@ -36,6 +36,7 @@ export interface AuthUser {
   email: string;
   fullName: string;
   avatar: AvatarOption;
+  avatarUrl?: string; // uploaded profile picture (base64 data URL)
   role: UserRole;
   memberSince: string; // ISO date string
 }

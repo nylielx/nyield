@@ -16,6 +16,7 @@ export const useProfileSettings = () => {
     fullName: user?.fullName ?? "",
     email: user?.email ?? "",
     avatar: (user?.avatar ?? "dragon") as AvatarOption,
+    avatarUrl: user?.avatarUrl,
   };
 
   const updateField = (field: string, value: string) => {
@@ -28,5 +29,13 @@ export const useProfileSettings = () => {
     updateProfile({ avatar });
   };
 
-  return { profile, updateField, updateAvatar, saving };
+  const updateAvatarUrl = (url: string) => {
+    updateProfile({ avatarUrl: url });
+  };
+
+  const removeAvatarUrl = () => {
+    updateProfile({ avatarUrl: undefined });
+  };
+
+  return { profile, updateField, updateAvatar, updateAvatarUrl, removeAvatarUrl, saving };
 };
