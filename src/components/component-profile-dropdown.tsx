@@ -18,7 +18,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { LogOut, Store, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { dropdownVariants } from "@/animations/presets";
-import { avatarOptions } from "@/data/temp/8-user-profile-mock";
+import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 import { standardSidebarSections } from "@/data/navigation-config";
 import BusinessPanel from "./component-business-panel";
 import SellerApplicationModal from "./seller-application-modal";
@@ -55,7 +55,7 @@ const StandardDropdown = () => {
 
   if (!user) return null;
 
-  const avatarEmoji = avatarOptions.find((a) => a.value === user.avatar)?.emoji ?? "👤";
+  const avatarEmoji = getAvatarById(user.avatar).emoji;
 
   /** Show only the first 3 sections (Overview + Activity + Saved) as quick links */
   const quickSections = standardSidebarSections.slice(0, 3);

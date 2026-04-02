@@ -23,14 +23,14 @@ import {
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { avatarOptions } from "@/data/temp/8-user-profile-mock";
+import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 import { Badge } from "@/components/ui/badge";
 import { businessSidebarSections } from "@/data/navigation-config";
 
 export const SellerSidebar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
-  const avatarEmoji = avatarOptions.find((a) => a.value === user?.avatar)?.emoji ?? "👤";
+  const avatarEmoji = getAvatarById(user?.avatar ?? "man").emoji;
 
   return (
     <aside className="w-full md:w-64 shrink-0">

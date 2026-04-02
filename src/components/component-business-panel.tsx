@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
-import { avatarOptions } from "@/data/temp/8-user-profile-mock";
+import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 import { sellerMetrics } from "@/pages/13-page-seller-dashboard/data/seller-mock";
 import { businessDropdownQuickActions } from "@/data/navigation-config";
 
@@ -50,7 +50,7 @@ const BusinessPanel = () => {
 
   if (!user) return null;
 
-  const avatarEmoji = avatarOptions.find((a) => a.value === user.avatar)?.emoji ?? "👤";
+  const avatarEmoji = getAvatarById(user.avatar).emoji;
 
   return (
     <div className="relative" ref={ref}>
