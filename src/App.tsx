@@ -53,6 +53,7 @@ import PcAnalyzerPage from "./pages/16-page-pc-analyzer";
 import MessagingPage from "./pages/18-page-messaging";
 import BusinessProfilePage from "./pages/19-page-business-profile";
 import AffiliatePage from "./pages/20-page-affiliate";
+import AffiliateLandingPage from "./pages/20-page-affiliate/landing";
 
 const queryClient = new QueryClient();
 
