@@ -276,3 +276,42 @@ export const messageIntents: MessageIntent[] = [
 export function getTotalUnread(): number {
   return conversationsMock.reduce((sum, c) => sum + c.unreadCount, 0);
 }
+
+/**
+ * Resolve the "my" participant in a conversation based on user role.
+ * Standard users own the "buyer" participant; business users own the "seller" participant.
+ */
+export function getMyParticipant(
+  conversation: Conversation,
+  userRole: "standard" | "business",
+): ConversationParticipant | undefined {
+  if (userRole === "business") {
+    return conversation.participants.find((p) => p.role === "seller");
+  }
+  return conversation.participants.find((p) => p.role === "buyer" && p.userId === "user-001")
+    ?? conversation.participants.find((p) => p.role === "buyer");
+}
+
+/**
+ * Resolve the "other" participant (the person you're chatting WITH).
+ */
+export function getOtherParticipant(
+  conversation: Conversation,
+  userRole: "standard" | "business",
+): ConversationParticipant | undefined {
+  const me = getMyParticipant(conversation, userRole);
+  if (!me) return conversation.participants[0];
+  return conversation.participants.find((p) => p.userId !== me.userId);
+}
+
+/**
+ * Check if a message was sent by "me" based on role-based ownership.
+ */
+export function isMyMessage(
+  message: ChatMessage,
+  conversation: Conversation,
+  userRole: "standard" | "business",
+): boolean {
+  const me = getMyParticipant(conversation, userRole);
+  return me ? message.senderId === me.userId : false;
+}
