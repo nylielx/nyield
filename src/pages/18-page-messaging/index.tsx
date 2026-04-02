@@ -1,6 +1,6 @@
 /**
  * =============================================================================
- * MESSAGING PAGE — Full chat system with context panels
+ * MESSAGING PAGE — Full chat system with dynamic context panel
  * =============================================================================
  */
 
@@ -9,11 +9,11 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Send, Search, ChevronRight, ChevronLeft, MessageCircle, Sparkles,
-  CheckCheck, Check, Circle, ExternalLink, Cpu, Monitor, MemoryStick,
-  PanelRightOpen, PanelRightClose, Bot, Zap, X,
+  CheckCheck, Check, ExternalLink, Cpu, Monitor, MemoryStick,
+  PanelRightOpen, PanelRightClose, Bot, Zap, X, Package, Truck,
+  ShieldCheck, HardDrive, Clock, DollarSign, AlertCircle, Headphones,
 } from "lucide-react";
 import Navbar from "@/components/component-navbar";
-import SiteFooter from "@/components/component-site-footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,9 +23,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 import { toast } from "@/hooks/use-toast";
+import { getUserProfile } from "@/data/temp/profile-mock";
 import {
   conversationsMock, messagesMock, aiSuggestionsMock, quickActions,
-  type Conversation, type ChatMessage, type AiSuggestion,
+  type Conversation, type ChatMessage,
 } from "@/data/temp/messaging-mock";
 
 /* ── Helpers ── */
@@ -42,6 +43,8 @@ const timeAgo = (ts: string) => {
 const formatTime = (ts: string) =>
   new Date(ts).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 
+const CURRENT_USER_ID = "user-001";
+
 /* ══════════════════════════════════════════════════════════════════════════════
  * CONVERSATION LIST COMPONENT
  * ══════════════════════════════════════════════════════════════════════════════ */
@@ -56,12 +59,20 @@ const ConversationList = ({
 }) => {
   const filtered = conversations.filter((c) => {
     const names = c.participants.map((p) => p.name.toLowerCase()).join(" ");
-    return names.includes(search.toLowerCase()) || (c.linkedListingTitle ?? "").toLowerCase().includes(search.toLowerCase());
+    return names.includes(search.toLowerCase()) || (c.linkedListing?.title ?? "").toLowerCase().includes(search.toLowerCase());
   });
+
+  const getTypeLabel = (conv: Conversation) => {
+    switch (conv.type) {
+      case "business": return "Business";
+      case "order": return "Order";
+      case "support": return "Support";
+      case "user": return null;
+    }
+  };
 
   return (
     <div className="flex flex-col h-full">
-      {/* Search */}
       <div className="p-3 border-b border-border/30">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -74,14 +85,14 @@ const ConversationList = ({
         </div>
       </div>
 
-      {/* List */}
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-0.5">
           {filtered.map((conv) => {
-            const other = conv.participants.find((p) => p.userId !== "user-001");
+            const other = conv.participants.find((p) => p.userId !== CURRENT_USER_ID);
             if (!other) return null;
             const avatar = getAvatarById(other.avatar);
             const isActive = conv.id === activeId;
+            const typeLabel = getTypeLabel(conv);
 
             return (
               <motion.button
@@ -95,7 +106,6 @@ const ConversationList = ({
                 whileTap={{ scale: 0.98 }}
               >
                 <div className="flex items-start gap-3">
-                  {/* Avatar with online indicator */}
                   <div className="relative shrink-0">
                     <div className="w-10 h-10 rounded-full bg-muted/30 flex items-center justify-center text-lg">
                       {avatar.emoji}
@@ -111,15 +121,15 @@ const ConversationList = ({
                         {conv.verified && (
                           <Badge variant="outline" className="text-[9px] px-1 py-0 bg-primary/10 text-primary border-primary/30">✓</Badge>
                         )}
-                        {conv.type === "support" && (
-                          <Badge variant="outline" className="text-[9px] px-1 py-0">Support</Badge>
+                        {typeLabel && (
+                          <Badge variant="outline" className="text-[9px] px-1 py-0">{typeLabel}</Badge>
                         )}
                       </div>
                       <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(conv.lastMessageTime)}</span>
                     </div>
                     <p className="text-xs text-muted-foreground truncate mt-0.5">{conv.lastMessage}</p>
-                    {conv.linkedListingTitle && (
-                      <p className="text-[10px] text-primary/70 truncate mt-0.5">📦 {conv.linkedListingTitle}</p>
+                    {conv.linkedListing && (
+                      <p className="text-[10px] text-primary/70 truncate mt-0.5">📦 {conv.linkedListing.title}</p>
                     )}
                   </div>
                   {conv.unreadCount > 0 && (
@@ -198,7 +208,6 @@ const ChatWindow = ({
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
-  // Simulate typing indicator
   useEffect(() => {
     const last = messages[messages.length - 1];
     if (last?.senderId === user?.id) {
@@ -208,8 +217,12 @@ const ChatWindow = ({
     }
   }, [messages, user?.id]);
 
-  const other = conversation.participants.find((p) => p.userId !== "user-001");
+  const other = conversation.participants.find((p) => p.userId !== CURRENT_USER_ID);
   const otherAvatar = getAvatarById(other?.avatar ?? "man");
+
+  const profileLink = conversation.type === "business" && conversation.businessSlug
+    ? `/business/${conversation.businessSlug}`
+    : `/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`;
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -231,7 +244,7 @@ const ChatWindow = ({
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <Link to={`/user/${other?.name?.toLowerCase().replace(/\s/g, "")}`} className="text-sm font-semibold hover:text-primary transition-colors">{other?.name}</Link>
+            <Link to={profileLink} className="text-sm font-semibold hover:text-primary transition-colors">{other?.name}</Link>
             {conversation.verified && <Badge variant="outline" className="text-[9px] px-1 py-0 bg-primary/10 text-primary border-primary/30">Verified</Badge>}
           </div>
           <p className="text-[10px] text-muted-foreground">
@@ -241,13 +254,16 @@ const ChatWindow = ({
         {conversation.businessName && (
           <Badge variant="secondary" className="text-xs gap-1">🏢 {conversation.businessName}</Badge>
         )}
+        {conversation.linkedOrder && (
+          <Badge variant="secondary" className="text-xs gap-1">📦 {conversation.linkedOrder.orderId}</Badge>
+        )}
       </div>
 
       {/* Context banner for linked listing */}
-      {conversation.linkedListingTitle && (
+      {conversation.linkedListing && (
         <div className="px-4 py-2 bg-primary/5 border-b border-primary/10 flex items-center gap-2">
           <span className="text-xs text-muted-foreground">📦 Re:</span>
-          <span className="text-xs font-medium text-primary">{conversation.linkedListingTitle}</span>
+          <span className="text-xs font-medium text-primary">{conversation.linkedListing.title}</span>
           <ChevronRight className="h-3 w-3 text-muted-foreground ml-auto" />
         </div>
       )}
@@ -256,7 +272,7 @@ const ChatWindow = ({
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
           {messages.map((msg) => {
-            const isMine = msg.senderId === "user-001";
+            const isMine = msg.senderId === CURRENT_USER_ID;
             return (
               <motion.div
                 key={msg.id}
@@ -266,12 +282,10 @@ const ChatWindow = ({
                 className={`flex ${isMine ? "justify-end" : "justify-start"}`}
               >
                 <div className={`max-w-[75%] ${isMine ? "items-end" : "items-start"} flex flex-col gap-1`}>
-                  {/* Rich cards */}
                   {msg.type === "listing-card" && msg.cardData && <ListingCard data={msg.cardData} />}
                   {msg.type === "specs-card" && msg.cardData && <SpecsCard data={msg.cardData} />}
                   {msg.type === "ai-suggestion" && msg.cardData && <AiCard data={msg.cardData} />}
 
-                  {/* Text bubble */}
                   {msg.content && (
                     <div className={`rounded-2xl px-3.5 py-2 text-sm ${
                       isMine
@@ -282,7 +296,6 @@ const ChatWindow = ({
                     </div>
                   )}
 
-                  {/* Meta */}
                   <div className={`flex items-center gap-1 ${isMine ? "flex-row-reverse" : ""}`}>
                     <span className="text-[10px] text-muted-foreground">{formatTime(msg.timestamp)}</span>
                     {isMine && (
@@ -296,13 +309,8 @@ const ChatWindow = ({
             );
           })}
 
-          {/* Typing indicator */}
           {isTyping && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center gap-2"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full bg-muted/30 flex items-center justify-center text-sm">
                 {otherAvatar.emoji}
               </div>
@@ -359,7 +367,7 @@ const ChatWindow = ({
 };
 
 /* ══════════════════════════════════════════════════════════════════════════════
- * CONTEXT + AI PANEL
+ * DYNAMIC CONTEXT PANEL — Renders based on conversation.type
  * ══════════════════════════════════════════════════════════════════════════════ */
 const ContextPanel = ({
   conversation, onClose,
@@ -367,116 +375,332 @@ const ContextPanel = ({
   conversation: Conversation;
   onClose: () => void;
 }) => {
-  const other = conversation.participants.find((p) => p.userId !== "user-001");
+  const other = conversation.participants.find((p) => p.userId !== CURRENT_USER_ID);
   const otherAvatar = getAvatarById(other?.avatar ?? "man");
+
+  // Look up user profile from mock data for richer context
+  const userProfile = other?.username ? getUserProfile(other.username) : undefined;
+
+  const panelTitle = (() => {
+    switch (conversation.type) {
+      case "business": return "Business Context";
+      case "order": return "Order Details";
+      case "support": return "Support Info";
+      case "user": return "User Profile";
+    }
+  })();
 
   return (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-border/30 flex items-center justify-between">
-        <span className="text-sm font-semibold">Context</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold">{panelTitle}</span>
+          <Badge variant="outline" className="text-[9px] px-1.5 py-0 capitalize">{conversation.type}</Badge>
+        </div>
         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
       </div>
+
       <ScrollArea className="flex-1 p-4 space-y-5">
         <div className="space-y-5">
-          {/* Profile Preview */}
-          <div className="space-y-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Profile</p>
-            <Link to={`/user/${other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
-              <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
-                <CardContent className="p-3 flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-muted/30 flex items-center justify-center text-2xl">
-                    {otherAvatar.emoji}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">{other?.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{other?.isOnline ? "🟢 Online" : "⚫ Offline"}</p>
-                    <p className="text-[10px] text-primary mt-0.5">View full profile →</p>
-                  </div>
-                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
-                </CardContent>
-              </Card>
-            </Link>
-          </div>
 
-          {/* Business info */}
-          {conversation.businessName && (
-            <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Business</p>
-              <Link to={`/business/${conversation.businessName.toLowerCase().replace(/\s/g, "-")}`}>
-                <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
-                  <CardContent className="p-3 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{conversation.businessName}</span>
-                      {conversation.verified && <Badge className="text-[9px] bg-primary/10 text-primary border-primary/30">✓ Verified</Badge>}
-                    </div>
-                    {conversation.businessRating && (
-                      <div className="flex items-center gap-1 text-xs">
-                        <span>⭐</span>
-                        <span className="font-medium">{conversation.businessRating}</span>
-                        <span className="text-muted-foreground">rating</span>
+          {/* ─── BUSINESS-TYPE: Show business profile + listing specs ─── */}
+          {conversation.type === "business" && (
+            <>
+              {/* Business Card */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Business</p>
+                <Link to={`/business/${conversation.businessSlug ?? "unknown"}`}>
+                  <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
+                    <CardContent className="p-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">{conversation.businessName}</span>
+                        {conversation.verified && (
+                          <Badge className="text-[9px] bg-primary/10 text-primary border-primary/30">
+                            <ShieldCheck className="h-2.5 w-2.5 mr-0.5" /> Verified
+                          </Badge>
+                        )}
                       </div>
-                    )}
-                    <p className="text-[10px] text-primary">View business profile →</p>
-                  </CardContent>
-                </Card>
-              </Link>
-            </div>
+                      {conversation.businessRating && (
+                        <div className="flex items-center gap-1 text-xs">
+                          <span>⭐</span>
+                          <span className="font-medium">{conversation.businessRating}</span>
+                          <span className="text-muted-foreground">rating</span>
+                        </div>
+                      )}
+                      <p className="text-[10px] text-primary">View business profile →</p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </div>
+
+              {/* Linked Listing with Specs */}
+              {conversation.linkedListing ? (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Linked Listing</p>
+                  <Card className="border-border/30 bg-muted/10">
+                    <CardContent className="p-3 space-y-2">
+                      <p className="text-sm font-medium">{conversation.linkedListing.title}</p>
+                      <p className="text-sm font-bold text-primary">£{conversation.linkedListing.price.toLocaleString()}</p>
+                      {conversation.linkedListing.cpu && (
+                        <div className="space-y-1 text-xs text-muted-foreground pt-1 border-t border-border/20">
+                          <div className="flex items-center gap-2"><Cpu className="h-3 w-3" /> {conversation.linkedListing.cpu}</div>
+                          <div className="flex items-center gap-2"><Monitor className="h-3 w-3" /> {conversation.linkedListing.gpu}</div>
+                          <div className="flex items-center gap-2"><MemoryStick className="h-3 w-3" /> {conversation.linkedListing.ram}</div>
+                          <div className="flex items-center gap-2"><HardDrive className="h-3 w-3" /> {conversation.linkedListing.storage}</div>
+                        </div>
+                      )}
+                      <Link to={`/marketplace/${conversation.linkedListing.id}`} className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+                        View Listing <ExternalLink className="h-2.5 w-2.5" />
+                      </Link>
+                    </CardContent>
+                  </Card>
+                </div>
+              ) : (
+                <div className="text-xs text-muted-foreground italic p-2">No listing linked to this conversation</div>
+              )}
+
+              {/* Seller Profile Preview */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Seller</p>
+                <Link to={`/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
+                  <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
+                    <CardContent className="p-3 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center text-xl">
+                        {otherAvatar.emoji}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{other?.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{other?.isOnline ? "🟢 Online" : "⚫ Offline"}</p>
+                        <p className="text-[10px] text-primary mt-0.5">View profile →</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </div>
+            </>
           )}
 
-          {/* Linked Listing */}
-          {conversation.linkedListingTitle && (
-            <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Linked Listing</p>
-              <Card className="border-border/30 bg-muted/10">
-                <CardContent className="p-3">
-                  <p className="text-sm font-medium">{conversation.linkedListingTitle}</p>
-                  <Link to={`/marketplace/${conversation.linkedListingId}`} className="text-xs text-primary hover:underline mt-1 inline-flex items-center gap-1">
-                    View Listing <ExternalLink className="h-2.5 w-2.5" />
-                  </Link>
-                </CardContent>
-              </Card>
-            </div>
+          {/* ─── USER-TYPE: Show user profile only, NO business data ─── */}
+          {conversation.type === "user" && (
+            <>
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Profile</p>
+                <Link to={`/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
+                  <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
+                    <CardContent className="p-3 flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-muted/30 flex items-center justify-center text-2xl">
+                        {otherAvatar.emoji}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{other?.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{other?.isOnline ? "🟢 Online" : "⚫ Offline"}</p>
+                        {userProfile && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5">⭐ {userProfile.rating} · {userProfile.location}</p>
+                        )}
+                        <p className="text-[10px] text-primary mt-0.5">View full profile →</p>
+                      </div>
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
+                    </CardContent>
+                  </Card>
+                </Link>
+              </div>
+
+              {/* Shared PC Setup — only for user-to-user chats */}
+              {userProfile?.pcSpecs && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Their PC Setup</p>
+                  <Card className="border-border/30 bg-muted/10">
+                    <CardContent className="p-3 space-y-1.5 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2"><Cpu className="h-3 w-3" /> {userProfile.pcSpecs.cpu}</div>
+                      <div className="flex items-center gap-2"><Monitor className="h-3 w-3" /> {userProfile.pcSpecs.gpu}</div>
+                      <div className="flex items-center gap-2"><MemoryStick className="h-3 w-3" /> {userProfile.pcSpecs.ram}</div>
+                      <div className="flex items-center gap-2"><HardDrive className="h-3 w-3" /> {userProfile.pcSpecs.storage}</div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Gaming preferences */}
+              {userProfile?.gaming && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Gaming</p>
+                  <Card className="border-border/30 bg-muted/10">
+                    <CardContent className="p-3 space-y-1.5 text-xs">
+                      <div className="flex justify-between"><span className="text-muted-foreground">Playstyle</span><span>{userProfile.gaming.playstyle}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Target FPS</span><span>{userProfile.gaming.targetFps}</span></div>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {userProfile.gaming.favouriteGames.map((g) => (
+                          <Badge key={g} variant="outline" className="text-[9px] px-1.5 py-0">{g}</Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </>
           )}
 
-          <Separator className="bg-border/20" />
-
-          {/* AI Suggestions */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-purple-400" />
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">AI Insights</p>
-            </div>
-            {aiSuggestionsMock.slice(0, 3).map((sug) => (
-              <motion.div
-                key={sug.id}
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="border-purple-500/15 bg-purple-500/5 hover:bg-purple-500/10 transition-colors cursor-pointer">
-                  <CardContent className="p-3">
-                    <div className="flex items-start gap-2">
-                      <span className="text-lg">{sug.emoji}</span>
-                      <div className="flex-1">
-                        <p className="text-xs font-medium">{sug.title}</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">{sug.description}</p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-[10px] h-6 px-2 mt-1.5 text-purple-400 hover:text-purple-300 gap-1"
-                          onClick={() => toast({ title: sug.actionLabel, description: "AI action triggered" })}
+          {/* ─── ORDER-TYPE: Show order status + tracking ─── */}
+          {conversation.type === "order" && (
+            <>
+              {conversation.linkedOrder ? (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Order Status</p>
+                  <Card className="border-border/30 bg-muted/10">
+                    <CardContent className="p-3 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold">{conversation.linkedOrder.orderId}</span>
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] px-1.5 py-0 capitalize ${
+                            conversation.linkedOrder.status === "delivered" ? "bg-green-500/10 text-green-400 border-green-500/30"
+                            : conversation.linkedOrder.status === "shipped" ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                            : "bg-yellow-500/10 text-yellow-400 border-yellow-500/30"
+                          }`}
                         >
-                          <Zap className="h-2.5 w-2.5" /> {sug.actionLabel}
-                        </Button>
+                          {conversation.linkedOrder.status}
+                        </Badge>
                       </div>
+
+                      {/* Status steps */}
+                      <div className="space-y-2">
+                        {(["building", "testing", "shipped", "delivered"] as const).map((step, i) => {
+                          const steps = ["building", "testing", "shipped", "delivered"];
+                          const currentIdx = steps.indexOf(conversation.linkedOrder!.status);
+                          const isComplete = i <= currentIdx;
+                          const isCurrent = i === currentIdx;
+                          return (
+                            <div key={step} className="flex items-center gap-2">
+                              <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] border ${
+                                isComplete ? "bg-primary border-primary text-primary-foreground" : "border-border/50 text-muted-foreground"
+                              } ${isCurrent ? "ring-2 ring-primary/30" : ""}`}>
+                                {isComplete ? "✓" : i + 1}
+                              </div>
+                              <span className={`text-xs capitalize ${isComplete ? "text-foreground font-medium" : "text-muted-foreground"}`}>{step}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <Separator className="bg-border/20" />
+
+                      <div className="space-y-1.5 text-xs">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          <span>Est. delivery: {new Date(conversation.linkedOrder.estimatedDelivery).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                        </div>
+                        {conversation.linkedOrder.trackingNumber && (
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Truck className="h-3 w-3" />
+                            <span className="font-mono text-[10px]">{conversation.linkedOrder.trackingNumber}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ) : (
+                <div className="text-xs text-muted-foreground italic p-2 flex items-center gap-1.5">
+                  <AlertCircle className="h-3 w-3" /> No order data linked to this conversation
+                </div>
+              )}
+
+              {/* Linked listing for context */}
+              {conversation.linkedListing && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Product</p>
+                  <Card className="border-border/30 bg-muted/10">
+                    <CardContent className="p-3">
+                      <p className="text-sm font-medium">{conversation.linkedListing.title}</p>
+                      <p className="text-xs text-primary font-semibold mt-0.5">£{conversation.linkedListing.price.toLocaleString()}</p>
+                      <Link to={`/marketplace/${conversation.linkedListing.id}`} className="text-xs text-primary hover:underline mt-1 inline-flex items-center gap-1">
+                        View Listing <ExternalLink className="h-2.5 w-2.5" />
+                      </Link>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Seller info */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Seller</p>
+                <Link to={`/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
+                  <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
+                    <CardContent className="p-3 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center text-xl">{otherAvatar.emoji}</div>
+                      <div>
+                        <p className="text-sm font-medium">{other?.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{other?.isOnline ? "🟢 Online" : "⚫ Offline"}</p>
+                        <p className="text-[10px] text-primary mt-0.5">View profile →</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </div>
+            </>
+          )}
+
+          {/* ─── SUPPORT-TYPE: Show support info + AI suggestions ─── */}
+          {conversation.type === "support" && (
+            <>
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Support</p>
+                <Card className="border-border/30 bg-muted/10">
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Headphones className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">nYield Support</p>
+                      <p className="text-[10px] text-green-400">🟢 Always online</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Avg. response: &lt; 5 min</p>
                     </div>
                   </CardContent>
                 </Card>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+
+              <Separator className="bg-border/20" />
+
+              {/* AI Suggestions — only shown in support context */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">AI Insights</p>
+                </div>
+                {aiSuggestionsMock.slice(0, 3).map((sug) => (
+                  <motion.div
+                    key={sug.id}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Card className="border-purple-500/15 bg-purple-500/5 hover:bg-purple-500/10 transition-colors cursor-pointer">
+                      <CardContent className="p-3">
+                        <div className="flex items-start gap-2">
+                          <span className="text-lg">{sug.emoji}</span>
+                          <div className="flex-1">
+                            <p className="text-xs font-medium">{sug.title}</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">{sug.description}</p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-[10px] h-6 px-2 mt-1.5 text-purple-400 hover:text-purple-300 gap-1"
+                              onClick={() => toast({ title: sug.actionLabel, description: "AI action triggered" })}
+                            >
+                              <Zap className="h-2.5 w-2.5" /> {sug.actionLabel}
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </>
+          )}
+
         </div>
       </ScrollArea>
     </div>
@@ -504,7 +728,7 @@ const MessagingPage = () => {
     const newMsg: ChatMessage = {
       id: `m-${Date.now()}`,
       conversationId: activeConv,
-      senderId: "user-001",
+      senderId: CURRENT_USER_ID,
       content: text,
       type: "text",
       timestamp: new Date().toISOString(),
@@ -526,7 +750,6 @@ const MessagingPage = () => {
       <Navbar />
       <main className="pt-24 pb-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -550,10 +773,8 @@ const MessagingPage = () => {
             </Button>
           </motion.div>
 
-          {/* Chat layout */}
           <div className="rounded-xl border border-border/30 bg-card/50 backdrop-blur-md overflow-hidden" style={{ height: "calc(100vh - 160px)" }}>
             <div className="flex h-full">
-              {/* Conversation list — hidden on mobile when viewing chat */}
               <div className={`w-full md:w-80 border-r border-border/30 shrink-0 ${mobileView === "chat" ? "hidden md:flex" : "flex"} flex-col`}>
                 <ConversationList
                   conversations={conversationsMock}
@@ -564,11 +785,9 @@ const MessagingPage = () => {
                 />
               </div>
 
-              {/* Chat window */}
               <div className={`flex-1 flex flex-col ${mobileView === "list" ? "hidden md:flex" : "flex"}`}>
                 {activeConversation ? (
                   <>
-                    {/* Mobile back button */}
                     <div className="md:hidden p-2 border-b border-border/30">
                       <Button variant="ghost" size="sm" onClick={() => setMobileView("list")} className="gap-1">
                         <ChevronLeft className="h-4 w-4" /> Back
@@ -590,10 +809,11 @@ const MessagingPage = () => {
                 )}
               </div>
 
-              {/* Context panel */}
-              <AnimatePresence>
+              {/* Context panel — keyed on activeConv to force full re-render on switch */}
+              <AnimatePresence mode="wait">
                 {showContext && activeConversation && (
                   <motion.div
+                    key={activeConversation.id}
                     initial={{ width: 0, opacity: 0 }}
                     animate={{ width: 300, opacity: 1 }}
                     exit={{ width: 0, opacity: 0 }}
