@@ -41,9 +41,9 @@ const DashboardPage = () => {
           <h1 className="text-2xl font-bold text-foreground">
             Welcome back, {firstName}
           </h1>
-          {isAdmin && (
+          {isBusiness && (
             <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">
-              Admin
+              Business
             </Badge>
           )}
         </div>
