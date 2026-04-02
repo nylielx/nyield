@@ -102,6 +102,10 @@ const App = () => (
             </Route>
             <Route path="/process" element={<ProcessPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/user/:username" element={<PublicProfilePage />} />
+            <Route path="/quiz" element={<OnboardingQuizPage />} />
+            <Route path="/pc-analyzer" element={<PcAnalyzerPage />} />
+            <Route path="/community" element={<CommunityPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
