@@ -211,6 +211,13 @@ const SignUpPage = () => {
         <span className="underline">Terms of Service</span> and{" "}
         <span className="underline">Privacy Policy</span>.
       </p>
+
+      <p className="text-center text-sm text-muted-foreground mt-4">
+        Not sure what you need?{" "}
+        <Link to="/quiz" className="text-primary hover:underline font-medium">
+          Take the Quiz →
+        </Link>
+      </p>
     </AuthLayout>
   );
 };
