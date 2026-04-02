@@ -110,6 +110,7 @@ const App = () => (
             <Route path="/quiz" element={<OnboardingQuizPage />} />
             <Route path="/pc-analyzer" element={<PcAnalyzerPage />} />
             <Route path="/messages" element={<MessagingPage />} />
+            <Route path="/earn" element={<AffiliateLandingPage />} />
             <Route path="/affiliate" element={<AffiliatePage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
