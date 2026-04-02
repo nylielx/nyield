@@ -1,9 +1,17 @@
 /**
  * =============================================================================
- * BUSINESS QUICK PANEL — Replaces basic profile dropdown for business users
+ * BUSINESS QUICK PANEL — Structured mini-dashboard popover for business users
  * =============================================================================
- * A structured mini-dashboard popover with account overview, quick actions,
- * live insights, and utility links. Uses glassmorphism + Framer Motion.
+ * Replaces the basic profile dropdown for business accounts.
+ * Includes: account overview, badges, quick actions, performance snapshot,
+ * and utility links.
+ *
+ * Uses glassmorphism + Framer Motion for premium feel.
+ *
+ * DATA FLOW:
+ *   AuthContext → user info
+ *   seller-mock.ts → live insight metrics
+ *   navigation-config.ts → quick action links
  * =============================================================================
  */
 
@@ -11,11 +19,6 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard,
-  Package,
-  ShoppingCart,
-  Megaphone,
-  DollarSign,
   Settings,
   HelpCircle,
   LogOut,
@@ -23,19 +26,13 @@ import {
   BarChart3,
   CheckCircle2,
   Store,
+  LayoutDashboard,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { avatarOptions } from "@/data/temp/8-user-profile-mock";
 import { sellerMetrics } from "@/pages/13-page-seller-dashboard/data/seller-mock";
-
-const quickActions = [
-  { label: "Go to Dashboard", to: "/seller", icon: LayoutDashboard },
-  { label: "Manage Listings", to: "/seller/listings", icon: Package },
-  { label: "View Orders", to: "/seller/orders", icon: ShoppingCart },
-  { label: "Open Marketing", to: "/seller/marketing", icon: Megaphone },
-  { label: "Finance Overview", to: "/seller/analytics", icon: DollarSign },
-];
+import { businessDropdownQuickActions } from "@/data/navigation-config";
 
 const BusinessPanel = () => {
   const [open, setOpen] = useState(false);
@@ -98,26 +95,26 @@ const BusinessPanel = () => {
 
             {/* ── Quick Actions ── */}
             <div className="p-2 border-b border-border/30">
-              <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                 Quick Actions
               </p>
-              {quickActions.map(({ label, to, icon: Icon }) => (
+              {businessDropdownQuickActions.map(({ label, to, icon: Icon }) => (
                 <Link
                   key={to}
                   to={to}
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors group"
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
                   {label}
                 </Link>
               ))}
             </div>
 
-            {/* ── Live Insights ── */}
+            {/* ── Performance Snapshot ── */}
             <div className="p-3 border-b border-border/30">
-              <p className="px-1 pb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Today's Insights
+              <p className="px-1 pb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                Performance Snapshot
               </p>
               <div className="grid grid-cols-3 gap-2">
                 {[
@@ -137,8 +134,11 @@ const BusinessPanel = () => {
               </div>
             </div>
 
-            {/* ── Utility ── */}
+            {/* ── Account + Support + System ── */}
             <div className="p-2">
+              <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                Account
+              </p>
               <Link
                 to="/seller/settings"
                 onClick={() => setOpen(false)}
@@ -155,16 +155,27 @@ const BusinessPanel = () => {
                 <HelpCircle className="h-4 w-4" />
                 Help & Support
               </Link>
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  logout().then(() => navigate("/"));
-                }}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors w-full"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </button>
+
+              <div className="mt-1 pt-1 border-t border-border/30">
+                <Link
+                  to="/account"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  My Account
+                </Link>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    logout().then(() => navigate("/"));
+                  }}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors w-full"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
