@@ -29,6 +29,7 @@ import { toast } from "@/hooks/use-toast";
 import { getUserProfile } from "@/data/temp/profile-mock";
 import {
   conversationsMock, messagesMock, aiSuggestionsMock, quickActions, messageIntents,
+  getMyParticipant, getOtherParticipant, isMyMessage,
   type Conversation, type ChatMessage, type ConversationType,
 } from "@/data/temp/messaging-mock";
 
@@ -45,48 +46,6 @@ const timeAgo = (ts: string) => {
 
 const formatTime = (ts: string) =>
   new Date(ts).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-
-const FALLBACK_USER_ID = "user-001";
-const TEMPLATE_STANDARD_USER_ID = "user-001";
-const TEMPLATE_SELLER_IDS = new Set(["user-004", "user-005"]);
-
-const toUsername = (value: string) => value.toLowerCase().replace(/\s+/g, "");
-
-const mapParticipantToCurrentUser = (
-  participant: Conversation["participants"][number],
-  user: AuthUser | null,
-) => {
-  if (!user) return participant;
-
-  if (user.role === "business" && participant.role === "seller") {
-    return {
-      ...participant,
-      userId: user.id,
-      name: user.fullName,
-      avatar: user.avatar,
-      username: toUsername(user.fullName),
-    };
-  }
-
-  if (user.role === "standard" && participant.userId === TEMPLATE_STANDARD_USER_ID) {
-    return {
-      ...participant,
-      userId: user.id,
-      name: user.fullName,
-      avatar: user.avatar,
-      username: toUsername(user.fullName),
-    };
-  }
-
-  return participant;
-};
-
-const mapSenderIdToCurrentUser = (senderId: string, user: AuthUser | null) => {
-  if (!user) return senderId;
-  if (user.role === "business" && TEMPLATE_SELLER_IDS.has(senderId)) return user.id;
-  if (user.role === "standard" && senderId === TEMPLATE_STANDARD_USER_ID) return user.id;
-  return senderId;
-};
 
 const TYPE_LABELS: Record<ConversationType, string> = {
   product_inquiry: "Product Inquiry",
@@ -143,7 +102,7 @@ const MessageSellerModal = ({
  * CONVERSATION LIST COMPONENT
  * ══════════════════════════════════════════════════════════════════════════════ */
 const ConversationList = ({
-  conversations, activeId, onSelect, search, onSearchChange, onNewMessage, currentUserId,
+  conversations, activeId, onSelect, search, onSearchChange, onNewMessage, userRole,
 }: {
   conversations: Conversation[];
   activeId: string | null;
@@ -151,7 +110,7 @@ const ConversationList = ({
   search: string;
   onSearchChange: (v: string) => void;
   onNewMessage: () => void;
-  currentUserId: string;
+  userRole: "standard" | "business";
 }) => {
   const filtered = conversations.filter((c) => {
     const names = c.participants.map((p) => p.name.toLowerCase()).join(" ");
@@ -183,7 +142,7 @@ const ConversationList = ({
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-0.5">
           {filtered.map((conv) => {
-            const other = conv.participants.find((p) => p.userId !== currentUserId);
+            const other = getOtherParticipant(conv, userRole);
             if (!other) return null;
             const avatar = getAvatarById(other.avatar);
             const isActive = conv.id === activeId;
@@ -291,19 +250,21 @@ const AiCard = ({ data }: { data: Record<string, string | number> }) => (
  * CHAT WINDOW COMPONENT
  * ══════════════════════════════════════════════════════════════════════════════ */
 const ChatWindow = ({
-  conversation, messages, onSendMessage, prefillMessage, onClearPrefill,
+  conversation, messages, onSendMessage, prefillMessage, onClearPrefill, userRole,
 }: {
   conversation: Conversation;
   messages: ChatMessage[];
   onSendMessage: (text: string) => void;
   prefillMessage: string;
   onClearPrefill: () => void;
+  userRole: "standard" | "business";
 }) => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
-  const currentUserId = user?.id ?? FALLBACK_USER_ID;
+  const myParticipant = getMyParticipant(conversation, userRole);
+  const myParticipantId = myParticipant?.userId;
 
   // Apply prefill message
   useEffect(() => {
@@ -317,14 +278,14 @@ const ChatWindow = ({
 
   useEffect(() => {
     const last = messages[messages.length - 1];
-    if (last?.senderId === user?.id) {
+    if (last && myParticipantId && last.senderId === myParticipantId) {
       setIsTyping(true);
       const timer = setTimeout(() => setIsTyping(false), 2000);
       return () => clearTimeout(timer);
     }
-  }, [messages, user?.id]);
+  }, [messages, myParticipantId]);
 
-  const other = conversation.participants.find((p) => p.userId !== currentUserId);
+  const other = getOtherParticipant(conversation, userRole);
   const otherAvatar = getAvatarById(other?.avatar ?? "man");
 
   const profileLink = conversation.businessSlug
@@ -387,7 +348,7 @@ const ChatWindow = ({
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
           {messages.map((msg) => {
-            const isMine = msg.senderId === currentUserId;
+            const isMine = isMyMessage(msg, conversation, userRole);
             return (
               <motion.div
                 key={msg.id}
@@ -485,22 +446,27 @@ const ChatWindow = ({
  * DYNAMIC CONTEXT PANEL — Renders strictly based on conversation.type
  * ══════════════════════════════════════════════════════════════════════════════ */
 const ContextPanel = ({
-  conversation, onClose, currentUserId,
+  conversation, onClose, userRole,
 }: {
   conversation: Conversation;
   onClose: () => void;
-  currentUserId: string;
+  userRole: "standard" | "business";
 }) => {
-  const other = conversation.participants.find((p) => p.userId !== currentUserId);
+  const me = getMyParticipant(conversation, userRole);
+  const other = getOtherParticipant(conversation, userRole);
   const otherAvatar = getAvatarById(other?.avatar ?? "man");
   const userProfile = other?.username ? getUserProfile(other.username) : undefined;
 
+  // Determine labels based on role perspective
+  const isBusinessView = userRole === "business";
+  const otherRoleLabel = isBusinessView ? "Customer" : (other?.role === "seller" ? "Seller" : "User");
+
   const panelTitle = (() => {
     switch (conversation.type) {
-      case "product_inquiry": return "Product Inquiry";
-      case "offer": return "Offer Details";
-      case "order": return "Order Details";
-      case "general": return "Profile";
+      case "product_inquiry": return isBusinessView ? `Inquiry from ${other?.name ?? "Customer"}` : "Product Inquiry";
+      case "offer": return isBusinessView ? `Offer from ${other?.name ?? "Customer"}` : "Offer Details";
+      case "order": return isBusinessView ? `Order — ${other?.name ?? "Customer"}` : "Order Details";
+      case "general": return other?.name ?? "Profile";
     }
   })();
 
@@ -525,7 +491,7 @@ const ContextPanel = ({
           {conversation.type === "product_inquiry" && (
             <>
               {/* Business Card */}
-              {conversation.businessName && (
+              {conversation.businessName && !isBusinessView && (
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Business</p>
                   <Link to={`/business/${conversation.businessSlug ?? "unknown"}`}>
@@ -547,6 +513,25 @@ const ContextPanel = ({
                           </div>
                         )}
                         <p className="text-[10px] text-primary">View business profile →</p>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </div>
+              )}
+
+              {/* Customer Card (business perspective) */}
+              {isBusinessView && other && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Customer</p>
+                  <Link to={`/user/${other.username ?? other.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
+                    <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
+                      <CardContent className="p-3 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center text-xl">{otherAvatar.emoji}</div>
+                        <div>
+                          <p className="text-sm font-medium">{other.name}</p>
+                          <p className="text-[10px] text-muted-foreground">{other.isOnline ? "🟢 Online" : "⚫ Offline"}</p>
+                          <p className="text-[10px] text-primary mt-0.5">View profile →</p>
+                        </div>
                       </CardContent>
                     </Card>
                   </Link>
@@ -696,9 +681,9 @@ const ContextPanel = ({
                 </div>
               )}
 
-              {/* Seller */}
+              {/* Other participant */}
               <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Seller</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{otherRoleLabel}</p>
                 <Link to={`/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
                   <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
                     <CardContent className="p-3 flex items-center gap-3">
@@ -795,7 +780,7 @@ const ContextPanel = ({
               )}
 
               <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Seller</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{otherRoleLabel}</p>
                 <Link to={`/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
                   <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
                     <CardContent className="p-3 flex items-center gap-3">
@@ -881,7 +866,7 @@ const ContextPanel = ({
  * ══════════════════════════════════════════════════════════════════════════════ */
 const MessagingPage = () => {
   const { user } = useAuth();
-  const currentUserId = user?.id ?? FALLBACK_USER_ID;
+  const userRole = user?.role ?? "standard";
   const [activeConv, setActiveConv] = useState<string | null>("conv-1");
   const [search, setSearch] = useState("");
   const [showContext, setShowContext] = useState(true);
@@ -892,32 +877,16 @@ const MessagingPage = () => {
 
   useEffect(() => { document.title = "Messages — nYield"; }, []);
 
-  const displayConversations = conversationsMock.map((conversation) => ({
-    ...conversation,
-    participants: conversation.participants.map((participant) =>
-      mapParticipantToCurrentUser(participant, user)
-    ),
-  }));
-
-  const displayMessages = Object.fromEntries(
-    Object.entries(localMessages).map(([conversationId, conversationMessages]) => [
-      conversationId,
-      conversationMessages.map((message) => ({
-        ...message,
-        senderId: mapSenderIdToCurrentUser(message.senderId, user),
-      })),
-    ])
-  ) as Record<string, ChatMessage[]>;
-
-  const activeConversation = displayConversations.find((c) => c.id === activeConv);
-  const activeMessages = activeConv ? (displayMessages[activeConv] ?? []) : [];
+  const activeConversation = conversationsMock.find((c) => c.id === activeConv);
+  const activeMessages = activeConv ? (localMessages[activeConv] ?? []) : [];
 
   const handleSend = (text: string) => {
     if (!activeConv || !user) return;
+    const myParticipant = activeConversation ? getMyParticipant(activeConversation, userRole) : null;
     const newMsg: ChatMessage = {
       id: `m-${Date.now()}`,
       conversationId: activeConv,
-      senderId: user?.id ?? FALLBACK_USER_ID,
+      senderId: myParticipant?.userId ?? "user-001",
       content: text,
       type: "text",
       timestamp: new Date().toISOString(),
@@ -957,7 +926,7 @@ const MessagingPage = () => {
               <MessageCircle className="h-5 w-5 text-primary" />
               <h1 className="text-xl font-heading font-bold">Messages</h1>
               <Badge variant="secondary" className="text-xs">
-                {displayConversations.reduce((s, c) => s + c.unreadCount, 0)} unread
+                {conversationsMock.reduce((s, c) => s + c.unreadCount, 0)} unread
               </Badge>
             </div>
             <Button
@@ -975,13 +944,13 @@ const MessagingPage = () => {
             <div className="flex h-full">
               <div className={`w-full md:w-80 border-r border-border/30 shrink-0 ${mobileView === "chat" ? "hidden md:flex" : "flex"} flex-col`}>
                 <ConversationList
-                  conversations={displayConversations}
+                  conversations={conversationsMock}
                   activeId={activeConv}
                   onSelect={selectConversation}
                   search={search}
                   onSearchChange={setSearch}
                    onNewMessage={() => setShowIntentModal(true)}
-                   currentUserId={currentUserId}
+                   userRole={userRole}
                  />
               </div>
 
@@ -999,6 +968,7 @@ const MessagingPage = () => {
                       onSendMessage={handleSend}
                       prefillMessage={prefillMessage}
                       onClearPrefill={() => setPrefillMessage("")}
+                      userRole={userRole}
                     />
                   </>
                 ) : (
@@ -1022,7 +992,7 @@ const MessagingPage = () => {
                     transition={{ duration: 0.25 }}
                     className="border-l border-border/30 hidden lg:flex flex-col overflow-hidden shrink-0"
                   >
-                    <ContextPanel conversation={activeConversation} onClose={() => setShowContext(false)} currentUserId={currentUserId} />
+                    <ContextPanel conversation={activeConversation} onClose={() => setShowContext(false)} userRole={userRole} />
                   </motion.div>
                 )}
               </AnimatePresence>
