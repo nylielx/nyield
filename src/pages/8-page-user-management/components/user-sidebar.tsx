@@ -20,15 +20,14 @@ import { LogOut, Store, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 import { standardSidebarSections } from "@/data/navigation-config";
+import { UserAvatarDisplay } from "@/components/ui/user-avatar-display";
 import SellerApplicationModal from "@/components/seller-application-modal";
 
 export const UserSidebar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [sellerModalOpen, setSellerModalOpen] = useState(false);
-  const avatarEmoji = getAvatarById(user?.avatar ?? "man").emoji;
 
   return (
     <>
@@ -36,9 +35,7 @@ export const UserSidebar = () => {
         <div className="rounded-xl glass-elevated p-4 space-y-1">
           {/* ── User info ── */}
           <div className="pb-3 mb-1 border-b border-border/30 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-lg">
-              {avatarEmoji}
-            </div>
+            <UserAvatarDisplay avatarUrl={user?.avatarUrl} avatarId={user?.avatar} size="md" />
             <div className="min-w-0">
               <p className="font-semibold text-foreground text-sm truncate">
                 {user?.fullName ?? "Guest"}
