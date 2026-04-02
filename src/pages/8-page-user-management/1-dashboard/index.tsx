@@ -2,15 +2,16 @@
  * =============================================================================
  * DASHBOARD PAGE — User overview & recent activity
  * =============================================================================
- * Composition-only page: imports hook + components, renders UI.
- * =============================================================================
  */
 
+import { useAuth } from "@/contexts/AuthContext";
 import { useDashboard } from "./hooks/use-dashboard";
 import { DashboardStats } from "./components/dashboard-stats";
 import { DashboardActivity } from "./components/dashboard-activity";
+import { Badge } from "@/components/ui/badge";
 
 const DashboardPage = () => {
+  const { user, isAdmin } = useAuth();
   const { data, loading } = useDashboard();
 
   if (loading || !data) {
@@ -27,15 +28,27 @@ const DashboardPage = () => {
     );
   }
 
+  const firstName = user?.fullName?.split(" ")[0] ?? "User";
+  const memberDate = user?.memberSince
+    ? new Date(user.memberSince).toLocaleDateString("en-GB", { month: "long", year: "numeric" })
+    : "—";
+
   return (
     <div className="space-y-6">
       {/* Welcome */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">
-          Welcome back, {data.user.fullName.split(" ")[0]}
-        </h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-foreground">
+            Welcome back, {firstName}
+          </h1>
+          {isAdmin && (
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">
+              Admin
+            </Badge>
+          )}
+        </div>
         <p className="text-sm text-muted-foreground">
-          Member since {new Date(data.user.memberSince).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
+          Member since {memberDate}
         </p>
       </div>
 

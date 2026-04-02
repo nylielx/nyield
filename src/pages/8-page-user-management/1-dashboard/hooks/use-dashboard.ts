@@ -2,8 +2,6 @@
  * =============================================================================
  * USE-DASHBOARD HOOK — State management for the dashboard page
  * =============================================================================
- * Fetches dashboard data via the service layer and exposes it to components.
- * =============================================================================
  */
 
 import { useState, useEffect } from "react";
