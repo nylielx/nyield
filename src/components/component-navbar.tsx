@@ -108,7 +108,17 @@ const Navbar = () => {
               {/* Desktop auth area */}
               <div className="hidden md:flex items-center gap-2 ml-2">
                 {user ? (
-                  <ProfileDropdown />
+                  <>
+                    <Link to="/messages" className="relative p-1.5 rounded-full hover:bg-muted/30 transition-colors">
+                      <MessageCircle className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                      {getTotalUnread() > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                          <span className="text-[9px] font-bold text-primary-foreground">{getTotalUnread()}</span>
+                        </span>
+                      )}
+                    </Link>
+                    <ProfileDropdown />
+                  </>
                 ) : (
                   <>
                     <Link
