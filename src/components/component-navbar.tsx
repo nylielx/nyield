@@ -23,7 +23,8 @@ const navLinks = [
   { label: "Services", to: "/services" },
   { label: "Builds", to: "/builds" },
   { label: "Marketplace", to: "/marketplace" },
-  { label: "Process", to: "/process" },
+  { label: "Community", to: "/community" },
+  { label: "PC Analyzer", to: "/pc-analyzer" },
   { label: "About", to: "/about" },
 ];
 

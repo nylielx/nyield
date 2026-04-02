@@ -47,6 +47,10 @@ import SellerAnalyticsPage from "./pages/13-page-seller-dashboard/pages/analytic
 import SellerCustomersPage from "./pages/13-page-seller-dashboard/pages/customers";
 import SellerMarketingPage from "./pages/13-page-seller-dashboard/pages/marketing";
 import SellerSettingsPage from "./pages/13-page-seller-dashboard/pages/settings";
+import PublicProfilePage from "./pages/14-page-public-profile";
+import OnboardingQuizPage from "./pages/15-page-onboarding-quiz";
+import PcAnalyzerPage from "./pages/16-page-pc-analyzer";
+import CommunityPage from "./pages/17-page-community";
 
 const queryClient = new QueryClient();
 
@@ -98,6 +102,10 @@ const App = () => (
             </Route>
             <Route path="/process" element={<ProcessPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/user/:username" element={<PublicProfilePage />} />
+            <Route path="/quiz" element={<OnboardingQuizPage />} />
+            <Route path="/pc-analyzer" element={<PcAnalyzerPage />} />
+            <Route path="/community" element={<CommunityPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
