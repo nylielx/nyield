@@ -18,7 +18,7 @@ import type { AvatarOption } from "@/data/temp/8-user-profile-mock";
  * TYPE DEFINITIONS
  * -------------------------------------------------------------------------- */
 
-export type UserRole = "user" | "admin";
+export type UserRole = "standard" | "business";
 
 export interface RegisterData {
   fullName: string;
