@@ -118,32 +118,35 @@ const ConversationList = ({
   });
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-3 border-b border-border/30 space-y-2">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Search conversations..."
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-8 h-9 text-sm bg-muted/20 border-border/30"
-          />
+    <div className="flex h-full min-w-0 flex-col overflow-hidden bg-card/20">
+      <div className="shrink-0 border-b border-border/30 p-4">
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search conversations..."
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="h-10 border-border/30 bg-muted/20 pl-9 text-sm"
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-10 w-full justify-center gap-1.5 border-border/30 text-xs hover:border-primary/30 hover:bg-primary/10 hover:text-primary"
+            onClick={onNewMessage}
+          >
+            <Plus className="h-3.5 w-3.5" /> New Conversation
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full text-xs gap-1.5 border-border/30 hover:bg-primary/10 hover:text-primary hover:border-primary/30"
-          onClick={onNewMessage}
-        >
-          <Plus className="h-3.5 w-3.5" /> New Conversation
-        </Button>
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="p-2 space-y-0.5">
+      <ScrollArea className="min-h-0 flex-1">
+        <div className="space-y-2 p-3">
           {filtered.map((conv) => {
             const other = getOtherParticipant(conv, userRole);
             if (!other) return null;
+
             const avatar = getAvatarById(other.avatar);
             const isActive = conv.id === activeId;
 
@@ -151,51 +154,78 @@ const ConversationList = ({
               <motion.button
                 key={conv.id}
                 onClick={() => onSelect(conv.id)}
-                className={`w-full text-left p-2.5 rounded-xl transition-all duration-200 group ${
+                whileTap={{ scale: 0.985 }}
+                className={`group block w-full overflow-hidden rounded-2xl border p-3 text-left transition-all duration-200 ${
                   isActive
-                    ? "bg-primary/10 border border-primary/20"
-                    : "hover:bg-muted/20 border border-transparent"
+                    ? "border-primary/30 bg-primary/10 shadow-sm"
+                    : "border-transparent bg-transparent hover:border-border/40 hover:bg-muted/20"
                 }`}
-                whileTap={{ scale: 0.98 }}
               >
-                <div className="flex items-start gap-3">
+                <div className="grid grid-cols-[auto,minmax(0,1fr),auto] items-start gap-3">
                   <div className="relative shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-muted/30 flex items-center justify-center text-lg">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-muted/30 text-lg">
                       {avatar.emoji}
                     </div>
                     {other.isOnline && (
-                      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-background" />
+                      <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-medium truncate">{other.name}</span>
-                        {conv.verified && (
-                          <Badge variant="outline" className="text-[9px] px-1 py-0 bg-primary/10 text-primary border-primary/30">✓</Badge>
-                        )}
+
+                  <div className="min-w-0 overflow-hidden">
+                    <div className="flex min-w-0 items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex min-w-0 items-center gap-1.5 overflow-hidden">
+                          <span className="truncate text-sm font-semibold">{other.name}</span>
+                          {conv.verified && (
+                            <Badge
+                              variant="outline"
+                              className="shrink-0 border-primary/30 bg-primary/10 px-1 py-0 text-[9px] text-primary"
+                            >
+                              ✓
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                      <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(conv.lastMessageTime)}</span>
+                      <span className="shrink-0 pt-0.5 text-[10px] text-muted-foreground">
+                        {timeAgo(conv.lastMessageTime)}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <Badge variant="outline" className={`text-[8px] px-1 py-0 ${TYPE_COLORS[conv.type]}`}>
+
+                    <div className="mt-1 flex min-w-0 items-center gap-1.5 overflow-hidden">
+                      <Badge
+                        variant="outline"
+                        className={`shrink-0 border px-1.5 py-0 text-[8px] ${TYPE_COLORS[conv.type]}`}
+                      >
                         {TYPE_LABELS[conv.type]}
                       </Badge>
+                      <span className="truncate text-[10px] text-muted-foreground">
+                        {other.isOnline ? "Online" : `Last seen ${timeAgo(other.lastSeen ?? conv.lastMessageTime)}`}
+                      </span>
                     </div>
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">{conv.lastMessage}</p>
+
+                    <p className="mt-1 truncate pr-2 text-xs text-muted-foreground">{conv.lastMessage}</p>
                     {conv.linkedListing && (
-                      <p className="text-[10px] text-primary/70 truncate mt-0.5">📦 {conv.linkedListing.title}</p>
+                      <p className="mt-1 truncate pr-2 text-[10px] text-primary/70">📦 {conv.linkedListing.title}</p>
                     )}
                   </div>
-                  {conv.unreadCount > 0 && (
-                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="text-[10px] font-bold text-primary-foreground">{conv.unreadCount}</span>
-                    </div>
-                  )}
+
+                  <div className="flex items-start justify-end pt-0.5">
+                    {conv.unreadCount > 0 && (
+                      <div className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5">
+                        <span className="text-[10px] font-bold text-primary-foreground">{conv.unreadCount}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </motion.button>
             );
           })}
+
+          {filtered.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-border/40 bg-muted/10 px-4 py-8 text-center text-sm text-muted-foreground">
+              No conversations match your search.
+            </div>
+          )}
         </div>
       </ScrollArea>
     </div>
@@ -299,7 +329,7 @@ const ChatWindow = ({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full min-w-0 flex-col overflow-hidden">
       {/* Chat header */}
       <div className="p-4 border-b border-border/30 flex items-center gap-3">
         <div className="relative">
@@ -346,7 +376,7 @@ const ChatWindow = ({
       )}
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="min-h-0 flex-1 p-4">
         <div className="space-y-4">
           {messages.map((msg) => {
             const isMine = isMyMessage(msg, conversation, userRole);
@@ -472,7 +502,7 @@ const ContextPanel = ({
   })();
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full min-w-0 flex-col overflow-hidden">
       <div className="p-4 border-b border-border/30 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold">{panelTitle}</span>
@@ -485,7 +515,7 @@ const ContextPanel = ({
         </Button>
       </div>
 
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="min-h-0 flex-1 p-4">
         <div className="space-y-5">
 
           {/* ─── PRODUCT INQUIRY: Business + Listing + Specs + AI ─── */}
@@ -930,24 +960,30 @@ const MessagingPage = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
-      <main className="pt-24 pb-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <main className="pb-6 pt-24">
+        <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between mb-4"
+            className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between"
           >
-            <div className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5 text-primary" />
-              <h1 className="text-xl font-heading font-bold">Messages</h1>
-              <Badge variant="secondary" className="text-xs">
-                {conversationsMock.reduce((s, c) => s + c.unreadCount, 0)} unread
-              </Badge>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-5 w-5 text-primary" />
+                <h1 className="text-xl font-heading font-bold">Messages</h1>
+                <Badge variant="secondary" className="text-xs">
+                  {conversationsMock.reduce((s, c) => s + c.unreadCount, 0)} unread
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Keep inquiries, offers, orders, and direct chats separated without the sidebar bleeding into the thread.
+              </p>
             </div>
+
             <Button
               variant="ghost"
               size="sm"
-              className="gap-1.5 text-xs hidden md:flex"
+              className="hidden gap-1.5 text-xs lg:inline-flex"
               onClick={() => setShowContext(!showContext)}
             >
               {showContext ? <PanelRightClose className="h-3.5 w-3.5" /> : <PanelRightOpen className="h-3.5 w-3.5" />}
@@ -955,28 +991,39 @@ const MessagingPage = () => {
             </Button>
           </motion.div>
 
-          <div className="rounded-xl border border-border/30 bg-card/50 backdrop-blur-md overflow-hidden" style={{ height: "calc(100vh - 160px)" }}>
-            <div className="flex h-full">
-              <div className={`w-full md:w-80 border-r border-border/30 shrink-0 overflow-hidden ${mobileView === "chat" ? "hidden md:flex" : "flex"} flex-col`}>
-                <ConversationList
-                  conversations={conversationsMock}
-                  activeId={activeConv}
-                  onSelect={selectConversation}
-                  search={search}
-                  onSearchChange={setSearch}
-                   onNewMessage={() => setShowIntentModal(true)}
-                   userRole={userRole}
-                 />
-              </div>
+          <div
+            className={`grid min-h-[38rem] overflow-hidden rounded-3xl border border-border/30 bg-card/60 shadow-sm backdrop-blur-md ${
+              showContext && activeConversation
+                ? "md:grid-cols-[minmax(21rem,23rem)_minmax(0,1fr)] lg:grid-cols-[minmax(21rem,23rem)_minmax(0,1fr)_minmax(20rem,22rem)]"
+                : "md:grid-cols-[minmax(21rem,23rem)_minmax(0,1fr)]"
+            }`}
+            style={{ height: "calc(100vh - 168px)" }}
+          >
+            <section
+              className={`${mobileView === "chat" ? "hidden md:flex" : "flex"} min-h-0 min-w-0 flex-col overflow-hidden border-b border-border/30 bg-card/30 md:border-b-0 md:border-r`}
+            >
+              <ConversationList
+                conversations={conversationsMock}
+                activeId={activeConv}
+                onSelect={selectConversation}
+                search={search}
+                onSearchChange={setSearch}
+                onNewMessage={() => setShowIntentModal(true)}
+                userRole={userRole}
+              />
+            </section>
 
-              <div className={`flex-1 flex flex-col ${mobileView === "list" ? "hidden md:flex" : "flex"}`}>
-                {activeConversation ? (
-                  <>
-                    <div className="md:hidden p-2 border-b border-border/30">
-                      <Button variant="ghost" size="sm" onClick={() => setMobileView("list")} className="gap-1">
-                        <ChevronLeft className="h-4 w-4" /> Back
-                      </Button>
-                    </div>
+            <section
+              className={`${mobileView === "list" ? "hidden md:flex" : "flex"} min-h-0 min-w-0 flex-col overflow-hidden bg-background/20`}
+            >
+              {activeConversation ? (
+                <>
+                  <div className="shrink-0 border-b border-border/30 bg-card/30 p-2 md:hidden">
+                    <Button variant="ghost" size="sm" onClick={() => setMobileView("list")} className="gap-1">
+                      <ChevronLeft className="h-4 w-4" /> Back
+                    </Button>
+                  </div>
+                  <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
                     <ChatWindow
                       conversation={activeConversation}
                       messages={activeMessages}
@@ -985,44 +1032,50 @@ const MessagingPage = () => {
                       onClearPrefill={() => setPrefillMessage("")}
                       userRole={userRole}
                     />
-                  </>
-                ) : (
-                  <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                    <div className="text-center">
-                      <MessageCircle className="h-12 w-12 mx-auto mb-3 text-muted-foreground/30" />
-                      <p className="text-sm">Select a conversation to start messaging</p>
-                    </div>
                   </div>
-                )}
-              </div>
+                </>
+              ) : (
+                <div className="flex flex-1 items-center justify-center px-6 text-muted-foreground">
+                  <div className="max-w-sm text-center">
+                    <MessageCircle className="mx-auto mb-3 h-12 w-12 text-muted-foreground/30" />
+                    <p className="text-sm font-medium text-foreground">Select a conversation</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Choose a chat from the left column to open the full thread and context details.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </section>
 
-              {/* Context panel — keyed on activeConv to force full re-render on switch */}
-              <AnimatePresence mode="wait">
-                {showContext && activeConversation && (
-                  <motion.div
-                    key={activeConversation.id}
-                    initial={{ width: 0, opacity: 0 }}
-                    animate={{ width: 300, opacity: 1 }}
-                    exit={{ width: 0, opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="border-l border-border/30 hidden lg:flex flex-col overflow-hidden shrink-0"
-                  >
-                    <ContextPanel conversation={activeConversation} onClose={() => setShowContext(false)} userRole={userRole} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <AnimatePresence initial={false}>
+              {showContext && activeConversation && (
+                <motion.aside
+                  key={activeConversation.id}
+                  initial={{ opacity: 0, x: 12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 12 }}
+                  transition={{ duration: 0.18 }}
+                  className="hidden min-h-0 min-w-0 flex-col overflow-hidden border-l border-border/30 bg-card/30 lg:flex"
+                >
+                  <ContextPanel
+                    conversation={activeConversation}
+                    onClose={() => setShowContext(false)}
+                    userRole={userRole}
+                  />
+                </motion.aside>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </main>
 
-      {/* Intent selection modal */}
       <MessageSellerModal
         open={showIntentModal}
         onClose={() => setShowIntentModal(false)}
         onSelectIntent={handleIntentSelect}
       />
     </div>
+  );
   );
 };
 
