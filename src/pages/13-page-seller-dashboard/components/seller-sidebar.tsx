@@ -23,7 +23,7 @@ import {
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { avatarOptions } from "@/data/temp/8-user-profile-mock";
+import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 import { Badge } from "@/components/ui/badge";
 import { businessSidebarSections } from "@/data/navigation-config";
 
