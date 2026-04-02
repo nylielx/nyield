@@ -20,7 +20,7 @@ import { LogOut, Store, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { avatarOptions } from "@/data/temp/8-user-profile-mock";
+import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 import { standardSidebarSections } from "@/data/navigation-config";
 import SellerApplicationModal from "@/components/seller-application-modal";
 
