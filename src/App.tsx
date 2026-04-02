@@ -47,6 +47,10 @@ import SellerAnalyticsPage from "./pages/13-page-seller-dashboard/pages/analytic
 import SellerCustomersPage from "./pages/13-page-seller-dashboard/pages/customers";
 import SellerMarketingPage from "./pages/13-page-seller-dashboard/pages/marketing";
 import SellerSettingsPage from "./pages/13-page-seller-dashboard/pages/settings";
+import PublicProfilePage from "./pages/14-page-public-profile";
+import OnboardingQuizPage from "./pages/15-page-onboarding-quiz";
+import PcAnalyzerPage from "./pages/16-page-pc-analyzer";
+import CommunityPage from "./pages/17-page-community";
 
 const queryClient = new QueryClient();
 
