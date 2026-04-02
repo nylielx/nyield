@@ -78,11 +78,18 @@ export interface BusinessProfile {
 /* -------------------------------------------------------------------------- */
 
 const sharedReviews: UserReview[] = [
-  { id: "r1", reviewerId: "user-001", reviewerName: "Hassan", reviewerAvatar: "dragon", rating: 5, comment: "Incredible build quality, exactly as described. Fast shipping too!", date: "2026-03-28", listingTitle: "RTX 4070 Gaming Build" },
-  { id: "r2", reviewerId: "user-002", reviewerName: "Demo User", reviewerAvatar: "fox", rating: 4, comment: "Great value for the price. Minor cosmetic marks but runs perfectly.", date: "2026-03-15", listingTitle: "Budget Esports Machine" },
-  { id: "r3", reviewerId: "user-005", reviewerName: "Kai Martinez", reviewerAvatar: "ninja", rating: 5, comment: "Beast of a machine. 360+ FPS in Valorant. Highly recommend this seller.", date: "2026-03-20", listingTitle: "High-End Creator & Gaming Rig" },
-  { id: "r4", reviewerId: "user-004", reviewerName: "Alex Chen", reviewerAvatar: "eagle", rating: 5, comment: "Professional seller. Everything was tested and documented. A+", date: "2026-02-28", listingTitle: "RTX 4070 Gaming Build" },
-  { id: "r5", reviewerId: "user-001", reviewerName: "Hassan", reviewerAvatar: "dragon", rating: 4, comment: "Good communication and fair pricing. Would buy again.", date: "2026-02-10", listingTitle: "Budget Esports Machine" },
+  { id: "r1", reviewerId: "user-002", reviewerName: "Demo User", reviewerAvatar: "fox", rating: 5, comment: "Incredible build quality, exactly as described. Fast shipping too!", date: "2026-03-28", listingTitle: "RTX 4070 Gaming Build" },
+  { id: "r2", reviewerId: "user-005", reviewerName: "Kai Martinez", reviewerAvatar: "ninja", rating: 4, comment: "Great value for the price. Minor cosmetic marks but runs perfectly.", date: "2026-03-15", listingTitle: "Budget Esports Machine" },
+  { id: "r3", reviewerId: "user-004", reviewerName: "Alex Chen", reviewerAvatar: "eagle", rating: 5, comment: "Beast of a machine. 360+ FPS in Valorant. Highly recommend this seller.", date: "2026-03-20", listingTitle: "High-End Creator & Gaming Rig" },
+  { id: "r4", reviewerId: "user-002", reviewerName: "Demo User", reviewerAvatar: "fox", rating: 5, comment: "Professional seller. Everything was tested and documented. A+", date: "2026-02-28", listingTitle: "RTX 4070 Gaming Build" },
+  { id: "r5", reviewerId: "user-005", reviewerName: "Kai Martinez", reviewerAvatar: "ninja", rating: 4, comment: "Good communication and fair pricing. Would buy again.", date: "2026-02-10", listingTitle: "Budget Esports Machine" },
+  { id: "r6", reviewerId: "user-004", reviewerName: "Alex Chen", reviewerAvatar: "eagle", rating: 5, comment: "Top-notch cable management. Clean build.", date: "2026-01-22", listingTitle: "RTX 4070 Gaming Build" },
+  { id: "r7", reviewerId: "user-002", reviewerName: "Demo User", reviewerAvatar: "fox", rating: 5, comment: "Arrived sooner than expected. Very pleased.", date: "2026-01-10", listingTitle: "Budget Esports Machine" },
+  { id: "r8", reviewerId: "user-005", reviewerName: "Kai Martinez", reviewerAvatar: "ninja", rating: 5, comment: "Rock solid thermals under load. Great job.", date: "2025-12-18", listingTitle: "High-End Creator & Gaming Rig" },
+  { id: "r9", reviewerId: "user-004", reviewerName: "Alex Chen", reviewerAvatar: "eagle", rating: 4, comment: "Good build, minor delay on shipping but overall happy.", date: "2025-12-05", listingTitle: "RTX 4070 Gaming Build" },
+  { id: "r10", reviewerId: "user-002", reviewerName: "Demo User", reviewerAvatar: "fox", rating: 5, comment: "Excellent packaging and build quality.", date: "2025-11-20", listingTitle: "Budget Esports Machine" },
+  { id: "r11", reviewerId: "user-005", reviewerName: "Kai Martinez", reviewerAvatar: "ninja", rating: 5, comment: "Perfect for 1440p gaming. Exactly what I needed.", date: "2025-11-08", listingTitle: "High-End Creator & Gaming Rig" },
+  { id: "r12", reviewerId: "user-004", reviewerName: "Alex Chen", reviewerAvatar: "eagle", rating: 5, comment: "Would recommend to anyone looking for a custom PC.", date: "2025-10-25", listingTitle: "RTX 4070 Gaming Build" },
 ];
 
 export const userProfilesMock: UserProfile[] = [
@@ -105,7 +112,7 @@ export const userProfilesMock: UserProfile[] = [
       { platform: "Twitch", username: "nYieldHassan", emoji: "📺" },
     ],
     listings: ["mp-001"],
-    reviews: [sharedReviews[0], sharedReviews[3]],
+    reviews: sharedReviews,
     stats: { totalSales: 3, totalPurchases: 8, responseTime: "< 1 hour", completionRate: 100 },
   },
   {
@@ -114,7 +121,7 @@ export const userProfilesMock: UserProfile[] = [
     avatar: "fox",
     fullName: "Demo User",
     rating: 4.5,
-    totalRatings: 5,
+    totalRatings: 1,
     joinDate: "2026-01-10",
     location: "Manchester, UK",
     bio: "Casual gamer who loves RPGs and open world exploration.",
@@ -132,7 +139,7 @@ export const userProfilesMock: UserProfile[] = [
     avatar: "eagle",
     fullName: "Alex Chen",
     rating: 4.9,
-    totalRatings: 48,
+    totalRatings: 3,
     joinDate: "2025-06-01",
     location: "Birmingham, UK",
     bio: "Professional PC builder. 200+ builds completed. nYield verified seller.",
@@ -153,7 +160,7 @@ export const userProfilesMock: UserProfile[] = [
     avatar: "ninja",
     fullName: "Kai Martinez",
     rating: 4.8,
-    totalRatings: 22,
+    totalRatings: 1,
     joinDate: "2025-08-20",
     location: "Bristol, UK",
     bio: "Speedrun enthusiast. If it has a timer, I'm racing it.",

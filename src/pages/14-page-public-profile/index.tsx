@@ -4,12 +4,14 @@
  * =============================================================================
  */
 
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Copy, Share2, MessageCircle, MapPin, Calendar, Star,
   Cpu, Monitor, HardDrive, MemoryStick, ExternalLink,
-  ShieldCheck, Clock, TrendingUp, Package,
+  ShieldCheck, Clock, TrendingUp, Package, Filter,
+  SortAsc, SortDesc,
 } from "lucide-react";
 import Navbar from "@/components/component-navbar";
 import SiteFooter from "@/components/component-site-footer";
@@ -18,7 +20,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 import { getUserProfile } from "@/data/temp/profile-mock";
 import { marketplaceListings } from "@/data/marketplaceExamples";
@@ -40,7 +44,27 @@ const StarRating = ({ rating, count }: { rating: number; count: number }) => (
 
 const PublicProfilePage = () => {
   const { username } = useParams<{ username: string }>();
+  const { user: authUser } = useAuth();
+
+  // Review filters
+  const [reviewSort, setReviewSort] = useState<"newest" | "oldest" | "highest" | "lowest">("newest");
+  const [reviewFilter, setReviewFilter] = useState<"all" | "5" | "4" | "3" | "2" | "1">("all");
+
+  // Listing filters
+  const [listingSort, setListingSort] = useState<"newest" | "price-asc" | "price-desc">("newest");
+
   const profile = getUserProfile(username ?? "hassan");
+
+  // Check if this is the logged-in user's own profile — merge auth changes
+  const isOwnProfile = authUser && profile && (
+    authUser.id === profile.id ||
+    authUser.fullName.toLowerCase().replace(/\s/g, "") === username?.toLowerCase()
+  );
+
+  // Merge auth context changes into profile display
+  const displayName = isOwnProfile ? authUser!.fullName : profile?.fullName ?? "";
+  const displayAvatar = isOwnProfile ? (authUser!.avatar ?? profile?.avatar ?? "dragon") : (profile?.avatar ?? "dragon");
+  const displayAvatarUrl = isOwnProfile ? authUser!.avatarUrl : undefined;
 
   if (!profile) {
     return (
@@ -54,8 +78,30 @@ const PublicProfilePage = () => {
     );
   }
 
-  const avatar = getAvatarById(profile.avatar);
+  const avatar = getAvatarById(displayAvatar);
   const userListings = marketplaceListings.filter((l) => profile.listings.includes(l.id));
+
+  // Filter & sort reviews
+  const filteredReviews = profile.reviews
+    .filter((r) => reviewFilter === "all" || r.rating === Number(reviewFilter))
+    .sort((a, b) => {
+      switch (reviewSort) {
+        case "newest": return new Date(b.date).getTime() - new Date(a.date).getTime();
+        case "oldest": return new Date(a.date).getTime() - new Date(b.date).getTime();
+        case "highest": return b.rating - a.rating;
+        case "lowest": return a.rating - b.rating;
+        default: return 0;
+      }
+    });
+
+  // Sort listings
+  const sortedListings = [...userListings].sort((a, b) => {
+    switch (listingSort) {
+      case "price-asc": return a.price - b.price;
+      case "price-desc": return b.price - a.price;
+      default: return 0;
+    }
+  });
 
   const copyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -74,16 +120,23 @@ const PublicProfilePage = () => {
               <div className="h-20 bg-gradient-to-r from-primary/20 via-primary/5 to-transparent" />
               <CardContent className="-mt-10 px-6 pb-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
-                  <div className="w-20 h-20 rounded-2xl bg-card border-4 border-background flex items-center justify-center text-4xl shadow-lg">
-                    {avatar.emoji}
+                  <div className="w-20 h-20 rounded-2xl bg-card border-4 border-background flex items-center justify-center text-4xl shadow-lg overflow-hidden">
+                    {displayAvatarUrl ? (
+                      <img src={displayAvatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                    ) : (
+                      avatar.emoji
+                    )}
                   </div>
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h1 className="text-2xl font-heading font-bold">{profile.fullName}</h1>
+                      <h1 className="text-2xl font-heading font-bold">{displayName}</h1>
                       {profile.verified && (
                         <Badge className="bg-primary/10 text-primary border-primary/30 text-[10px] gap-1">
                           <ShieldCheck className="h-3 w-3" /> Verified
                         </Badge>
+                      )}
+                      {isOwnProfile && (
+                        <Badge variant="outline" className="text-[10px] border-border/30">Your Profile</Badge>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">@{profile.username}</p>
@@ -91,14 +144,23 @@ const PublicProfilePage = () => {
                       <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {profile.location}</span>
                       <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> Member since {new Date(profile.joinDate).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</span>
                     </div>
-                    <StarRating rating={profile.rating} count={profile.totalRatings} />
+                    <StarRating rating={profile.rating} count={profile.reviews.length} />
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <Link to="/messages">
-                      <Button size="sm" className="gap-1.5">
-                        <MessageCircle className="h-3.5 w-3.5" /> Message
-                      </Button>
-                    </Link>
+                    {!isOwnProfile && (
+                      <Link to="/messages">
+                        <Button size="sm" className="gap-1.5">
+                          <MessageCircle className="h-3.5 w-3.5" /> Message
+                        </Button>
+                      </Link>
+                    )}
+                    {isOwnProfile && (
+                      <Link to="/account/profile">
+                        <Button size="sm" variant="outline" className="gap-1.5">
+                          Edit Profile
+                        </Button>
+                      </Link>
+                    )}
                     <Button size="sm" variant="outline" onClick={copyLink} className="gap-1.5">
                       <Copy className="h-3.5 w-3.5" /> Copy Link
                     </Button>
@@ -150,31 +212,48 @@ const PublicProfilePage = () => {
                 {userListings.length === 0 ? (
                   <Card className="border-border/30 bg-card/50"><CardContent className="p-8 text-center text-muted-foreground text-sm">No listings yet.</CardContent></Card>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {userListings.map((listing) => (
-                      <Link key={listing.id} to={`/marketplace/${listing.id}`}>
-                        <Card className="border-border/30 bg-card/50 backdrop-blur-md hover:border-primary/30 transition-all group">
-                          <CardContent className="p-4 space-y-3">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">{listing.title}</h3>
-                                <p className="text-xs text-muted-foreground mt-0.5">{listing.condition} · {listing.bestFor}</p>
+                  <div className="space-y-4">
+                    {/* Listing filters */}
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+                      <Select value={listingSort} onValueChange={(v) => setListingSort(v as typeof listingSort)}>
+                        <SelectTrigger className="w-[160px] h-8 text-xs bg-muted/20 border-border/30">
+                          <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="newest">Newest First</SelectItem>
+                          <SelectItem value="price-asc">Price: Low → High</SelectItem>
+                          <SelectItem value="price-desc">Price: High → Low</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <span className="text-xs text-muted-foreground ml-auto">{sortedListings.length} listing{sortedListings.length !== 1 ? "s" : ""}</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {sortedListings.map((listing) => (
+                        <Link key={listing.id} to={`/marketplace/${listing.id}`}>
+                          <Card className="border-border/30 bg-card/50 backdrop-blur-md hover:border-primary/30 transition-all group">
+                            <CardContent className="p-4 space-y-3">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">{listing.title}</h3>
+                                  <p className="text-xs text-muted-foreground mt-0.5">{listing.condition} · {listing.bestFor}</p>
+                                </div>
+                                <span className="text-lg font-bold text-primary">£{listing.price.toLocaleString()}</span>
                               </div>
-                              <span className="text-lg font-bold text-primary">£{listing.price.toLocaleString()}</span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-1.5 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1"><Cpu className="h-3 w-3" /> {listing.specs.cpu}</span>
-                              <span className="flex items-center gap-1"><Monitor className="h-3 w-3" /> {listing.specs.gpu}</span>
-                              <span className="flex items-center gap-1"><MemoryStick className="h-3 w-3" /> {listing.specs.ram}</span>
-                              <span className="flex items-center gap-1"><HardDrive className="h-3 w-3" /> {listing.specs.storage}</span>
-                            </div>
-                            <div className="flex gap-1.5">
-                              {listing.tags.map((t) => <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>)}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
-                    ))}
+                              <div className="grid grid-cols-2 gap-1.5 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1"><Cpu className="h-3 w-3" /> {listing.specs.cpu}</span>
+                                <span className="flex items-center gap-1"><Monitor className="h-3 w-3" /> {listing.specs.gpu}</span>
+                                <span className="flex items-center gap-1"><MemoryStick className="h-3 w-3" /> {listing.specs.ram}</span>
+                                <span className="flex items-center gap-1"><HardDrive className="h-3 w-3" /> {listing.specs.storage}</span>
+                              </div>
+                              <div className="flex gap-1.5">
+                                {listing.tags.map((t) => <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>)}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 )}
               </TabsContent>
@@ -222,30 +301,68 @@ const PublicProfilePage = () => {
 
               {/* REVIEWS */}
               <TabsContent value="reviews">
-                <div className="space-y-3">
-                  {profile.reviews.map((review) => {
-                    const reviewerAvatar = getAvatarById(review.reviewerAvatar);
-                    return (
-                      <Card key={review.id} className="border-border/30 bg-card/50 backdrop-blur-md">
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-3">
-                            <div className="w-9 h-9 rounded-full bg-muted/30 flex items-center justify-center text-lg">{reviewerAvatar.emoji}</div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Link to={`/user/${review.reviewerName.toLowerCase().replace(/\s/g, "")}`} className="text-sm font-medium hover:text-primary transition-colors">{review.reviewerName}</Link>
-                                <div className="flex gap-0.5">
-                                  {[1, 2, 3, 4, 5].map((i) => <Star key={i} className={`h-3 w-3 ${i <= review.rating ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground/20"}`} />)}
+                <div className="space-y-4">
+                  {/* Review filters */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+                    <Select value={reviewFilter} onValueChange={(v) => setReviewFilter(v as typeof reviewFilter)}>
+                      <SelectTrigger className="w-[130px] h-8 text-xs bg-muted/20 border-border/30">
+                        <SelectValue placeholder="Filter" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Ratings</SelectItem>
+                        <SelectItem value="5">⭐ 5 Stars</SelectItem>
+                        <SelectItem value="4">⭐ 4 Stars</SelectItem>
+                        <SelectItem value="3">⭐ 3 Stars</SelectItem>
+                        <SelectItem value="2">⭐ 2 Stars</SelectItem>
+                        <SelectItem value="1">⭐ 1 Star</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={reviewSort} onValueChange={(v) => setReviewSort(v as typeof reviewSort)}>
+                      <SelectTrigger className="w-[140px] h-8 text-xs bg-muted/20 border-border/30">
+                        <SelectValue placeholder="Sort" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="newest">Newest First</SelectItem>
+                        <SelectItem value="oldest">Oldest First</SelectItem>
+                        <SelectItem value="highest">Highest Rated</SelectItem>
+                        <SelectItem value="lowest">Lowest Rated</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <span className="text-xs text-muted-foreground ml-auto">{filteredReviews.length} of {profile.reviews.length} reviews</span>
+                  </div>
+
+                  {filteredReviews.length === 0 ? (
+                    <Card className="border-border/30 bg-card/50">
+                      <CardContent className="p-8 text-center text-muted-foreground text-sm">
+                        No reviews match the selected filter.
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    filteredReviews.map((review) => {
+                      const reviewerAvatar = getAvatarById(review.reviewerAvatar);
+                      return (
+                        <Card key={review.id} className="border-border/30 bg-card/50 backdrop-blur-md">
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="w-9 h-9 rounded-full bg-muted/30 flex items-center justify-center text-lg">{reviewerAvatar.emoji}</div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Link to={`/user/${review.reviewerName.toLowerCase().replace(/\s/g, "")}`} className="text-sm font-medium hover:text-primary transition-colors">{review.reviewerName}</Link>
+                                  <div className="flex gap-0.5">
+                                    {[1, 2, 3, 4, 5].map((i) => <Star key={i} className={`h-3 w-3 ${i <= review.rating ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground/20"}`} />)}
+                                  </div>
+                                  <span className="text-[10px] text-muted-foreground">{new Date(review.date).toLocaleDateString("en-GB")}</span>
                                 </div>
-                                <span className="text-[10px] text-muted-foreground">{new Date(review.date).toLocaleDateString("en-GB")}</span>
+                                <p className="text-xs text-muted-foreground mt-0.5">Re: {review.listingTitle}</p>
+                                <p className="text-sm mt-1.5">{review.comment}</p>
                               </div>
-                              <p className="text-xs text-muted-foreground mt-0.5">Re: {review.listingTitle}</p>
-                              <p className="text-sm mt-1.5">{review.comment}</p>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                          </CardContent>
+                        </Card>
+                      );
+                    })
+                  )}
                 </div>
               </TabsContent>
 
