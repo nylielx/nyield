@@ -7,14 +7,22 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MetricCard } from "../components/metric-card";
-import { Megaphone, Tag, TrendingUp, Zap, Plus } from "lucide-react";
+import { SectionInfoCard } from "../components/section-info-card";
+import { Megaphone, Tag, TrendingUp, Zap, Plus, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
 
 const mockCampaigns = [
   { id: 1, name: "Summer Sale 2025", status: "active", discount: "15%", uses: 234, revenue: 18200 },
   { id: 2, name: "New Customer Welcome", status: "active", discount: "10%", uses: 89, revenue: 6400 },
   { id: 3, name: "Black Friday Early", status: "scheduled", discount: "25%", uses: 0, revenue: 0 },
   { id: 4, name: "Spring Clearance", status: "ended", discount: "20%", uses: 567, revenue: 42100 },
+];
+
+const aiInsights = [
+  "Your Summer Sale campaign is outperforming by 23% compared to last quarter's equivalent.",
+  "Conversion rate increased 1.4% after the New Customer Welcome discount was introduced.",
+  "Consider raising the Black Friday discount to 30% — demand forecasting suggests higher uptake.",
 ];
 
 const SellerMarketingPage = () => (
@@ -32,12 +40,18 @@ const SellerMarketingPage = () => (
       </Button>
     </div>
 
+    <SectionInfoCard
+      icon={Megaphone}
+      title="Marketing & Growth"
+      description="Track campaign performance, discounts, and conversion metrics to optimise revenue growth."
+    />
+
     {/* Stats */}
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <MetricCard label="Active Campaigns" value="2" icon={Megaphone} glow />
-      <MetricCard label="Active Discounts" value="3" icon={Tag} />
-      <MetricCard label="Campaign Revenue" value="£66,700" change="+18%" changeType="positive" icon={TrendingUp} />
-      <MetricCard label="Conversion Uplift" value="+2.1%" icon={Zap} />
+      <MetricCard label="Active Campaigns" value="2" icon={Megaphone} glow index={0} />
+      <MetricCard label="Active Discounts" value="3" icon={Tag} index={1} />
+      <MetricCard label="Campaign Revenue" value="£66,700" change="+18%" changeType="positive" icon={TrendingUp} index={2} />
+      <MetricCard label="Conversion Uplift" value="+2.1%" icon={Zap} index={3} />
     </div>
 
     {/* Campaigns */}
@@ -47,10 +61,13 @@ const SellerMarketingPage = () => (
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-3">
-          {mockCampaigns.map((campaign) => (
-            <div
+          {mockCampaigns.map((campaign, i) => (
+            <motion.div
               key={campaign.id}
-              className="flex items-center gap-4 py-3 border-b border-border/20 last:border-0"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.06, duration: 0.25 }}
+              className="flex items-center gap-4 py-3 border-b border-border/20 last:border-0 hover:bg-muted/10 transition-colors rounded-lg px-2"
             >
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">{campaign.name}</p>
@@ -75,20 +92,42 @@ const SellerMarketingPage = () => (
               >
                 {campaign.status}
               </Badge>
-            </div>
+            </motion.div>
           ))}
         </div>
       </CardContent>
     </Card>
 
-    {/* Future tools placeholder */}
-    <Card className="glass-base border-dashed">
-      <CardContent className="p-8 text-center">
-        <Zap className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-        <h3 className="text-sm font-semibold text-foreground mb-1">AI-Powered Insights</h3>
-        <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-          Demand forecasting, auto-pricing, and smart alert systems coming soon.
-        </p>
+    {/* AI Insights — upgraded */}
+    <Card className="glass-base border-primary/20">
+      <CardContent className="p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <motion.div
+            animate={{ scale: [1, 1.12, 1] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            className="p-2 rounded-lg bg-primary/10"
+          >
+            <Sparkles className="h-5 w-5 text-primary" />
+          </motion.div>
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">AI-Powered Insights</h3>
+            <p className="text-[10px] text-muted-foreground">Smart analysis based on your data</p>
+          </div>
+        </div>
+        <div className="space-y-3">
+          {aiInsights.map((insight, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 + i * 0.12, duration: 0.3 }}
+              className="flex items-start gap-2.5 py-2"
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+              <p className="text-xs text-muted-foreground leading-relaxed">{insight}</p>
+            </motion.div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   </div>
