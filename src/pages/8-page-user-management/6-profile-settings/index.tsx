@@ -1,8 +1,6 @@
 /**
  * =============================================================================
- * PROFILE SETTINGS PAGE — Edit user profile
- * =============================================================================
- * Allows editing: full name, email (display only), avatar selection.
+ * PROFILE SETTINGS PAGE — Edit user profile with save lifecycle
  * =============================================================================
  */
 
@@ -13,7 +11,7 @@ import { ProfilePictureUpload } from "@/components/ui/profile-picture-upload";
 import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 
 const ProfileSettingsPage = () => {
-  const { profile, updateField, updateAvatar, updateAvatarUrl, removeAvatarUrl, saving } = useProfileSettings();
+  const { profile, updateField, saveChanges, updateAvatar, updateAvatarUrl, removeAvatarUrl, saving, hasPendingChanges } = useProfileSettings();
   const fallbackEmoji = getAvatarById(profile.avatar).emoji;
 
   return (
@@ -36,7 +34,13 @@ const ProfileSettingsPage = () => {
             The emoji icon is used as a fallback when no profile picture is uploaded.
           </p>
         </div>
-        <ProfileForm profile={profile} onUpdate={updateField} saving={saving} />
+        <ProfileForm
+          profile={profile}
+          onUpdate={updateField}
+          onSave={saveChanges}
+          saving={saving}
+          hasPendingChanges={hasPendingChanges}
+        />
       </div>
     </div>
   );

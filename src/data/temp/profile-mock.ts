@@ -2,13 +2,22 @@
  * =============================================================================
  * PROFILE MOCK DATA — User & Business profiles (eBay-style)
  * =============================================================================
+ *
+ * IMPORTANT: Public profile resolution now checks the auth registry first
+ * before falling back to static mock data. This ensures registered users
+ * automatically have resolvable public profiles.
+ * =============================================================================
  */
+
+import { getUserByUsername, getBusinessBySlug as getBusinessBySlugFromAuth } from "@/services/auth";
 
 export interface UserReview {
   id: string;
   reviewerId: string;
   reviewerName: string;
   reviewerAvatar: string;
+  /** Canonical username for reviewer profile link */
+  reviewerUsername: string;
   rating: number;
   comment: string;
   date: string;
@@ -19,6 +28,7 @@ export interface UserProfile {
   id: string;
   username: string;
   avatar: string;
+  avatarUrl?: string;
   fullName: string;
   rating: number;
   totalRatings: number;
@@ -40,7 +50,7 @@ export interface UserProfile {
     targetFps: number;
   };
   socialLinks: { platform: string; username: string; emoji: string }[];
-  listings: string[]; // listing IDs from marketplace
+  listings: string[];
   reviews: UserReview[];
   stats: {
     totalSales: number;
@@ -55,6 +65,8 @@ export interface BusinessProfile {
   slug: string;
   name: string;
   logo: string;
+  /** Auth user ID that owns this business */
+  ownerUserId?: string;
   rating: number;
   totalRatings: number;
   verified: boolean;
@@ -78,18 +90,18 @@ export interface BusinessProfile {
 /* -------------------------------------------------------------------------- */
 
 const sharedReviews: UserReview[] = [
-  { id: "r1", reviewerId: "user-002", reviewerName: "Demo User", reviewerAvatar: "fox", rating: 5, comment: "Incredible build quality, exactly as described. Fast shipping too!", date: "2026-03-28", listingTitle: "RTX 4070 Gaming Build" },
-  { id: "r2", reviewerId: "user-005", reviewerName: "Kai Martinez", reviewerAvatar: "ninja", rating: 4, comment: "Great value for the price. Minor cosmetic marks but runs perfectly.", date: "2026-03-15", listingTitle: "Budget Esports Machine" },
-  { id: "r3", reviewerId: "user-004", reviewerName: "Alex Chen", reviewerAvatar: "eagle", rating: 5, comment: "Beast of a machine. 360+ FPS in Valorant. Highly recommend this seller.", date: "2026-03-20", listingTitle: "High-End Creator & Gaming Rig" },
-  { id: "r4", reviewerId: "user-002", reviewerName: "Demo User", reviewerAvatar: "fox", rating: 5, comment: "Professional seller. Everything was tested and documented. A+", date: "2026-02-28", listingTitle: "RTX 4070 Gaming Build" },
-  { id: "r5", reviewerId: "user-005", reviewerName: "Kai Martinez", reviewerAvatar: "ninja", rating: 4, comment: "Good communication and fair pricing. Would buy again.", date: "2026-02-10", listingTitle: "Budget Esports Machine" },
-  { id: "r6", reviewerId: "user-004", reviewerName: "Alex Chen", reviewerAvatar: "eagle", rating: 5, comment: "Top-notch cable management. Clean build.", date: "2026-01-22", listingTitle: "RTX 4070 Gaming Build" },
-  { id: "r7", reviewerId: "user-002", reviewerName: "Demo User", reviewerAvatar: "fox", rating: 5, comment: "Arrived sooner than expected. Very pleased.", date: "2026-01-10", listingTitle: "Budget Esports Machine" },
-  { id: "r8", reviewerId: "user-005", reviewerName: "Kai Martinez", reviewerAvatar: "ninja", rating: 5, comment: "Rock solid thermals under load. Great job.", date: "2025-12-18", listingTitle: "High-End Creator & Gaming Rig" },
-  { id: "r9", reviewerId: "user-004", reviewerName: "Alex Chen", reviewerAvatar: "eagle", rating: 4, comment: "Good build, minor delay on shipping but overall happy.", date: "2025-12-05", listingTitle: "RTX 4070 Gaming Build" },
-  { id: "r10", reviewerId: "user-002", reviewerName: "Demo User", reviewerAvatar: "fox", rating: 5, comment: "Excellent packaging and build quality.", date: "2025-11-20", listingTitle: "Budget Esports Machine" },
-  { id: "r11", reviewerId: "user-005", reviewerName: "Kai Martinez", reviewerAvatar: "ninja", rating: 5, comment: "Perfect for 1440p gaming. Exactly what I needed.", date: "2025-11-08", listingTitle: "High-End Creator & Gaming Rig" },
-  { id: "r12", reviewerId: "user-004", reviewerName: "Alex Chen", reviewerAvatar: "eagle", rating: 5, comment: "Would recommend to anyone looking for a custom PC.", date: "2025-10-25", listingTitle: "RTX 4070 Gaming Build" },
+  { id: "r1", reviewerId: "user-002", reviewerName: "Demo User", reviewerAvatar: "fox", reviewerUsername: "demouser", rating: 5, comment: "Incredible build quality, exactly as described. Fast shipping too!", date: "2026-03-28", listingTitle: "RTX 4070 Gaming Build" },
+  { id: "r2", reviewerId: "user-005", reviewerName: "Kai Martinez", reviewerAvatar: "ninja", reviewerUsername: "speedrunner", rating: 4, comment: "Great value for the price. Minor cosmetic marks but runs perfectly.", date: "2026-03-15", listingTitle: "Budget Esports Machine" },
+  { id: "r3", reviewerId: "user-004", reviewerName: "Alex Chen", reviewerAvatar: "eagle", reviewerUsername: "probuilder", rating: 5, comment: "Beast of a machine. 360+ FPS in Valorant. Highly recommend this seller.", date: "2026-03-20", listingTitle: "High-End Creator & Gaming Rig" },
+  { id: "r4", reviewerId: "user-002", reviewerName: "Demo User", reviewerAvatar: "fox", reviewerUsername: "demouser", rating: 5, comment: "Professional seller. Everything was tested and documented. A+", date: "2026-02-28", listingTitle: "RTX 4070 Gaming Build" },
+  { id: "r5", reviewerId: "user-005", reviewerName: "Kai Martinez", reviewerAvatar: "ninja", reviewerUsername: "speedrunner", rating: 4, comment: "Good communication and fair pricing. Would buy again.", date: "2026-02-10", listingTitle: "Budget Esports Machine" },
+  { id: "r6", reviewerId: "user-004", reviewerName: "Alex Chen", reviewerAvatar: "eagle", reviewerUsername: "probuilder", rating: 5, comment: "Top-notch cable management. Clean build.", date: "2026-01-22", listingTitle: "RTX 4070 Gaming Build" },
+  { id: "r7", reviewerId: "user-002", reviewerName: "Demo User", reviewerAvatar: "fox", reviewerUsername: "demouser", rating: 5, comment: "Arrived sooner than expected. Very pleased.", date: "2026-01-10", listingTitle: "Budget Esports Machine" },
+  { id: "r8", reviewerId: "user-005", reviewerName: "Kai Martinez", reviewerAvatar: "ninja", reviewerUsername: "speedrunner", rating: 5, comment: "Rock solid thermals under load. Great job.", date: "2025-12-18", listingTitle: "High-End Creator & Gaming Rig" },
+  { id: "r9", reviewerId: "user-004", reviewerName: "Alex Chen", reviewerAvatar: "eagle", reviewerUsername: "probuilder", rating: 4, comment: "Good build, minor delay on shipping but overall happy.", date: "2025-12-05", listingTitle: "RTX 4070 Gaming Build" },
+  { id: "r10", reviewerId: "user-002", reviewerName: "Demo User", reviewerAvatar: "fox", reviewerUsername: "demouser", rating: 5, comment: "Excellent packaging and build quality.", date: "2025-11-20", listingTitle: "Budget Esports Machine" },
+  { id: "r11", reviewerId: "user-005", reviewerName: "Kai Martinez", reviewerAvatar: "ninja", reviewerUsername: "speedrunner", rating: 5, comment: "Perfect for 1440p gaming. Exactly what I needed.", date: "2025-11-08", listingTitle: "High-End Creator & Gaming Rig" },
+  { id: "r12", reviewerId: "user-004", reviewerName: "Alex Chen", reviewerAvatar: "eagle", reviewerUsername: "probuilder", rating: 5, comment: "Would recommend to anyone looking for a custom PC.", date: "2025-10-25", listingTitle: "RTX 4070 Gaming Build" },
 ];
 
 export const userProfilesMock: UserProfile[] = [
@@ -183,6 +195,7 @@ export const businessProfilesMock: BusinessProfile[] = [
     slug: "probuilder-pcs",
     name: "ProBuilder PCs",
     logo: "🏗️",
+    ownerUserId: "user-003",
     rating: 4.9,
     totalRatings: 128,
     verified: true,
@@ -205,6 +218,7 @@ export const businessProfilesMock: BusinessProfile[] = [
     slug: "speed-rigs",
     name: "Speed Rigs",
     logo: "⚡",
+    ownerUserId: undefined,
     rating: 4.7,
     totalRatings: 56,
     verified: true,
@@ -222,9 +236,41 @@ export const businessProfilesMock: BusinessProfile[] = [
   },
 ];
 
-/** Lookup helpers */
+/**
+ * Resolve a user profile by username.
+ * First checks the auth registry (so newly registered users resolve),
+ * then falls back to static mock data for extended profile fields.
+ */
 export function getUserProfile(username: string): UserProfile | undefined {
-  return userProfilesMock.find((p) => p.username === username);
+  // Check static mock first (has full profile data)
+  const mockProfile = userProfilesMock.find((p) => p.username === username);
+  if (mockProfile) return mockProfile;
+
+  // Fallback: check auth registry for dynamically registered users
+  const authUser = getUserByUsername(username);
+  if (authUser) {
+    return {
+      id: authUser.id,
+      username: authUser.username,
+      avatar: authUser.avatar,
+      avatarUrl: authUser.avatarUrl,
+      fullName: authUser.fullName,
+      rating: 0,
+      totalRatings: 0,
+      joinDate: authUser.memberSince,
+      location: "Not set",
+      bio: "This user hasn't set up their profile yet.",
+      verified: false,
+      pcSpecs: { cpu: "Not set", gpu: "Not set", ram: "Not set", storage: "Not set", monitor: "Not set", os: "Not set" },
+      gaming: { playstyle: "Not set", favouriteGames: [], targetFps: 60 },
+      socialLinks: [],
+      listings: [],
+      reviews: [],
+      stats: { totalSales: 0, totalPurchases: 0, responseTime: "N/A", completionRate: 0 },
+    };
+  }
+
+  return undefined;
 }
 
 export function getBusinessProfile(slug: string): BusinessProfile | undefined {

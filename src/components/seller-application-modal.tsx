@@ -2,24 +2,13 @@
  * =============================================================================
  * SELLER APPLICATION MODAL — Buyer → Seller conversion flow
  * =============================================================================
- * Low-friction onboarding form that allows standard users to apply for a
- * business account. Uses dialog pattern with glass morphism styling.
- *
- * CONVERSION PSYCHOLOGY:
- *   - Minimal fields (reduces friction)
- *   - Pre-filled email (saves effort)
- *   - Clear benefit framing (motivates action)
- *   - Immediate confirmation (reduces anxiety)
- *
- * SCALING NOTE:
- *   In production, this would POST to a backend endpoint that queues
- *   the application for manual review or auto-approves based on criteria.
+ * State-driven: submits application via AuthContext, transitions to pending state.
  * =============================================================================
  */
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Store, CheckCircle2, Zap, BarChart3, Users } from "lucide-react";
+import { X, Store, CheckCircle2, Zap, BarChart3, Users, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,24 +26,40 @@ const benefits = [
 ];
 
 const SellerApplicationModal = ({ open, onClose }: SellerApplicationModalProps) => {
-  const { user } = useAuth();
+  const { user, applyForSeller } = useAuth();
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [sellType, setSellType] = useState("");
   const [description, setDescription] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const alreadyApplied = user?.sellerApplicationStatus === "pending" || user?.sellerApplicationStatus === "approved";
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock submission — in production this calls an API
-    setSubmitted(true);
+    setError("");
+    setSubmitting(true);
+    try {
+      const result = await applyForSeller({ sellType, description });
+      if (result.success) {
+        setSubmitted(true);
+      } else {
+        setError(result.message);
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleClose = () => {
     onClose();
-    // Reset after animation
     setTimeout(() => {
       setSubmitted(false);
       setSellType("");
       setDescription("");
+      setError("");
     }, 300);
   };
 
@@ -67,10 +72,8 @@ const SellerApplicationModal = ({ open, onClose }: SellerApplicationModalProps) 
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[60] flex items-center justify-center p-4"
         >
-          {/* Backdrop */}
           <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" onClick={handleClose} />
 
-          {/* Modal */}
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -78,7 +81,6 @@ const SellerApplicationModal = ({ open, onClose }: SellerApplicationModalProps) 
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="relative w-full max-w-md rounded-2xl glass-elevated border border-border/30 shadow-2xl overflow-hidden"
           >
-            {/* Close */}
             <button
               onClick={handleClose}
               className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors z-10"
@@ -86,8 +88,22 @@ const SellerApplicationModal = ({ open, onClose }: SellerApplicationModalProps) 
               <X className="h-4 w-4" />
             </button>
 
-            {submitted ? (
-              /* ── Confirmation State ── */
+            {alreadyApplied ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-8 text-center">
+                <div className="w-16 h-16 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mx-auto mb-4">
+                  <Clock className="h-8 w-8 text-amber-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  {user?.sellerApplicationStatus === "approved" ? "Already Approved" : "Application Pending"}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-6">
+                  {user?.sellerApplicationStatus === "approved"
+                    ? "Your business account is already active."
+                    : "Your application is being reviewed. We'll notify you within 24–48 hours."}
+                </p>
+                <Button onClick={handleClose} className="rounded-full">Got It</Button>
+              </motion.div>
+            ) : submitted ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -106,14 +122,10 @@ const SellerApplicationModal = ({ open, onClose }: SellerApplicationModalProps) 
                   We'll review your application and get back to you within 24–48 hours.
                   You'll receive an email once approved.
                 </p>
-                <Button onClick={handleClose} className="rounded-full">
-                  Got It
-                </Button>
+                <Button onClick={handleClose} className="rounded-full">Got It</Button>
               </motion.div>
             ) : (
-              /* ── Application Form ── */
               <form onSubmit={handleSubmit}>
-                {/* Header */}
                 <div className="p-6 pb-4 border-b border-border/30">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center">
@@ -124,8 +136,6 @@ const SellerApplicationModal = ({ open, onClose }: SellerApplicationModalProps) 
                       <p className="text-xs text-muted-foreground">List your PC, reach verified buyers, and earn.</p>
                     </div>
                   </div>
-
-                  {/* Benefits */}
                   <div className="space-y-2 mt-4">
                     {benefits.map(({ icon: Icon, text }) => (
                       <div key={text} className="flex items-center gap-2.5 text-sm text-muted-foreground">
@@ -138,23 +148,14 @@ const SellerApplicationModal = ({ open, onClose }: SellerApplicationModalProps) 
                   </div>
                 </div>
 
-                {/* Fields */}
                 <div className="p-6 space-y-4">
                   <div>
                     <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Full Name</label>
-                    <Input
-                      value={user?.fullName ?? ""}
-                      disabled
-                      className="bg-muted/20 border-border/30"
-                    />
+                    <Input value={user?.fullName ?? ""} disabled className="bg-muted/20 border-border/30" />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Email</label>
-                    <Input
-                      value={user?.email ?? ""}
-                      disabled
-                      className="bg-muted/20 border-border/30"
-                    />
+                    <Input value={user?.email ?? ""} disabled className="bg-muted/20 border-border/30" />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-muted-foreground mb-1.5 block">What do you want to sell?</label>
@@ -176,13 +177,13 @@ const SellerApplicationModal = ({ open, onClose }: SellerApplicationModalProps) 
                       className="bg-muted/20 border-border/30 resize-none"
                     />
                   </div>
+                  {error && <p className="text-xs text-destructive">{error}</p>}
                 </div>
 
-                {/* Submit */}
                 <div className="px-6 pb-6">
-                  <Button type="submit" className="w-full rounded-full glow-sm gap-2">
+                  <Button type="submit" disabled={submitting} className="w-full rounded-full glow-sm gap-2">
                     <Zap className="h-4 w-4" />
-                    Apply for Business Account
+                    {submitting ? "Submitting..." : "Apply for Business Account"}
                   </Button>
                 </div>
               </form>

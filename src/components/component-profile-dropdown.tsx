@@ -2,6 +2,8 @@
  * =============================================================================
  * PROFILE DROPDOWN — Role-based navigation dropdown
  * =============================================================================
+ * Uses canonical username for profile URL generation.
+ * =============================================================================
  */
 
 import { useState, useRef, useEffect } from "react";
@@ -46,6 +48,9 @@ const StandardDropdown = () => {
 
   const quickSections = standardSidebarSections.slice(0, 3);
 
+  // Hide seller CTA if already applied or approved
+  const showSellerCta = user.sellerApplicationStatus === "none";
+
   return (
     <>
       <div className="relative" ref={dropdownRef}>
@@ -75,7 +80,7 @@ const StandardDropdown = () => {
               {/* Profile & Affiliate links */}
               <div className="py-1 border-b border-border/30">
                 <Link
-                  to={`/user/${user.fullName.toLowerCase().replace(/\s/g, "")}`}
+                  to={`/user/${user.username}`}
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-3 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
                 >
@@ -148,17 +153,28 @@ const StandardDropdown = () => {
                 </button>
               </div>
 
-              {/* Seller CTA */}
-              <div className="border-t border-border/30 px-3 py-2.5">
-                <button
-                  onClick={() => { setOpen(false); setSellerModalOpen(true); }}
-                  className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium text-primary hover:bg-primary/10 transition-colors"
-                >
-                  <Store className="h-3 w-3" />
-                  Start Selling
-                  <ArrowRight className="h-3 w-3" />
-                </button>
-              </div>
+              {/* Seller CTA — only if not already applied */}
+              {showSellerCta && (
+                <div className="border-t border-border/30 px-3 py-2.5">
+                  <button
+                    onClick={() => { setOpen(false); setSellerModalOpen(true); }}
+                    className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium text-primary hover:bg-primary/10 transition-colors"
+                  >
+                    <Store className="h-3 w-3" />
+                    Start Selling
+                    <ArrowRight className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+
+              {/* Pending application status */}
+              {user.sellerApplicationStatus === "pending" && (
+                <div className="border-t border-border/30 px-3 py-2.5">
+                  <p className="text-center text-[11px] text-amber-400">
+                    ⏳ Seller application under review
+                  </p>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

@@ -2,16 +2,20 @@
  * =============================================================================
  * NAVBAR COMPONENT — Top navigation bar for nYield
  * =============================================================================
+ * Unread message count is user-scoped via AuthContext.
+ * =============================================================================
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, useScroll, useTransform, useVelocity, useSpring } from "framer-motion";
 import { Menu, X, MessageCircle, Bell } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import ThemeToggle from "./component-theme-toggle";
 import ProfileDropdown from "./component-profile-dropdown";
 import { useAuth } from "@/contexts/AuthContext";
-import { getTotalUnread } from "@/data/temp/messaging-mock";
+import {
+  conversationsMock, messagesMock, getConversationsForUser, getTotalUnreadForUser,
+} from "@/data/temp/messaging-mock";
 
 const navLinks = [
   { label: "Services", to: "/services" },
@@ -51,12 +55,19 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Mock notifications
-  const notifications = [
+  // User-scoped unread count
+  const unreadMessages = useMemo(() => {
+    if (!user) return 0;
+    const myConversations = getConversationsForUser(user.id, conversationsMock);
+    return getTotalUnreadForUser(user.id, myConversations, messagesMock);
+  }, [user]);
+
+  // Mock notifications — demo-only, clearly scoped
+  const notifications = user ? [
     { id: "n1", text: "New message from Alex Chen", time: "2m ago", read: false },
     { id: "n2", text: "Your order has been shipped", time: "1h ago", read: false },
     { id: "n3", text: "Affiliate commission earned: £7.50", time: "3h ago", read: true },
-  ];
+  ] : [];
   const unreadNotifs = notifications.filter((n) => !n.read).length;
 
   return (
@@ -136,9 +147,9 @@ const Navbar = () => {
                     {/* Messages */}
                     <Link to="/messages" className="relative p-1.5 rounded-full hover:bg-muted/30 transition-colors">
                       <MessageCircle className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
-                      {getTotalUnread() > 0 && (
+                      {unreadMessages > 0 && (
                         <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
-                          <span className="text-[9px] font-bold text-primary-foreground">{getTotalUnread()}</span>
+                          <span className="text-[9px] font-bold text-primary-foreground">{unreadMessages}</span>
                         </span>
                       )}
                     </Link>
@@ -176,6 +187,9 @@ const Navbar = () => {
                 <div className="flex flex-col gap-2 pt-2 border-t border-border/50">
                   <Link to="/account" onClick={() => setMenuOpen(false)} className="px-5 py-2.5 rounded-full border border-border text-sm font-medium text-center hover:text-primary hover:border-primary transition-colors">
                     My Account
+                  </Link>
+                  <Link to="/messages" onClick={() => setMenuOpen(false)} className="px-5 py-2.5 rounded-full border border-border text-sm font-medium text-center hover:text-primary hover:border-primary transition-colors">
+                    Messages {unreadMessages > 0 && `(${unreadMessages})`}
                   </Link>
                   <Link to="/affiliate" onClick={() => setMenuOpen(false)} className="px-5 py-2.5 rounded-full border border-border text-sm font-medium text-center hover:text-primary hover:border-primary transition-colors">
                     Affiliate

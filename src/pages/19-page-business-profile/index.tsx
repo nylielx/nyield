@@ -2,6 +2,9 @@
  * =============================================================================
  * BUSINESS PROFILE PAGE — /business/:slug (eBay-style)
  * =============================================================================
+ * Uses canonical slug for routing. Reviewer links use reviewerUsername.
+ * Message button includes context. Fails cleanly on invalid slug.
+ * =============================================================================
  */
 
 import { useParams, Link } from "react-router-dom";
@@ -19,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { getBusinessProfile } from "@/data/temp/profile-mock";
 import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 import { marketplaceListings } from "@/data/marketplaceExamples";
@@ -28,14 +32,21 @@ const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transi
 
 const BusinessProfilePage = () => {
   const { slug } = useParams<{ slug: string }>();
-  const profile = getBusinessProfile(slug ?? "probuilder-pcs");
+  const { user: authUser } = useAuth();
 
-  if (!profile) {
+  const profile = slug ? getBusinessProfile(slug) : undefined;
+
+  // Own-business detection
+  const isOwnBusiness = !!(authUser && profile && authUser.businessSlug === slug);
+
+  if (!slug || !profile) {
     return (
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
         <main className="pt-28 pb-16 text-center">
-          <p className="text-muted-foreground">Business not found.</p>
+          <p className="text-lg font-medium text-foreground mb-2">Business not found</p>
+          <p className="text-muted-foreground text-sm">The business profile you're looking for doesn't exist or has been removed.</p>
+          <Link to="/" className="text-primary text-sm hover:underline mt-4 inline-block">← Back to home</Link>
         </main>
         <SiteFooter />
       </div>
@@ -72,6 +83,9 @@ const BusinessProfilePage = () => {
                           <ShieldCheck className="h-3 w-3" /> Verified Business
                         </Badge>
                       )}
+                      {isOwnBusiness && (
+                        <Badge variant="outline" className="text-[10px] border-border/30">Your Business</Badge>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground">{profile.specialisation}</p>
                     <div className="flex items-center gap-4 flex-wrap text-xs text-muted-foreground mt-1">
@@ -87,13 +101,26 @@ const BusinessProfilePage = () => {
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <Link to="/messages"><Button size="sm" className="gap-1.5"><MessageCircle className="h-3.5 w-3.5" /> Contact</Button></Link>
+                    {!isOwnBusiness && authUser && (
+                      <Link to={`/messages?to=${profile.slug}&type=business`}>
+                        <Button size="sm" className="gap-1.5"><MessageCircle className="h-3.5 w-3.5" /> Contact</Button>
+                      </Link>
+                    )}
+                    {!isOwnBusiness && !authUser && (
+                      <Link to="/signin">
+                        <Button size="sm" className="gap-1.5"><MessageCircle className="h-3.5 w-3.5" /> Contact</Button>
+                      </Link>
+                    )}
+                    {isOwnBusiness && (
+                      <Link to="/seller">
+                        <Button size="sm" variant="outline" className="gap-1.5">Manage Dashboard</Button>
+                      </Link>
+                    )}
                     <Button size="sm" variant="outline" onClick={copyLink} className="gap-1.5"><Copy className="h-3.5 w-3.5" /> Copy</Button>
-                    <Button size="sm" variant="outline" className="gap-1.5"><Share2 className="h-3.5 w-3.5" /> Share</Button>
+                    <Button size="sm" variant="outline" className="gap-1.5" onClick={() => toast({ title: "Share", description: "Share feature coming soon (demo)" })}><Share2 className="h-3.5 w-3.5" /> Share</Button>
                   </div>
                 </div>
 
-                {/* Badges */}
                 <div className="flex flex-wrap gap-1.5 mt-4">
                   {profile.badges.map((b) => <Badge key={b} variant="secondary" className="text-xs">{b}</Badge>)}
                 </div>
@@ -205,7 +232,7 @@ const BusinessProfilePage = () => {
                             <div className="w-9 h-9 rounded-full bg-muted/30 flex items-center justify-center text-lg">{reviewerAvatar.emoji}</div>
                             <div className="flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <Link to={`/user/${review.reviewerName.toLowerCase().replace(/\s/g, "")}`} className="text-sm font-medium hover:text-primary transition-colors">{review.reviewerName}</Link>
+                                <Link to={`/user/${review.reviewerUsername}`} className="text-sm font-medium hover:text-primary transition-colors">{review.reviewerName}</Link>
                                 <div className="flex gap-0.5">
                                   {[1, 2, 3, 4, 5].map((i) => <Star key={i} className={`h-3 w-3 ${i <= review.rating ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground/20"}`} />)}
                                 </div>
