@@ -77,7 +77,7 @@ function getDefaultRegistry(): StoredUser[] {
       password: "123",
       fullName: "Hassan",
       avatar: "dragon",
-      role: "admin",
+      role: "standard",
       memberSince: "2025-09-14",
     },
     {
@@ -86,8 +86,17 @@ function getDefaultRegistry(): StoredUser[] {
       password: "demo",
       fullName: "Demo User",
       avatar: "fox",
-      role: "user",
+      role: "standard",
       memberSince: "2026-01-10",
+    },
+    {
+      id: "user-003",
+      email: "hassan@business.com",
+      password: "123",
+      fullName: "Hassan",
+      avatar: "dragon",
+      role: "business",
+      memberSince: "2025-06-01",
     },
   ];
   saveRegistry(defaults);
