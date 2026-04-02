@@ -121,7 +121,7 @@ export async function registerUser(data: RegisterData): Promise<AuthResponse> {
     password: data.password,
     fullName: data.fullName,
     avatar: "man",
-    role: "user",
+    role: "standard",
     memberSince: new Date().toISOString().split("T")[0],
   };
 
