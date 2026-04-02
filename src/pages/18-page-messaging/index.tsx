@@ -392,6 +392,7 @@ const ContextPanel = ({
                   <div>
                     <p className="text-sm font-medium">{other?.name}</p>
                     <p className="text-[10px] text-muted-foreground">{other?.isOnline ? "🟢 Online" : "⚫ Offline"}</p>
+                    <p className="text-[10px] text-primary mt-0.5">View full profile →</p>
                   </div>
                   <ExternalLink className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
                 </CardContent>
