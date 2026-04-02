@@ -51,6 +51,7 @@ import PublicProfilePage from "./pages/14-page-public-profile";
 import OnboardingQuizPage from "./pages/15-page-onboarding-quiz";
 import PcAnalyzerPage from "./pages/16-page-pc-analyzer";
 import CommunityPage from "./pages/17-page-community";
+import MessagingPage from "./pages/18-page-messaging";
 
 const queryClient = new QueryClient();
 
@@ -106,6 +107,7 @@ const App = () => (
             <Route path="/quiz" element={<OnboardingQuizPage />} />
             <Route path="/pc-analyzer" element={<PcAnalyzerPage />} />
             <Route path="/community" element={<CommunityPage />} />
+            <Route path="/messages" element={<MessagingPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

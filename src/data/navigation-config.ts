@@ -29,6 +29,7 @@ import {
   DollarSign,
   Settings,
   Store,
+  MessageCircle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -61,6 +62,7 @@ export const standardSidebarSections: NavSection[] = [
   {
     group: "Activity",
     items: [
+      { label: "Messages", to: "/messages", icon: MessageCircle, quickAction: true },
       { label: "My Bookings", to: "/account/bookings", icon: CalendarDays, quickAction: true },
       { label: "My Orders", to: "/account/orders", icon: ShoppingCart, quickAction: true },
     ],
