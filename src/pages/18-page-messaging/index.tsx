@@ -151,7 +151,7 @@ const ConversationList = ({
               <motion.button
                 key={conv.id}
                 onClick={() => onSelect(conv.id)}
-                className={`w-full text-left p-3 rounded-xl transition-all duration-200 group ${
+                className={`w-full text-left p-2.5 rounded-xl transition-all duration-200 group ${
                   isActive
                     ? "bg-primary/10 border border-primary/20"
                     : "hover:bg-muted/20 border border-transparent"
@@ -322,7 +322,8 @@ const ChatWindow = ({
             {other?.isOnline ? "Online" : `Last seen ${timeAgo(other?.lastSeen ?? "")}`}
           </p>
         </div>
-        {conversation.businessName && (
+        {/* Show business badge ONLY when standard user is talking to a business */}
+        {conversation.businessName && userRole === "standard" && (
           <Badge variant="secondary" className="text-xs gap-1">🏢 {conversation.businessName}</Badge>
         )}
         {conversation.linkedOrder && (
@@ -600,12 +601,14 @@ const ContextPanel = ({
             </>
           )}
 
-          {/* ─── OFFER: Listing + Offer details + Accept/Decline ─── */}
+          {/* ─── OFFER: Role-aware — buyer sees status, seller sees accept/decline ─── */}
           {conversation.type === "offer" && (
             <>
               {conversation.linkedOffer ? (
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Offer</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {isBusinessView ? "Incoming Offer" : "Your Offer"}
+                  </p>
                   <Card className="border-amber-500/20 bg-amber-500/5">
                     <CardContent className="p-3 space-y-3">
                       <div className="flex items-center gap-2">
@@ -640,7 +643,8 @@ const ContextPanel = ({
                         </div>
                       </div>
 
-                      {conversation.linkedOffer.status === "pending" && (
+                      {/* Accept/Decline ONLY for business (seller) */}
+                      {isBusinessView && conversation.linkedOffer.status === "pending" && (
                         <div className="flex gap-2 pt-1">
                           <Button
                             size="sm" className="flex-1 text-xs h-8 gap-1 bg-green-600 hover:bg-green-700 text-white"
@@ -655,6 +659,13 @@ const ContextPanel = ({
                             <ThumbsDown className="h-3 w-3" /> Decline
                           </Button>
                         </div>
+                      )}
+
+                      {/* Waiting status for standard (buyer) */}
+                      {!isBusinessView && conversation.linkedOffer.status === "pending" && (
+                        <p className="text-[10px] text-muted-foreground italic pt-1 flex items-center gap-1">
+                          <Clock className="h-3 w-3" /> Waiting for seller to respond…
+                        </p>
                       )}
                     </CardContent>
                   </Card>
