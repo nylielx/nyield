@@ -957,7 +957,7 @@ const MessagingPage = () => {
 
           <div className="rounded-xl border border-border/30 bg-card/50 backdrop-blur-md overflow-hidden" style={{ height: "calc(100vh - 160px)" }}>
             <div className="flex h-full">
-              <div className={`w-full md:w-80 border-r border-border/30 shrink-0 ${mobileView === "chat" ? "hidden md:flex" : "flex"} flex-col`}>
+              <div className={`w-full md:w-80 border-r border-border/30 shrink-0 overflow-hidden ${mobileView === "chat" ? "hidden md:flex" : "flex"} flex-col`}>
                 <ConversationList
                   conversations={conversationsMock}
                   activeId={activeConv}
