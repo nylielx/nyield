@@ -23,6 +23,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
+import type { AuthUser } from "@/services/auth";
 import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 import { toast } from "@/hooks/use-toast";
 import { getUserProfile } from "@/data/temp/profile-mock";
@@ -46,6 +47,46 @@ const formatTime = (ts: string) =>
   new Date(ts).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 
 const FALLBACK_USER_ID = "user-001";
+const TEMPLATE_STANDARD_USER_ID = "user-001";
+const TEMPLATE_SELLER_IDS = new Set(["user-004", "user-005"]);
+
+const toUsername = (value: string) => value.toLowerCase().replace(/\s+/g, "");
+
+const mapParticipantToCurrentUser = (
+  participant: Conversation["participants"][number],
+  user: AuthUser | null,
+) => {
+  if (!user) return participant;
+
+  if (user.role === "business" && participant.role === "seller") {
+    return {
+      ...participant,
+      userId: user.id,
+      name: user.fullName,
+      avatar: user.avatar,
+      username: toUsername(user.fullName),
+    };
+  }
+
+  if (user.role === "standard" && participant.userId === TEMPLATE_STANDARD_USER_ID) {
+    return {
+      ...participant,
+      userId: user.id,
+      name: user.fullName,
+      avatar: user.avatar,
+      username: toUsername(user.fullName),
+    };
+  }
+
+  return participant;
+};
+
+const mapSenderIdToCurrentUser = (senderId: string, user: AuthUser | null) => {
+  if (!user) return senderId;
+  if (user.role === "business" && TEMPLATE_SELLER_IDS.has(senderId)) return user.id;
+  if (user.role === "standard" && senderId === TEMPLATE_STANDARD_USER_ID) return user.id;
+  return senderId;
+};
 
 const TYPE_LABELS: Record<ConversationType, string> = {
   product_inquiry: "Product Inquiry",
@@ -851,8 +892,25 @@ const MessagingPage = () => {
 
   useEffect(() => { document.title = "Messages — nYield"; }, []);
 
-  const activeConversation = conversationsMock.find((c) => c.id === activeConv);
-  const activeMessages = activeConv ? (localMessages[activeConv] ?? []) : [];
+  const displayConversations = conversationsMock.map((conversation) => ({
+    ...conversation,
+    participants: conversation.participants.map((participant) =>
+      mapParticipantToCurrentUser(participant, user)
+    ),
+  }));
+
+  const displayMessages = Object.fromEntries(
+    Object.entries(localMessages).map(([conversationId, conversationMessages]) => [
+      conversationId,
+      conversationMessages.map((message) => ({
+        ...message,
+        senderId: mapSenderIdToCurrentUser(message.senderId, user),
+      })),
+    ])
+  ) as Record<string, ChatMessage[]>;
+
+  const activeConversation = displayConversations.find((c) => c.id === activeConv);
+  const activeMessages = activeConv ? (displayMessages[activeConv] ?? []) : [];
 
   const handleSend = (text: string) => {
     if (!activeConv || !user) return;
@@ -899,7 +957,7 @@ const MessagingPage = () => {
               <MessageCircle className="h-5 w-5 text-primary" />
               <h1 className="text-xl font-heading font-bold">Messages</h1>
               <Badge variant="secondary" className="text-xs">
-                {conversationsMock.reduce((s, c) => s + c.unreadCount, 0)} unread
+                {displayConversations.reduce((s, c) => s + c.unreadCount, 0)} unread
               </Badge>
             </div>
             <Button
@@ -917,7 +975,7 @@ const MessagingPage = () => {
             <div className="flex h-full">
               <div className={`w-full md:w-80 border-r border-border/30 shrink-0 ${mobileView === "chat" ? "hidden md:flex" : "flex"} flex-col`}>
                 <ConversationList
-                  conversations={conversationsMock}
+                  conversations={displayConversations}
                   activeId={activeConv}
                   onSelect={selectConversation}
                   search={search}
