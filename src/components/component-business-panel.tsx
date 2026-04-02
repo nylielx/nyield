@@ -59,7 +59,7 @@ const BusinessPanel = () => {
         className="rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
         aria-label="Open business panel"
       >
-        {avatarEmoji}
+        <UserAvatarDisplay avatarUrl={user.avatarUrl} avatarId={avatarId} size="sm" />
       </button>
 
       <AnimatePresence>
@@ -74,9 +74,7 @@ const BusinessPanel = () => {
             {/* ── Account Overview ── */}
             <div className="p-4 border-b border-border/30">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-lg">
-                  {avatarEmoji}
-                </div>
+                <UserAvatarDisplay avatarUrl={user.avatarUrl} avatarId={avatarId} size="md" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-foreground truncate">{user.fullName}</p>
                   <p className="text-xs text-muted-foreground truncate">{user.email}</p>
