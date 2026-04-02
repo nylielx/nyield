@@ -1,6 +1,6 @@
 /**
  * =============================================================================
- * MESSAGING PAGE — Full chat system with dynamic context panel
+ * MESSAGING PAGE — Intent-driven chat with dynamic context panel
  * =============================================================================
  */
 
@@ -10,8 +10,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Send, Search, ChevronRight, ChevronLeft, MessageCircle, Sparkles,
   CheckCheck, Check, ExternalLink, Cpu, Monitor, MemoryStick,
-  PanelRightOpen, PanelRightClose, Bot, Zap, X, Package, Truck,
-  ShieldCheck, HardDrive, Clock, DollarSign, AlertCircle, Headphones,
+  PanelRightOpen, PanelRightClose, Bot, Zap, X, Truck,
+  ShieldCheck, HardDrive, Clock, AlertCircle,
+  Tag, ThumbsUp, ThumbsDown, Plus,
 } from "lucide-react";
 import Navbar from "@/components/component-navbar";
 import { Button } from "@/components/ui/button";
@@ -20,13 +21,14 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 import { toast } from "@/hooks/use-toast";
 import { getUserProfile } from "@/data/temp/profile-mock";
 import {
-  conversationsMock, messagesMock, aiSuggestionsMock, quickActions,
-  type Conversation, type ChatMessage,
+  conversationsMock, messagesMock, aiSuggestionsMock, quickActions, messageIntents,
+  type Conversation, type ChatMessage, type ConversationType,
 } from "@/data/temp/messaging-mock";
 
 /* ── Helpers ── */
@@ -45,35 +47,78 @@ const formatTime = (ts: string) =>
 
 const CURRENT_USER_ID = "user-001";
 
+const TYPE_LABELS: Record<ConversationType, string> = {
+  product_inquiry: "Product Inquiry",
+  offer: "Offer",
+  order: "Order",
+  general: "General",
+};
+
+const TYPE_COLORS: Record<ConversationType, string> = {
+  product_inquiry: "bg-primary/10 text-primary border-primary/30",
+  offer: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+  order: "bg-blue-500/10 text-blue-400 border-blue-500/30",
+  general: "bg-muted/20 text-muted-foreground border-border/30",
+};
+
+/* ══════════════════════════════════════════════════════════════════════════════
+ * MESSAGE SELLER MODAL — Intent selection before starting a conversation
+ * ══════════════════════════════════════════════════════════════════════════════ */
+const MessageSellerModal = ({
+  open, onClose, onSelectIntent,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSelectIntent: (type: ConversationType, prefill: string) => void;
+}) => (
+  <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+    <DialogContent className="sm:max-w-md glass-focus border-border/30">
+      <DialogHeader>
+        <DialogTitle className="text-lg font-heading">What would you like to do?</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-2 mt-2">
+        {messageIntents.map((intent) => (
+          <button
+            key={intent.id}
+            onClick={() => onSelectIntent(intent.type, intent.prefillMessage)}
+            className="w-full text-left p-3.5 rounded-xl border border-border/30 bg-muted/10 hover:bg-muted/20 hover:border-primary/30 transition-all duration-200 group"
+          >
+            <div className="flex items-start gap-3">
+              <span className="text-xl mt-0.5">{intent.emoji}</span>
+              <div className="flex-1">
+                <p className="text-sm font-medium group-hover:text-primary transition-colors">{intent.label}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{intent.description}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground mt-1 group-hover:text-primary transition-colors" />
+            </div>
+          </button>
+        ))}
+      </div>
+    </DialogContent>
+  </Dialog>
+);
+
 /* ══════════════════════════════════════════════════════════════════════════════
  * CONVERSATION LIST COMPONENT
  * ══════════════════════════════════════════════════════════════════════════════ */
 const ConversationList = ({
-  conversations, activeId, onSelect, search, onSearchChange,
+  conversations, activeId, onSelect, search, onSearchChange, onNewMessage,
 }: {
   conversations: Conversation[];
   activeId: string | null;
   onSelect: (id: string) => void;
   search: string;
   onSearchChange: (v: string) => void;
+  onNewMessage: () => void;
 }) => {
   const filtered = conversations.filter((c) => {
     const names = c.participants.map((p) => p.name.toLowerCase()).join(" ");
     return names.includes(search.toLowerCase()) || (c.linkedListing?.title ?? "").toLowerCase().includes(search.toLowerCase());
   });
 
-  const getTypeLabel = (conv: Conversation) => {
-    switch (conv.type) {
-      case "business": return "Business";
-      case "order": return "Order";
-      case "support": return "Support";
-      case "user": return null;
-    }
-  };
-
   return (
     <div className="flex flex-col h-full">
-      <div className="p-3 border-b border-border/30">
+      <div className="p-3 border-b border-border/30 space-y-2">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
@@ -83,6 +128,14 @@ const ConversationList = ({
             className="pl-8 h-9 text-sm bg-muted/20 border-border/30"
           />
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full text-xs gap-1.5 border-border/30 hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+          onClick={onNewMessage}
+        >
+          <Plus className="h-3.5 w-3.5" /> New Conversation
+        </Button>
       </div>
 
       <ScrollArea className="flex-1">
@@ -92,7 +145,6 @@ const ConversationList = ({
             if (!other) return null;
             const avatar = getAvatarById(other.avatar);
             const isActive = conv.id === activeId;
-            const typeLabel = getTypeLabel(conv);
 
             return (
               <motion.button
@@ -121,11 +173,13 @@ const ConversationList = ({
                         {conv.verified && (
                           <Badge variant="outline" className="text-[9px] px-1 py-0 bg-primary/10 text-primary border-primary/30">✓</Badge>
                         )}
-                        {typeLabel && (
-                          <Badge variant="outline" className="text-[9px] px-1 py-0">{typeLabel}</Badge>
-                        )}
                       </div>
                       <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(conv.lastMessageTime)}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <Badge variant="outline" className={`text-[8px] px-1 py-0 ${TYPE_COLORS[conv.type]}`}>
+                        {TYPE_LABELS[conv.type]}
+                      </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground truncate mt-0.5">{conv.lastMessage}</p>
                     {conv.linkedListing && (
@@ -195,16 +249,26 @@ const AiCard = ({ data }: { data: Record<string, string | number> }) => (
  * CHAT WINDOW COMPONENT
  * ══════════════════════════════════════════════════════════════════════════════ */
 const ChatWindow = ({
-  conversation, messages, onSendMessage,
+  conversation, messages, onSendMessage, prefillMessage, onClearPrefill,
 }: {
   conversation: Conversation;
   messages: ChatMessage[];
   onSendMessage: (text: string) => void;
+  prefillMessage: string;
+  onClearPrefill: () => void;
 }) => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+
+  // Apply prefill message
+  useEffect(() => {
+    if (prefillMessage) {
+      setInput(prefillMessage);
+      onClearPrefill();
+    }
+  }, [prefillMessage, onClearPrefill]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
@@ -220,7 +284,7 @@ const ChatWindow = ({
   const other = conversation.participants.find((p) => p.userId !== CURRENT_USER_ID);
   const otherAvatar = getAvatarById(other?.avatar ?? "man");
 
-  const profileLink = conversation.type === "business" && conversation.businessSlug
+  const profileLink = conversation.businessSlug
     ? `/business/${conversation.businessSlug}`
     : `/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`;
 
@@ -246,6 +310,9 @@ const ChatWindow = ({
           <div className="flex items-center gap-2">
             <Link to={profileLink} className="text-sm font-semibold hover:text-primary transition-colors">{other?.name}</Link>
             {conversation.verified && <Badge variant="outline" className="text-[9px] px-1 py-0 bg-primary/10 text-primary border-primary/30">Verified</Badge>}
+            <Badge variant="outline" className={`text-[8px] px-1.5 py-0 ${TYPE_COLORS[conversation.type]}`}>
+              {TYPE_LABELS[conversation.type]}
+            </Badge>
           </div>
           <p className="text-[10px] text-muted-foreground">
             {other?.isOnline ? "Online" : `Last seen ${timeAgo(other?.lastSeen ?? "")}`}
@@ -264,7 +331,12 @@ const ChatWindow = ({
         <div className="px-4 py-2 bg-primary/5 border-b border-primary/10 flex items-center gap-2">
           <span className="text-xs text-muted-foreground">📦 Re:</span>
           <span className="text-xs font-medium text-primary">{conversation.linkedListing.title}</span>
-          <ChevronRight className="h-3 w-3 text-muted-foreground ml-auto" />
+          {conversation.linkedOffer && (
+            <Badge variant="outline" className="text-[9px] ml-auto bg-amber-500/10 text-amber-400 border-amber-500/30">
+              Offer: £{conversation.linkedOffer.offerAmount.toLocaleString()}
+            </Badge>
+          )}
+          {!conversation.linkedOffer && <ChevronRight className="h-3 w-3 text-muted-foreground ml-auto" />}
         </div>
       )}
 
@@ -367,7 +439,7 @@ const ChatWindow = ({
 };
 
 /* ══════════════════════════════════════════════════════════════════════════════
- * DYNAMIC CONTEXT PANEL — Renders based on conversation.type
+ * DYNAMIC CONTEXT PANEL — Renders strictly based on conversation.type
  * ══════════════════════════════════════════════════════════════════════════════ */
 const ContextPanel = ({
   conversation, onClose,
@@ -377,16 +449,14 @@ const ContextPanel = ({
 }) => {
   const other = conversation.participants.find((p) => p.userId !== CURRENT_USER_ID);
   const otherAvatar = getAvatarById(other?.avatar ?? "man");
-
-  // Look up user profile from mock data for richer context
   const userProfile = other?.username ? getUserProfile(other.username) : undefined;
 
   const panelTitle = (() => {
     switch (conversation.type) {
-      case "business": return "Business Context";
+      case "product_inquiry": return "Product Inquiry";
+      case "offer": return "Offer Details";
       case "order": return "Order Details";
-      case "support": return "Support Info";
-      case "user": return "User Profile";
+      case "general": return "Profile";
     }
   })();
 
@@ -395,50 +465,54 @@ const ContextPanel = ({
       <div className="p-4 border-b border-border/30 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold">{panelTitle}</span>
-          <Badge variant="outline" className="text-[9px] px-1.5 py-0 capitalize">{conversation.type}</Badge>
+          <Badge variant="outline" className={`text-[8px] px-1.5 py-0 ${TYPE_COLORS[conversation.type]}`}>
+            {TYPE_LABELS[conversation.type]}
+          </Badge>
         </div>
         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
       </div>
 
-      <ScrollArea className="flex-1 p-4 space-y-5">
+      <ScrollArea className="flex-1 p-4">
         <div className="space-y-5">
 
-          {/* ─── BUSINESS-TYPE: Show business profile + listing specs ─── */}
-          {conversation.type === "business" && (
+          {/* ─── PRODUCT INQUIRY: Business + Listing + Specs + AI ─── */}
+          {conversation.type === "product_inquiry" && (
             <>
               {/* Business Card */}
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Business</p>
-                <Link to={`/business/${conversation.businessSlug ?? "unknown"}`}>
-                  <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
-                    <CardContent className="p-3 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{conversation.businessName}</span>
-                        {conversation.verified && (
-                          <Badge className="text-[9px] bg-primary/10 text-primary border-primary/30">
-                            <ShieldCheck className="h-2.5 w-2.5 mr-0.5" /> Verified
-                          </Badge>
-                        )}
-                      </div>
-                      {conversation.businessRating && (
-                        <div className="flex items-center gap-1 text-xs">
-                          <span>⭐</span>
-                          <span className="font-medium">{conversation.businessRating}</span>
-                          <span className="text-muted-foreground">rating</span>
+              {conversation.businessName && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Business</p>
+                  <Link to={`/business/${conversation.businessSlug ?? "unknown"}`}>
+                    <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
+                      <CardContent className="p-3 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">{conversation.businessName}</span>
+                          {conversation.verified && (
+                            <Badge className="text-[9px] bg-primary/10 text-primary border-primary/30">
+                              <ShieldCheck className="h-2.5 w-2.5 mr-0.5" /> Verified
+                            </Badge>
+                          )}
                         </div>
-                      )}
-                      <p className="text-[10px] text-primary">View business profile →</p>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </div>
+                        {conversation.businessRating && (
+                          <div className="flex items-center gap-1 text-xs">
+                            <span>⭐</span>
+                            <span className="font-medium">{conversation.businessRating}</span>
+                            <span className="text-muted-foreground">rating</span>
+                          </div>
+                        )}
+                        <p className="text-[10px] text-primary">View business profile →</p>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </div>
+              )}
 
               {/* Linked Listing with Specs */}
               {conversation.linkedListing ? (
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Linked Listing</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Product</p>
                   <Card className="border-border/30 bg-muted/10">
                     <CardContent className="p-3 space-y-2">
                       <p className="text-sm font-medium">{conversation.linkedListing.title}</p>
@@ -458,18 +532,133 @@ const ContextPanel = ({
                   </Card>
                 </div>
               ) : (
-                <div className="text-xs text-muted-foreground italic p-2">No listing linked to this conversation</div>
+                <div className="text-xs text-muted-foreground italic p-2 flex items-center gap-1.5">
+                  <AlertCircle className="h-3 w-3" /> No listing linked to this conversation
+                </div>
               )}
 
-              {/* Seller Profile Preview */}
+              <Separator className="bg-border/20" />
+
+              {/* AI Insights */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">AI Insights</p>
+                </div>
+                {aiSuggestionsMock.slice(0, 2).map((sug) => (
+                  <motion.div key={sug.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
+                    <Card className="border-purple-500/15 bg-purple-500/5 hover:bg-purple-500/10 transition-colors cursor-pointer">
+                      <CardContent className="p-3">
+                        <div className="flex items-start gap-2">
+                          <span className="text-lg">{sug.emoji}</span>
+                          <div className="flex-1">
+                            <p className="text-xs font-medium">{sug.title}</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">{sug.description}</p>
+                            <Button
+                              variant="ghost" size="sm"
+                              className="text-[10px] h-6 px-2 mt-1.5 text-purple-400 hover:text-purple-300 gap-1"
+                              onClick={() => toast({ title: sug.actionLabel, description: "AI action triggered" })}
+                            >
+                              <Zap className="h-2.5 w-2.5" /> {sug.actionLabel}
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ─── OFFER: Listing + Offer details + Accept/Decline ─── */}
+          {conversation.type === "offer" && (
+            <>
+              {conversation.linkedOffer ? (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Offer</p>
+                  <Card className="border-amber-500/20 bg-amber-500/5">
+                    <CardContent className="p-3 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-amber-400" />
+                        <span className="text-sm font-semibold text-amber-400">
+                          £{conversation.linkedOffer.offerAmount.toLocaleString()}
+                        </span>
+                        <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ml-auto capitalize ${
+                          conversation.linkedOffer.status === "accepted" ? "bg-green-500/10 text-green-400 border-green-500/30"
+                          : conversation.linkedOffer.status === "declined" ? "bg-red-500/10 text-red-400 border-red-500/30"
+                          : "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                        }`}>
+                          {conversation.linkedOffer.status}
+                        </Badge>
+                      </div>
+
+                      <div className="space-y-1.5 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Listing Price</span>
+                          <span>£{conversation.linkedOffer.listingPrice.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Offer Amount</span>
+                          <span className="font-semibold text-amber-400">£{conversation.linkedOffer.offerAmount.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Difference</span>
+                          <span className="text-red-400">
+                            -£{(conversation.linkedOffer.listingPrice - conversation.linkedOffer.offerAmount).toLocaleString()}
+                            {" "}({Math.round((1 - conversation.linkedOffer.offerAmount / conversation.linkedOffer.listingPrice) * 100)}% off)
+                          </span>
+                        </div>
+                      </div>
+
+                      {conversation.linkedOffer.status === "pending" && (
+                        <div className="flex gap-2 pt-1">
+                          <Button
+                            size="sm" className="flex-1 text-xs h-8 gap-1 bg-green-600 hover:bg-green-700 text-white"
+                            onClick={() => toast({ title: "Offer Accepted", description: "Mock: Offer accepted" })}
+                          >
+                            <ThumbsUp className="h-3 w-3" /> Accept
+                          </Button>
+                          <Button
+                            size="sm" variant="outline" className="flex-1 text-xs h-8 gap-1 border-red-500/30 text-red-400 hover:bg-red-500/10"
+                            onClick={() => toast({ title: "Offer Declined", description: "Mock: Offer declined" })}
+                          >
+                            <ThumbsDown className="h-3 w-3" /> Decline
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              ) : (
+                <div className="text-xs text-muted-foreground italic p-2 flex items-center gap-1.5">
+                  <AlertCircle className="h-3 w-3" /> No offer data linked
+                </div>
+              )}
+
+              {/* Linked listing */}
+              {conversation.linkedListing && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Product</p>
+                  <Card className="border-border/30 bg-muted/10">
+                    <CardContent className="p-3 space-y-2">
+                      <p className="text-sm font-medium">{conversation.linkedListing.title}</p>
+                      <p className="text-sm font-bold text-primary">£{conversation.linkedListing.price.toLocaleString()}</p>
+                      <Link to={`/marketplace/${conversation.linkedListing.id}`} className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+                        View Listing <ExternalLink className="h-2.5 w-2.5" />
+                      </Link>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Seller */}
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Seller</p>
                 <Link to={`/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
                   <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
                     <CardContent className="p-3 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center text-xl">
-                        {otherAvatar.emoji}
-                      </div>
+                      <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center text-xl">{otherAvatar.emoji}</div>
                       <div>
                         <p className="text-sm font-medium">{other?.name}</p>
                         <p className="text-[10px] text-muted-foreground">{other?.isOnline ? "🟢 Online" : "⚫ Offline"}</p>
@@ -482,67 +671,7 @@ const ContextPanel = ({
             </>
           )}
 
-          {/* ─── USER-TYPE: Show user profile only, NO business data ─── */}
-          {conversation.type === "user" && (
-            <>
-              <div className="space-y-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Profile</p>
-                <Link to={`/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
-                  <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
-                    <CardContent className="p-3 flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-muted/30 flex items-center justify-center text-2xl">
-                        {otherAvatar.emoji}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{other?.name}</p>
-                        <p className="text-[10px] text-muted-foreground">{other?.isOnline ? "🟢 Online" : "⚫ Offline"}</p>
-                        {userProfile && (
-                          <p className="text-[10px] text-muted-foreground mt-0.5">⭐ {userProfile.rating} · {userProfile.location}</p>
-                        )}
-                        <p className="text-[10px] text-primary mt-0.5">View full profile →</p>
-                      </div>
-                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
-                    </CardContent>
-                  </Card>
-                </Link>
-              </div>
-
-              {/* Shared PC Setup — only for user-to-user chats */}
-              {userProfile?.pcSpecs && (
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Their PC Setup</p>
-                  <Card className="border-border/30 bg-muted/10">
-                    <CardContent className="p-3 space-y-1.5 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-2"><Cpu className="h-3 w-3" /> {userProfile.pcSpecs.cpu}</div>
-                      <div className="flex items-center gap-2"><Monitor className="h-3 w-3" /> {userProfile.pcSpecs.gpu}</div>
-                      <div className="flex items-center gap-2"><MemoryStick className="h-3 w-3" /> {userProfile.pcSpecs.ram}</div>
-                      <div className="flex items-center gap-2"><HardDrive className="h-3 w-3" /> {userProfile.pcSpecs.storage}</div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-
-              {/* Gaming preferences */}
-              {userProfile?.gaming && (
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Gaming</p>
-                  <Card className="border-border/30 bg-muted/10">
-                    <CardContent className="p-3 space-y-1.5 text-xs">
-                      <div className="flex justify-between"><span className="text-muted-foreground">Playstyle</span><span>{userProfile.gaming.playstyle}</span></div>
-                      <div className="flex justify-between"><span className="text-muted-foreground">Target FPS</span><span>{userProfile.gaming.targetFps}</span></div>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {userProfile.gaming.favouriteGames.map((g) => (
-                          <Badge key={g} variant="outline" className="text-[9px] px-1.5 py-0">{g}</Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* ─── ORDER-TYPE: Show order status + tracking ─── */}
+          {/* ─── ORDER: Order status + tracking + listing ─── */}
           {conversation.type === "order" && (
             <>
               {conversation.linkedOrder ? (
@@ -564,7 +693,6 @@ const ContextPanel = ({
                         </Badge>
                       </div>
 
-                      {/* Status steps */}
                       <div className="space-y-2">
                         {(["building", "testing", "shipped", "delivered"] as const).map((step, i) => {
                           const steps = ["building", "testing", "shipped", "delivered"];
@@ -607,7 +735,6 @@ const ContextPanel = ({
                 </div>
               )}
 
-              {/* Linked listing for context */}
               {conversation.linkedListing && (
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Product</p>
@@ -623,7 +750,6 @@ const ContextPanel = ({
                 </div>
               )}
 
-              {/* Seller info */}
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Seller</p>
                 <Link to={`/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
@@ -642,62 +768,61 @@ const ContextPanel = ({
             </>
           )}
 
-          {/* ─── SUPPORT-TYPE: Show support info + AI suggestions ─── */}
-          {conversation.type === "support" && (
+          {/* ─── GENERAL: Profile only, NO business/listing data ─── */}
+          {conversation.type === "general" && (
             <>
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Support</p>
-                <Card className="border-border/30 bg-muted/10">
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <Headphones className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">nYield Support</p>
-                      <p className="text-[10px] text-green-400">🟢 Always online</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">Avg. response: &lt; 5 min</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Separator className="bg-border/20" />
-
-              {/* AI Suggestions — only shown in support context */}
               <div className="space-y-3">
-                <div className="flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-purple-400" />
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">AI Insights</p>
-                </div>
-                {aiSuggestionsMock.slice(0, 3).map((sug) => (
-                  <motion.div
-                    key={sug.id}
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <Card className="border-purple-500/15 bg-purple-500/5 hover:bg-purple-500/10 transition-colors cursor-pointer">
-                      <CardContent className="p-3">
-                        <div className="flex items-start gap-2">
-                          <span className="text-lg">{sug.emoji}</span>
-                          <div className="flex-1">
-                            <p className="text-xs font-medium">{sug.title}</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">{sug.description}</p>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-[10px] h-6 px-2 mt-1.5 text-purple-400 hover:text-purple-300 gap-1"
-                              onClick={() => toast({ title: sug.actionLabel, description: "AI action triggered" })}
-                            >
-                              <Zap className="h-2.5 w-2.5" /> {sug.actionLabel}
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Profile</p>
+                <Link to={`/user/${other?.username ?? other?.name?.toLowerCase().replace(/\s/g, "")}`} className="block">
+                  <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
+                    <CardContent className="p-3 flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-muted/30 flex items-center justify-center text-2xl">
+                        {otherAvatar.emoji}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{other?.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{other?.isOnline ? "🟢 Online" : "⚫ Offline"}</p>
+                        {userProfile && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5">⭐ {userProfile.rating} · {userProfile.location}</p>
+                        )}
+                        <p className="text-[10px] text-primary mt-0.5">View full profile →</p>
+                      </div>
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
+                    </CardContent>
+                  </Card>
+                </Link>
               </div>
+
+              {userProfile?.pcSpecs && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Their PC Setup</p>
+                  <Card className="border-border/30 bg-muted/10">
+                    <CardContent className="p-3 space-y-1.5 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2"><Cpu className="h-3 w-3" /> {userProfile.pcSpecs.cpu}</div>
+                      <div className="flex items-center gap-2"><Monitor className="h-3 w-3" /> {userProfile.pcSpecs.gpu}</div>
+                      <div className="flex items-center gap-2"><MemoryStick className="h-3 w-3" /> {userProfile.pcSpecs.ram}</div>
+                      <div className="flex items-center gap-2"><HardDrive className="h-3 w-3" /> {userProfile.pcSpecs.storage}</div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {userProfile?.gaming && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Gaming</p>
+                  <Card className="border-border/30 bg-muted/10">
+                    <CardContent className="p-3 space-y-1.5 text-xs">
+                      <div className="flex justify-between"><span className="text-muted-foreground">Playstyle</span><span>{userProfile.gaming.playstyle}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Target FPS</span><span>{userProfile.gaming.targetFps}</span></div>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {userProfile.gaming.favouriteGames.map((g) => (
+                          <Badge key={g} variant="outline" className="text-[9px] px-1.5 py-0">{g}</Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </>
           )}
 
@@ -717,6 +842,8 @@ const MessagingPage = () => {
   const [showContext, setShowContext] = useState(true);
   const [localMessages, setLocalMessages] = useState(messagesMock);
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
+  const [showIntentModal, setShowIntentModal] = useState(false);
+  const [prefillMessage, setPrefillMessage] = useState("");
 
   useEffect(() => { document.title = "Messages — nYield"; }, []);
 
@@ -743,6 +870,15 @@ const MessagingPage = () => {
   const selectConversation = (id: string) => {
     setActiveConv(id);
     setMobileView("chat");
+  };
+
+  const handleIntentSelect = (_type: ConversationType, prefill: string) => {
+    setShowIntentModal(false);
+    setPrefillMessage(prefill);
+    // For demo, select the first conversation — in production this would create a new one
+    if (activeConv) {
+      toast({ title: "Conversation started", description: `Intent: ${TYPE_LABELS[_type]}` });
+    }
   };
 
   return (
@@ -782,6 +918,7 @@ const MessagingPage = () => {
                   onSelect={selectConversation}
                   search={search}
                   onSearchChange={setSearch}
+                  onNewMessage={() => setShowIntentModal(true)}
                 />
               </div>
 
@@ -797,6 +934,8 @@ const MessagingPage = () => {
                       conversation={activeConversation}
                       messages={activeMessages}
                       onSendMessage={handleSend}
+                      prefillMessage={prefillMessage}
+                      onClearPrefill={() => setPrefillMessage("")}
                     />
                   </>
                 ) : (
@@ -828,6 +967,13 @@ const MessagingPage = () => {
           </div>
         </div>
       </main>
+
+      {/* Intent selection modal */}
+      <MessageSellerModal
+        open={showIntentModal}
+        onClose={() => setShowIntentModal(false)}
+        onSelectIntent={handleIntentSelect}
+      />
     </div>
   );
 };
