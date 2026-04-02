@@ -8,11 +8,12 @@ import { useState } from "react";
 import { useSellerDashboard } from "../hooks/use-seller-dashboard";
 import { RecentOrdersTable } from "../components/recent-orders-table";
 import { MetricCard } from "../components/metric-card";
-import { ShoppingCart, Truck, PackageCheck, XCircle } from "lucide-react";
+import { SectionInfoCard } from "../components/section-info-card";
+import { ShoppingCart, Truck, PackageCheck, XCircle, ClipboardList } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { orderStatusConfig, type SellerOrder } from "../data/seller-mock";
+import { orderStatusConfig } from "../data/seller-mock";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const SellerOrdersPage = () => {
@@ -46,23 +47,32 @@ const SellerOrdersPage = () => {
         </p>
       </div>
 
+      <SectionInfoCard
+        icon={ClipboardList}
+        title="Order Management"
+        description="Manage the full lifecycle of customer orders from processing to delivery and returns."
+      />
+
       {/* Quick stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard label="Total Orders" value={orders.length.toString()} icon={ShoppingCart} />
+        <MetricCard label="Total Orders" value={orders.length.toString()} icon={ShoppingCart} index={0} />
         <MetricCard
           label="Shipped"
           value={orders.filter((o) => o.status === "shipped").length.toString()}
           icon={Truck}
+          index={1}
         />
         <MetricCard
           label="Delivered"
           value={orders.filter((o) => o.status === "delivered").length.toString()}
           icon={PackageCheck}
+          index={2}
         />
         <MetricCard
           label="Cancelled"
           value={orders.filter((o) => o.status === "cancelled").length.toString()}
           icon={XCircle}
+          index={3}
         />
       </div>
 

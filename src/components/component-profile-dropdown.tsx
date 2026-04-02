@@ -2,8 +2,8 @@
  * =============================================================================
  * PROFILE DROPDOWN — Animated dropdown menu for logged-in users
  * =============================================================================
- * Shows when clicking profile icon in navbar. Animated with framer-motion.
- * Links to all user management pages + logout.
+ * For "business" users → renders the BusinessPanel (structured mini-dashboard).
+ * For "standard" users → renders the classic dropdown with links.
  * =============================================================================
  */
 
@@ -21,43 +21,42 @@ import {
   Shield,
   HelpCircle,
   LogOut,
-  Store,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { dropdownVariants } from "@/animations/presets";
 import { avatarOptions } from "@/data/temp/8-user-profile-mock";
+import BusinessPanel from "./component-business-panel";
 
-/**
- * Build dropdown links dynamically based on user role.
- * Business accounts see the Business Dashboard link; standard accounts do not.
- */
-const getDropdownLinks = (role?: string) => {
-  const links = [
-    { label: "My Account", to: "/account", icon: LayoutDashboard },
-  ];
-  if (role === "business") {
-    links.push({ label: "Business Dashboard", to: "/seller", icon: Store });
-  }
-  links.push(
-    { label: "My Bookings", to: "/account/bookings", icon: CalendarDays },
-    { label: "My Orders", to: "/account/orders", icon: ShoppingCart },
-    { label: "Saved Builds", to: "/account/builds", icon: Cpu },
-    { label: "Saved Items", to: "/account/saved", icon: Heart },
-    { label: "Lists", to: "/account/lists", icon: List },
-    { label: "Profile Settings", to: "/account/profile", icon: UserCog },
-    { label: "Security", to: "/account/security", icon: Shield },
-    { label: "Help & Support", to: "/account/help", icon: HelpCircle },
-  );
-  return links;
-};
+const standardLinks = [
+  { label: "My Account", to: "/account", icon: LayoutDashboard },
+  { label: "My Bookings", to: "/account/bookings", icon: CalendarDays },
+  { label: "My Orders", to: "/account/orders", icon: ShoppingCart },
+  { label: "Saved Builds", to: "/account/builds", icon: Cpu },
+  { label: "Saved Items", to: "/account/saved", icon: Heart },
+  { label: "Lists", to: "/account/lists", icon: List },
+  { label: "Profile Settings", to: "/account/profile", icon: UserCog },
+  { label: "Security", to: "/account/security", icon: Shield },
+  { label: "Help & Support", to: "/account/help", icon: HelpCircle },
+];
 
 const ProfileDropdown = () => {
+  const { user, isBusiness } = useAuth();
+
+  // Business users get the structured panel
+  if (user && isBusiness) {
+    return <BusinessPanel />;
+  }
+
+  // Standard users get classic dropdown
+  return <StandardDropdown />;
+};
+
+const StandardDropdown = () => {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  /** Close on click outside */
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -74,7 +73,6 @@ const ProfileDropdown = () => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Trigger — avatar circle */}
       <button
         onClick={() => setOpen(!open)}
         className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-sm hover:bg-primary/30 transition-colors"
@@ -92,15 +90,13 @@ const ProfileDropdown = () => {
             exit="exit"
             className="absolute right-0 mt-2 w-56 rounded-xl glass-focus shadow-xl overflow-hidden"
           >
-            {/* User info header */}
             <div className="px-4 py-3 border-b border-border/50">
               <p className="text-sm font-semibold text-foreground">{user.fullName}</p>
               <p className="text-xs text-muted-foreground">{user.email}</p>
             </div>
 
-            {/* Navigation links */}
             <div className="py-1">
-              {getDropdownLinks(user.role).map(({ label, to, icon: Icon }) => (
+              {standardLinks.map(({ label, to, icon: Icon }) => (
                 <Link
                   key={to}
                   to={to}
@@ -113,7 +109,6 @@ const ProfileDropdown = () => {
               ))}
             </div>
 
-            {/* Logout */}
             <div className="border-t border-border/50 py-1">
               <button
                 onClick={() => {
