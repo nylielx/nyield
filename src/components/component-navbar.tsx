@@ -117,15 +117,16 @@ const Navbar = () => {
                               Clear all
                             </button>
                           </div>
-                          <div className="max-h-60 overflow-y-auto">
+                          <div className="max-h-60 overflow-y-auto p-1 space-y-0.5">
                             {notifications.map((n) => (
-                              <div
+                              <button
                                 key={n.id}
-                                className={`px-4 py-2.5 border-b border-border/10 hover:bg-muted/20 transition-colors ${!n.read ? "bg-primary/5" : ""}`}
+                                className={`w-full text-left px-3 py-2.5 rounded-lg transition-all duration-200 relative isolate cursor-pointer hover:bg-accent hover:translate-x-0.5 ${!n.read ? "bg-primary/5" : ""}`}
+                                onClick={() => setNotifOpen(false)}
                               >
                                 <p className="text-xs">{n.text}</p>
                                 <p className="text-[10px] text-muted-foreground mt-0.5">{n.time}</p>
-                              </div>
+                              </button>
                             ))}
                           </div>
                         </div>
