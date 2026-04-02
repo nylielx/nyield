@@ -45,7 +45,7 @@ const timeAgo = (ts: string) => {
 const formatTime = (ts: string) =>
   new Date(ts).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 
-const CURRENT_USER_ID = "user-001";
+const FALLBACK_USER_ID = "user-001";
 
 const TYPE_LABELS: Record<ConversationType, string> = {
   product_inquiry: "Product Inquiry",
@@ -102,7 +102,7 @@ const MessageSellerModal = ({
  * CONVERSATION LIST COMPONENT
  * ══════════════════════════════════════════════════════════════════════════════ */
 const ConversationList = ({
-  conversations, activeId, onSelect, search, onSearchChange, onNewMessage,
+  conversations, activeId, onSelect, search, onSearchChange, onNewMessage, currentUserId,
 }: {
   conversations: Conversation[];
   activeId: string | null;
@@ -110,6 +110,7 @@ const ConversationList = ({
   search: string;
   onSearchChange: (v: string) => void;
   onNewMessage: () => void;
+  currentUserId: string;
 }) => {
   const filtered = conversations.filter((c) => {
     const names = c.participants.map((p) => p.name.toLowerCase()).join(" ");
@@ -141,7 +142,7 @@ const ConversationList = ({
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-0.5">
           {filtered.map((conv) => {
-            const other = conv.participants.find((p) => p.userId !== CURRENT_USER_ID);
+            const other = conv.participants.find((p) => p.userId !== currentUserId);
             if (!other) return null;
             const avatar = getAvatarById(other.avatar);
             const isActive = conv.id === activeId;
@@ -261,6 +262,7 @@ const ChatWindow = ({
   const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  const currentUserId = user?.id ?? FALLBACK_USER_ID;
 
   // Apply prefill message
   useEffect(() => {
@@ -281,7 +283,7 @@ const ChatWindow = ({
     }
   }, [messages, user?.id]);
 
-  const other = conversation.participants.find((p) => p.userId !== CURRENT_USER_ID);
+  const other = conversation.participants.find((p) => p.userId !== currentUserId);
   const otherAvatar = getAvatarById(other?.avatar ?? "man");
 
   const profileLink = conversation.businessSlug
@@ -344,7 +346,7 @@ const ChatWindow = ({
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
           {messages.map((msg) => {
-            const isMine = msg.senderId === CURRENT_USER_ID;
+            const isMine = msg.senderId === currentUserId;
             return (
               <motion.div
                 key={msg.id}
@@ -442,12 +444,13 @@ const ChatWindow = ({
  * DYNAMIC CONTEXT PANEL — Renders strictly based on conversation.type
  * ══════════════════════════════════════════════════════════════════════════════ */
 const ContextPanel = ({
-  conversation, onClose,
+  conversation, onClose, currentUserId,
 }: {
   conversation: Conversation;
   onClose: () => void;
+  currentUserId: string;
 }) => {
-  const other = conversation.participants.find((p) => p.userId !== CURRENT_USER_ID);
+  const other = conversation.participants.find((p) => p.userId !== currentUserId);
   const otherAvatar = getAvatarById(other?.avatar ?? "man");
   const userProfile = other?.username ? getUserProfile(other.username) : undefined;
 
@@ -837,6 +840,7 @@ const ContextPanel = ({
  * ══════════════════════════════════════════════════════════════════════════════ */
 const MessagingPage = () => {
   const { user } = useAuth();
+  const currentUserId = user?.id ?? FALLBACK_USER_ID;
   const [activeConv, setActiveConv] = useState<string | null>("conv-1");
   const [search, setSearch] = useState("");
   const [showContext, setShowContext] = useState(true);
@@ -855,7 +859,7 @@ const MessagingPage = () => {
     const newMsg: ChatMessage = {
       id: `m-${Date.now()}`,
       conversationId: activeConv,
-      senderId: CURRENT_USER_ID,
+      senderId: user?.id ?? FALLBACK_USER_ID,
       content: text,
       type: "text",
       timestamp: new Date().toISOString(),
@@ -918,8 +922,9 @@ const MessagingPage = () => {
                   onSelect={selectConversation}
                   search={search}
                   onSearchChange={setSearch}
-                  onNewMessage={() => setShowIntentModal(true)}
-                />
+                   onNewMessage={() => setShowIntentModal(true)}
+                   currentUserId={currentUserId}
+                 />
               </div>
 
               <div className={`flex-1 flex flex-col ${mobileView === "list" ? "hidden md:flex" : "flex"}`}>
@@ -959,7 +964,7 @@ const MessagingPage = () => {
                     transition={{ duration: 0.25 }}
                     className="border-l border-border/30 hidden lg:flex flex-col overflow-hidden shrink-0"
                   >
-                    <ContextPanel conversation={activeConversation} onClose={() => setShowContext(false)} />
+                    <ContextPanel conversation={activeConversation} onClose={() => setShowContext(false)} currentUserId={currentUserId} />
                   </motion.div>
                 )}
               </AnimatePresence>
