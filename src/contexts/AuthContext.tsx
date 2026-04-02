@@ -32,7 +32,7 @@ interface AuthContextType {
   login: (data: LoginData) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ success: boolean; message: string }>;
-  updateProfile: (updates: Partial<Pick<AuthUser, "fullName" | "avatar">>) => void;
+  updateProfile: (updates: Partial<Pick<AuthUser, "fullName" | "avatar" | "avatarUrl">>) => void;
   isBusiness: boolean;
 }
 
@@ -133,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   /** Update user profile fields locally (name, avatar) and sync to registry */
-  const updateProfile = (updates: Partial<Pick<AuthUser, "fullName" | "avatar">>) => {
+  const updateProfile = (updates: Partial<Pick<AuthUser, "fullName" | "avatar" | "avatarUrl">>) => {
     if (!user) return;
     const updated = { ...user, ...updates };
     setUser(updated);

@@ -10,8 +10,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { LogOut, Store, ArrowRight, Award, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { dropdownVariants } from "@/animations/presets";
-import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 import { standardSidebarSections } from "@/data/navigation-config";
+import { UserAvatarDisplay } from "@/components/ui/user-avatar-display";
 import BusinessPanel from "./component-business-panel";
 import SellerApplicationModal from "./seller-application-modal";
 
@@ -44,7 +44,6 @@ const StandardDropdown = () => {
 
   if (!user) return null;
 
-  const avatarEmoji = getAvatarById(user.avatar).emoji;
   const quickSections = standardSidebarSections.slice(0, 3);
 
   return (
@@ -52,10 +51,10 @@ const StandardDropdown = () => {
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setOpen(!open)}
-          className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-sm hover:bg-primary/30 transition-colors"
+          className="rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
           aria-label="Open profile menu"
         >
-          {avatarEmoji}
+          <UserAvatarDisplay avatarUrl={user.avatarUrl} avatarId={user.avatar} size="sm" />
         </button>
 
         <AnimatePresence>

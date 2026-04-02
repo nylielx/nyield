@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
-import { getAvatarById } from "@/data/temp/8-user-profile-mock";
+import { UserAvatarDisplay } from "@/components/ui/user-avatar-display";
 import { sellerMetrics } from "@/pages/13-page-seller-dashboard/data/seller-mock";
 import { businessDropdownQuickActions } from "@/data/navigation-config";
 
@@ -50,16 +50,16 @@ const BusinessPanel = () => {
 
   if (!user) return null;
 
-  const avatarEmoji = getAvatarById(user.avatar).emoji;
+  const avatarId = user.avatar;
 
   return (
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-sm hover:bg-primary/30 transition-colors"
+        className="rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
         aria-label="Open business panel"
       >
-        {avatarEmoji}
+        <UserAvatarDisplay avatarUrl={user.avatarUrl} avatarId={avatarId} size="sm" />
       </button>
 
       <AnimatePresence>
@@ -74,9 +74,7 @@ const BusinessPanel = () => {
             {/* ── Account Overview ── */}
             <div className="p-4 border-b border-border/30">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-lg">
-                  {avatarEmoji}
-                </div>
+                <UserAvatarDisplay avatarUrl={user.avatarUrl} avatarId={avatarId} size="md" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-foreground truncate">{user.fullName}</p>
                   <p className="text-xs text-muted-foreground truncate">{user.email}</p>
