@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
-import { avatarOptions } from "@/data/temp/8-user-profile-mock";
+import { getAvatarById } from "@/data/temp/8-user-profile-mock";
 import { sellerMetrics } from "@/pages/13-page-seller-dashboard/data/seller-mock";
 import { businessDropdownQuickActions } from "@/data/navigation-config";
 
