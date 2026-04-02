@@ -27,18 +27,29 @@ import { useAuth } from "@/contexts/AuthContext";
 import { dropdownVariants } from "@/animations/presets";
 import { avatarOptions } from "@/data/temp/8-user-profile-mock";
 
-const dropdownLinks = [
-  { label: "Dashboard", to: "/account", icon: LayoutDashboard },
-  { label: "Seller Dashboard", to: "/seller", icon: Store },
-  { label: "My Bookings", to: "/account/bookings", icon: CalendarDays },
-  { label: "My Orders", to: "/account/orders", icon: ShoppingCart },
-  { label: "Saved Builds", to: "/account/builds", icon: Cpu },
-  { label: "Saved Items", to: "/account/saved", icon: Heart },
-  { label: "Lists", to: "/account/lists", icon: List },
-  { label: "Profile Settings", to: "/account/profile", icon: UserCog },
-  { label: "Security", to: "/account/security", icon: Shield },
-  { label: "Help & Support", to: "/account/help", icon: HelpCircle },
-];
+/**
+ * Build dropdown links dynamically based on user role.
+ * Business accounts see the Business Dashboard link; standard accounts do not.
+ */
+const getDropdownLinks = (role?: string) => {
+  const links = [
+    { label: "My Account", to: "/account", icon: LayoutDashboard },
+  ];
+  if (role === "business") {
+    links.push({ label: "Business Dashboard", to: "/seller", icon: Store });
+  }
+  links.push(
+    { label: "My Bookings", to: "/account/bookings", icon: CalendarDays },
+    { label: "My Orders", to: "/account/orders", icon: ShoppingCart },
+    { label: "Saved Builds", to: "/account/builds", icon: Cpu },
+    { label: "Saved Items", to: "/account/saved", icon: Heart },
+    { label: "Lists", to: "/account/lists", icon: List },
+    { label: "Profile Settings", to: "/account/profile", icon: UserCog },
+    { label: "Security", to: "/account/security", icon: Shield },
+    { label: "Help & Support", to: "/account/help", icon: HelpCircle },
+  );
+  return links;
+};
 
 const ProfileDropdown = () => {
   const [open, setOpen] = useState(false);
