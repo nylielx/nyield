@@ -39,6 +39,14 @@ import BookingDetailPage from "./pages/8-page-user-management/9-my-bookings/book
 import NotFound from "./pages/10-page-not-found";
 import ProcessPage from "./pages/11-page-process";
 import AboutPage from "./pages/12-page-about";
+import SellerDashboardLayout from "./pages/13-page-seller-dashboard";
+import SellerOverviewPage from "./pages/13-page-seller-dashboard/pages/overview";
+import SellerOrdersPage from "./pages/13-page-seller-dashboard/pages/orders";
+import SellerListingsPage from "./pages/13-page-seller-dashboard/pages/listings";
+import SellerAnalyticsPage from "./pages/13-page-seller-dashboard/pages/analytics";
+import SellerCustomersPage from "./pages/13-page-seller-dashboard/pages/customers";
+import SellerMarketingPage from "./pages/13-page-seller-dashboard/pages/marketing";
+import SellerSettingsPage from "./pages/13-page-seller-dashboard/pages/settings";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +85,16 @@ const App = () => (
               <Route path="help" element={<HelpSupportPage />} />
               <Route path="bookings" element={<MyBookingsPage />} />
               <Route path="bookings/:id" element={<BookingDetailPage />} />
+            </Route>
+            {/* Seller Dashboard — nested routes with sidebar layout */}
+            <Route path="/seller" element={<SellerDashboardLayout />}>
+              <Route index element={<SellerOverviewPage />} />
+              <Route path="orders" element={<SellerOrdersPage />} />
+              <Route path="listings" element={<SellerListingsPage />} />
+              <Route path="analytics" element={<SellerAnalyticsPage />} />
+              <Route path="customers" element={<SellerCustomersPage />} />
+              <Route path="marketing" element={<SellerMarketingPage />} />
+              <Route path="settings" element={<SellerSettingsPage />} />
             </Route>
             <Route path="/process" element={<ProcessPage />} />
             <Route path="/about" element={<AboutPage />} />
