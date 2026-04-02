@@ -1,15 +1,15 @@
 /**
  * =============================================================================
- * PUBLIC USER PROFILE PAGE — /user/:username (eBay-style)
+ * BUSINESS PROFILE PAGE — /business/:slug (eBay-style)
  * =============================================================================
  */
 
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Copy, Share2, MessageCircle, MapPin, Calendar, Star,
+  MessageCircle, MapPin, Calendar, Star, Copy, Share2,
   Cpu, Monitor, HardDrive, MemoryStick, ExternalLink,
-  ShieldCheck, Clock, TrendingUp, Package,
+  ShieldCheck, Clock, TrendingUp, Package, Users, BarChart3,
 } from "lucide-react";
 import Navbar from "@/components/component-navbar";
 import SiteFooter from "@/components/component-site-footer";
@@ -19,47 +19,34 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
+import { getBusinessProfile } from "@/data/temp/profile-mock";
 import { getAvatarById } from "@/data/temp/8-user-profile-mock";
-import { getUserProfile } from "@/data/temp/profile-mock";
 import { marketplaceListings } from "@/data/marketplaceExamples";
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
 const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
 
-const StarRating = ({ rating, count }: { rating: number; count: number }) => (
-  <div className="flex items-center gap-1.5">
-    <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <Star key={i} className={`h-3.5 w-3.5 ${i <= Math.round(rating) ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground/30"}`} />
-      ))}
-    </div>
-    <span className="text-sm font-medium">{rating}</span>
-    <span className="text-xs text-muted-foreground">({count} reviews)</span>
-  </div>
-);
-
-const PublicProfilePage = () => {
-  const { username } = useParams<{ username: string }>();
-  const profile = getUserProfile(username ?? "hassan");
+const BusinessProfilePage = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const profile = getBusinessProfile(slug ?? "probuilder-pcs");
 
   if (!profile) {
     return (
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
         <main className="pt-28 pb-16 text-center">
-          <p className="text-muted-foreground">User not found.</p>
+          <p className="text-muted-foreground">Business not found.</p>
         </main>
         <SiteFooter />
       </div>
     );
   }
 
-  const avatar = getAvatarById(profile.avatar);
-  const userListings = marketplaceListings.filter((l) => profile.listings.includes(l.id));
+  const bizListings = marketplaceListings.filter((l) => profile.listings.includes(l.id));
 
   const copyLink = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast({ title: "Link copied!", description: "Share this profile with anyone." });
+    toast({ title: "Link copied!" });
   };
 
   return (
@@ -68,90 +55,88 @@ const PublicProfilePage = () => {
       <main className="pt-28 pb-16">
         <motion.div className="max-w-5xl mx-auto px-6 space-y-6" variants={stagger} initial="hidden" animate="show">
 
-          {/* ── HEADER CARD ── */}
+          {/* HEADER */}
           <motion.div variants={fadeUp}>
             <Card className="overflow-hidden border-border/30 bg-card/50 backdrop-blur-md">
               <div className="h-20 bg-gradient-to-r from-primary/20 via-primary/5 to-transparent" />
               <CardContent className="-mt-10 px-6 pb-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
                   <div className="w-20 h-20 rounded-2xl bg-card border-4 border-background flex items-center justify-center text-4xl shadow-lg">
-                    {avatar.emoji}
+                    {profile.logo}
                   </div>
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h1 className="text-2xl font-heading font-bold">{profile.fullName}</h1>
+                      <h1 className="text-2xl font-heading font-bold">{profile.name}</h1>
                       {profile.verified && (
                         <Badge className="bg-primary/10 text-primary border-primary/30 text-[10px] gap-1">
-                          <ShieldCheck className="h-3 w-3" /> Verified
+                          <ShieldCheck className="h-3 w-3" /> Verified Business
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">@{profile.username}</p>
+                    <p className="text-sm text-muted-foreground">{profile.specialisation}</p>
                     <div className="flex items-center gap-4 flex-wrap text-xs text-muted-foreground mt-1">
                       <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {profile.location}</span>
-                      <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> Member since {new Date(profile.joinDate).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</span>
+                      <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> Since {new Date(profile.joinDate).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</span>
                     </div>
-                    <StarRating rating={profile.rating} count={profile.totalRatings} />
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <div className="flex gap-0.5">
+                        {[1, 2, 3, 4, 5].map((i) => <Star key={i} className={`h-3.5 w-3.5 ${i <= Math.round(profile.rating) ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground/30"}`} />)}
+                      </div>
+                      <span className="text-sm font-medium">{profile.rating}</span>
+                      <span className="text-xs text-muted-foreground">({profile.totalRatings} reviews)</span>
+                    </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <Link to="/messages">
-                      <Button size="sm" className="gap-1.5">
-                        <MessageCircle className="h-3.5 w-3.5" /> Message
-                      </Button>
-                    </Link>
-                    <Button size="sm" variant="outline" onClick={copyLink} className="gap-1.5">
-                      <Copy className="h-3.5 w-3.5" /> Copy Link
-                    </Button>
-                    <Button size="sm" variant="outline" className="gap-1.5">
-                      <Share2 className="h-3.5 w-3.5" /> Share
-                    </Button>
+                    <Link to="/messages"><Button size="sm" className="gap-1.5"><MessageCircle className="h-3.5 w-3.5" /> Contact</Button></Link>
+                    <Button size="sm" variant="outline" onClick={copyLink} className="gap-1.5"><Copy className="h-3.5 w-3.5" /> Copy</Button>
+                    <Button size="sm" variant="outline" className="gap-1.5"><Share2 className="h-3.5 w-3.5" /> Share</Button>
                   </div>
+                </div>
+
+                {/* Badges */}
+                <div className="flex flex-wrap gap-1.5 mt-4">
+                  {profile.badges.map((b) => <Badge key={b} variant="secondary" className="text-xs">{b}</Badge>)}
                 </div>
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* ── TRUST STATS BAR ── */}
+          {/* METRICS */}
           <motion.div variants={fadeUp}>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {[
-                { icon: Package, label: "Total Sales", value: profile.stats.totalSales.toString() },
-                { icon: Clock, label: "Response Time", value: profile.stats.responseTime },
-                { icon: TrendingUp, label: "Completion", value: `${profile.stats.completionRate}%` },
-                { icon: Star, label: "Rating", value: `${profile.rating} / 5` },
+                { icon: Package, label: "Total Sales", value: profile.metrics.totalSales.toString() },
+                { icon: Clock, label: "Response", value: profile.metrics.responseTime },
+                { icon: BarChart3, label: "Avg Score", value: `${profile.metrics.avgBenchmarkScore}/100` },
+                { icon: TrendingUp, label: "Completion", value: `${profile.metrics.completionRate}%` },
+                { icon: Users, label: "Repeat Buyers", value: profile.metrics.repeatCustomers.toString() },
               ].map(({ icon: Icon, label, value }) => (
                 <Card key={label} className="border-border/30 bg-card/50 backdrop-blur-md">
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Icon className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold">{value}</p>
-                      <p className="text-[10px] text-muted-foreground">{label}</p>
-                    </div>
+                  <CardContent className="p-3 text-center">
+                    <Icon className="h-4 w-4 text-primary mx-auto mb-1" />
+                    <p className="text-sm font-bold">{value}</p>
+                    <p className="text-[10px] text-muted-foreground">{label}</p>
                   </CardContent>
                 </Card>
               ))}
             </div>
           </motion.div>
 
-          {/* ── TABBED CONTENT ── */}
+          {/* TABS */}
           <motion.div variants={fadeUp}>
             <Tabs defaultValue="listings" className="space-y-4">
               <TabsList className="bg-muted/20 border border-border/30">
-                <TabsTrigger value="listings">Listings ({userListings.length})</TabsTrigger>
+                <TabsTrigger value="listings">Listings ({bizListings.length})</TabsTrigger>
                 <TabsTrigger value="about">About</TabsTrigger>
                 <TabsTrigger value="reviews">Reviews ({profile.reviews.length})</TabsTrigger>
-                <TabsTrigger value="setup">PC Setup</TabsTrigger>
               </TabsList>
 
-              {/* LISTINGS */}
               <TabsContent value="listings">
-                {userListings.length === 0 ? (
+                {bizListings.length === 0 ? (
                   <Card className="border-border/30 bg-card/50"><CardContent className="p-8 text-center text-muted-foreground text-sm">No listings yet.</CardContent></Card>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {userListings.map((listing) => (
+                    {bizListings.map((listing) => (
                       <Link key={listing.id} to={`/marketplace/${listing.id}`}>
                         <Card className="border-border/30 bg-card/50 backdrop-blur-md hover:border-primary/30 transition-all group">
                           <CardContent className="p-4 space-y-3">
@@ -179,48 +164,36 @@ const PublicProfilePage = () => {
                 )}
               </TabsContent>
 
-              {/* ABOUT */}
               <TabsContent value="about">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Card className="border-border/30 bg-card/50 backdrop-blur-md">
                     <CardContent className="p-5 space-y-3">
-                      <h3 className="font-semibold text-sm">Bio</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{profile.bio}</p>
+                      <h3 className="font-semibold text-sm">About</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{profile.description}</p>
                       <Separator className="bg-border/30" />
-                      <h3 className="font-semibold text-sm">🎮 Gaming Preferences</h3>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between"><span className="text-muted-foreground">Playstyle</span><Badge variant="outline" className="capitalize">{profile.gaming.playstyle}</Badge></div>
-                        <div className="flex justify-between"><span className="text-muted-foreground">Target FPS</span><span>{profile.gaming.targetFps} FPS</span></div>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {profile.gaming.favouriteGames.map((g) => <Badge key={g} variant="secondary" className="text-xs">{g}</Badge>)}
-                      </div>
+                      <h3 className="font-semibold text-sm">Specialisation</h3>
+                      <Badge variant="outline">{profile.specialisation}</Badge>
                     </CardContent>
                   </Card>
                   <Card className="border-border/30 bg-card/50 backdrop-blur-md">
                     <CardContent className="p-5 space-y-3">
                       <h3 className="font-semibold text-sm">🔗 Social Links</h3>
-                      {profile.socialLinks.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">No social links added.</p>
-                      ) : (
-                        <div className="space-y-2">
-                          {profile.socialLinks.map((link) => (
-                            <div key={link.platform} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/20">
-                              <span className="text-lg">{link.emoji}</span>
-                              <div className="flex-1">
-                                <p className="text-sm font-medium">{link.platform}</p>
-                                <p className="text-xs text-muted-foreground">{link.username}</p>
-                              </div>
+                      <div className="space-y-2">
+                        {profile.socialLinks.map((link) => (
+                          <div key={link.platform} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/20">
+                            <span className="text-lg">{link.emoji}</span>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">{link.platform}</p>
+                              <p className="text-xs text-muted-foreground">{link.username}</p>
                             </div>
-                          ))}
-                        </div>
-                      )}
+                          </div>
+                        ))}
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
               </TabsContent>
 
-              {/* REVIEWS */}
               <TabsContent value="reviews">
                 <div className="space-y-3">
                   {profile.reviews.map((review) => {
@@ -248,35 +221,6 @@ const PublicProfilePage = () => {
                   })}
                 </div>
               </TabsContent>
-
-              {/* PC SETUP */}
-              <TabsContent value="setup">
-                <Card className="border-border/30 bg-card/50 backdrop-blur-md">
-                  <CardContent className="p-5 space-y-3">
-                    <h3 className="font-semibold text-sm">🖥️ Current PC Setup</h3>
-                    <div className="space-y-2.5 text-sm">
-                      {[
-                        { icon: Cpu, label: "CPU", value: profile.pcSpecs.cpu },
-                        { icon: Monitor, label: "GPU", value: profile.pcSpecs.gpu },
-                        { icon: MemoryStick, label: "RAM", value: profile.pcSpecs.ram },
-                        { icon: HardDrive, label: "Storage", value: profile.pcSpecs.storage },
-                        { icon: Monitor, label: "Monitor", value: profile.pcSpecs.monitor },
-                      ].map(({ icon: Icon, label, value }) => (
-                        <div key={label} className="flex items-center gap-3">
-                          <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-muted-foreground w-16">{label}</span>
-                          <span className="text-foreground">{value}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <Separator className="bg-border/30" />
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-muted-foreground">OS</span>
-                      <Badge className="bg-primary/10 text-primary border-primary/30">{profile.pcSpecs.os}</Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
             </Tabs>
           </motion.div>
 
@@ -287,4 +231,4 @@ const PublicProfilePage = () => {
   );
 };
 
-export default PublicProfilePage;
+export default BusinessProfilePage;

@@ -231,7 +231,7 @@ const ChatWindow = ({
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">{other?.name}</span>
+            <Link to={`/user/${other?.name?.toLowerCase().replace(/\s/g, "")}`} className="text-sm font-semibold hover:text-primary transition-colors">{other?.name}</Link>
             {conversation.verified && <Badge variant="outline" className="text-[9px] px-1 py-0 bg-primary/10 text-primary border-primary/30">Verified</Badge>}
           </div>
           <p className="text-[10px] text-muted-foreground">
@@ -392,6 +392,7 @@ const ContextPanel = ({
                   <div>
                     <p className="text-sm font-medium">{other?.name}</p>
                     <p className="text-[10px] text-muted-foreground">{other?.isOnline ? "🟢 Online" : "⚫ Offline"}</p>
+                    <p className="text-[10px] text-primary mt-0.5">View full profile →</p>
                   </div>
                   <ExternalLink className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
                 </CardContent>
@@ -403,21 +404,24 @@ const ContextPanel = ({
           {conversation.businessName && (
             <div className="space-y-2">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Business</p>
-              <Card className="border-border/30 bg-muted/10">
-                <CardContent className="p-3 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{conversation.businessName}</span>
-                    {conversation.verified && <Badge className="text-[9px] bg-primary/10 text-primary border-primary/30">✓ Verified</Badge>}
-                  </div>
-                  {conversation.businessRating && (
-                    <div className="flex items-center gap-1 text-xs">
-                      <span>⭐</span>
-                      <span className="font-medium">{conversation.businessRating}</span>
-                      <span className="text-muted-foreground">rating</span>
+              <Link to={`/business/${conversation.businessName.toLowerCase().replace(/\s/g, "-")}`}>
+                <Card className="border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors">
+                  <CardContent className="p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{conversation.businessName}</span>
+                      {conversation.verified && <Badge className="text-[9px] bg-primary/10 text-primary border-primary/30">✓ Verified</Badge>}
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+                    {conversation.businessRating && (
+                      <div className="flex items-center gap-1 text-xs">
+                        <span>⭐</span>
+                        <span className="font-medium">{conversation.businessRating}</span>
+                        <span className="text-muted-foreground">rating</span>
+                      </div>
+                    )}
+                    <p className="text-[10px] text-primary">View business profile →</p>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
           )}
 

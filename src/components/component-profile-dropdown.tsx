@@ -2,20 +2,12 @@
  * =============================================================================
  * PROFILE DROPDOWN — Role-based navigation dropdown
  * =============================================================================
- * For "business" users → renders the BusinessPanel (structured mini-dashboard).
- * For "standard" users → renders the StandardDropdown with grouped sections
- *   and a subtle "Start Selling" conversion link.
- *
- * DATA FLOW:
- *   AuthContext (role) → selects panel type
- *   navigation-config.ts → powers link lists
- * =============================================================================
  */
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, Store, ArrowRight } from "lucide-react";
+import { LogOut, Store, ArrowRight, Award, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { dropdownVariants } from "@/animations/presets";
 import { getAvatarById } from "@/data/temp/8-user-profile-mock";
@@ -33,9 +25,6 @@ const ProfileDropdown = () => {
   return <StandardDropdown />;
 };
 
-/* --------------------------------------------------------------------------
- * STANDARD USER DROPDOWN — Grouped menu with conversion CTA
- * -------------------------------------------------------------------------- */
 const StandardDropdown = () => {
   const [open, setOpen] = useState(false);
   const [sellerModalOpen, setSellerModalOpen] = useState(false);
@@ -56,8 +45,6 @@ const StandardDropdown = () => {
   if (!user) return null;
 
   const avatarEmoji = getAvatarById(user.avatar).emoji;
-
-  /** Show only the first 3 sections (Overview + Activity + Saved) as quick links */
   const quickSections = standardSidebarSections.slice(0, 3);
 
   return (
@@ -84,6 +71,26 @@ const StandardDropdown = () => {
               <div className="px-4 py-3 border-b border-border/30">
                 <p className="text-sm font-semibold text-foreground">{user.fullName}</p>
                 <p className="text-xs text-muted-foreground">{user.email}</p>
+              </div>
+
+              {/* Profile & Affiliate links */}
+              <div className="py-1 border-b border-border/30">
+                <Link
+                  to={`/user/${user.fullName.toLowerCase().replace(/\s/g, "")}`}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
+                >
+                  <User className="h-4 w-4" />
+                  View Profile
+                </Link>
+                <Link
+                  to="/affiliate"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
+                >
+                  <Award className="h-4 w-4" />
+                  Affiliate Dashboard
+                </Link>
               </div>
 
               {/* Quick sections */}
@@ -128,7 +135,7 @@ const StandardDropdown = () => {
                   ))}
               </div>
 
-              {/* System */}
+              {/* Sign out */}
               <div className="border-t border-border/30 py-1">
                 <button
                   onClick={() => {
@@ -142,13 +149,10 @@ const StandardDropdown = () => {
                 </button>
               </div>
 
-              {/* Subtle seller conversion CTA */}
+              {/* Seller CTA */}
               <div className="border-t border-border/30 px-3 py-2.5">
                 <button
-                  onClick={() => {
-                    setOpen(false);
-                    setSellerModalOpen(true);
-                  }}
+                  onClick={() => { setOpen(false); setSellerModalOpen(true); }}
                   className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium text-primary hover:bg-primary/10 transition-colors"
                 >
                   <Store className="h-3 w-3" />
