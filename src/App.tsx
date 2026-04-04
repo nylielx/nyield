@@ -54,6 +54,9 @@ import MessagingPage from "./pages/18-page-messaging";
 import BusinessProfilePage from "./pages/19-page-business-profile";
 import AffiliatePage from "./pages/20-page-affiliate";
 import AffiliateLandingPage from "./pages/20-page-affiliate/landing";
+import FaqPage from "./pages/21-page-faq";
+import GiftPage from "./pages/22-page-gift";
+import SupportPage from "./pages/23-page-support";
 
 const queryClient = new QueryClient();
 
@@ -112,6 +115,9 @@ const App = () => (
             <Route path="/messages" element={<MessagingPage />} />
             <Route path="/earn" element={<AffiliateLandingPage />} />
             <Route path="/affiliate" element={<AffiliatePage />} />
+            <Route path="/faq" element={<FaqPage />} />
+            <Route path="/gift" element={<GiftPage />} />
+            <Route path="/support" element={<SupportPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -26,6 +26,8 @@ import PerformanceProofSection from "./components/section-performance-proof";
 import FeaturesSection from "./components/section-features";
 import StatsLandingSection from "./components/section-stats-landing";
 import FinalCtaSection from "./components/section-final-cta";
+import SectionFaq from "./components/section-faq";
+import SectionGift from "./components/section-gift";
 import SiteFooter from "@/components/component-site-footer";
 
 const Index = () => {
@@ -42,7 +44,9 @@ const Index = () => {
         <HardwareSection />
         <PerformanceProofSection />
         <FeaturesSection />
+        <SectionGift />
         <StatsLandingSection />
+        <SectionFaq />
         <FinalCtaSection />
       </main>
       <SiteFooter />
