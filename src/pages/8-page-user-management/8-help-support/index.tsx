@@ -1,10 +1,11 @@
 /**
  * =============================================================================
- * HELP & SUPPORT PAGE
+ * HELP & SUPPORT PAGE — Redirects to the full Support Hub
  * =============================================================================
  */
 
-import { Mail, MessageSquare, FileText } from "lucide-react";
+import { Mail, MessageSquare, FileText, ArrowRight, HelpCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const HelpSupportPage = () => (
   <div className="space-y-6">
@@ -28,9 +29,9 @@ const HelpSupportPage = () => (
         <div>
           <h3 className="font-semibold text-foreground mb-1">Live Chat</h3>
           <p className="text-sm text-muted-foreground">Chat with our team in real-time</p>
-          <button className="mt-2 px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium opacity-50 cursor-not-allowed" disabled>
-            Start Chat (Coming Soon)
-          </button>
+          <Link to="/messages" className="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:underline">
+            Open Messages <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
       </div>
 
@@ -39,11 +40,20 @@ const HelpSupportPage = () => (
         <div>
           <h3 className="font-semibold text-foreground mb-1">FAQ & Documentation</h3>
           <p className="text-sm text-muted-foreground">Browse common questions and guides</p>
-          <button className="mt-2 px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium opacity-50 cursor-not-allowed" disabled>
-            View FAQ (Coming Soon)
-          </button>
+          <Link to="/faq" className="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:underline">
+            View FAQ <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
       </div>
+
+      <Link
+        to="/support"
+        className="flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm font-medium text-primary hover:bg-primary/10 transition-colors"
+      >
+        <HelpCircle className="h-4 w-4" />
+        Open Full Support Hub
+        <ArrowRight className="h-4 w-4" />
+      </Link>
     </div>
   </div>
 );
