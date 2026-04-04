@@ -115,6 +115,9 @@ const App = () => (
             <Route path="/messages" element={<MessagingPage />} />
             <Route path="/earn" element={<AffiliateLandingPage />} />
             <Route path="/affiliate" element={<AffiliatePage />} />
+            <Route path="/faq" element={<FaqPage />} />
+            <Route path="/gift" element={<GiftPage />} />
+            <Route path="/support" element={<SupportPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
