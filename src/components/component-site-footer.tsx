@@ -24,16 +24,16 @@ const footerLinks = {
     { label: "Marketplace", href: "/marketplace" },
   ],
   Company: [
-    { label: "About", href: "/#about" },
+    { label: "About", href: "/about" },
     { label: "Careers", href: "#" },
-    { label: "Contact", href: "#" },
-    { label: "Blog", href: "#" },
+    { label: "Gift nYield", href: "/gift" },
+    { label: "Affiliate", href: "/earn" },
   ],
   Support: [
-    { label: "Help Center", href: "#" },
+    { label: "FAQ", href: "/faq" },
+    { label: "Support Hub", href: "/support" },
     { label: "Privacy Policy", href: "#" },
     { label: "Terms of Service", href: "#" },
-    { label: "Refund Policy", href: "#" },
   ],
 };
 
